@@ -69,8 +69,6 @@ class _MyHomePageState extends State<MyHomePage> {
         clips.add(clip);
       }
     });
-    print("==============clips0:${clips[0].isSelected}");
-    print("==============clips1:${clips[1].isSelected}");
   }
 
   final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
@@ -127,21 +125,23 @@ class _MyHomePageState extends State<MyHomePage> {
                   _ListViewItemCopyIntent: CallbackAction(
                       onInvoke: (e) => copyToClipboard(clips[index].text))
                 },
-                child: ListView.separated(
-                  itemBuilder: (context, index) => Container(
-                      color: clips[index].backgroundColor(context),
-                      child: Text(
-                        clips[index].subText(),
+                child: Row(children: <Widget>[
+                  SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.3,
+                      child: ListView.separated(
+                        itemBuilder: (context, index) => Container(
+                            color: clips[index].backgroundColor(context),
+                            child: Text(
+                              clips[index].subText(),
+                            )),
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 0.5),
+                        itemCount: clips.length,
                       )),
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 0.5),
-                  itemCount: clips.length,
-                ))));
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+                  // SizedBox(
+                  //     width: MediaQuery.of(context).size.width * 0.7,
+                  //     child: Text(clips[index].subText()))
+                ]))));
   }
 }
 
