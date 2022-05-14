@@ -47,6 +47,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final clipboardContentStream = StreamController<String>.broadcast();
+  List<String> clips = [];
 
   @override
   void initState() {
@@ -55,12 +56,21 @@ class _MyHomePageState extends State<MyHomePage> {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
         Clipboard.getData('text/plain').then((clipboarContent) {
           if (clipboarContent != null) {
-            print('Clipboard content ${clipboarContent.text}');
-            Provider.of<ClipNotifier>(context, listen: false)
-                .updateClips(Clip(clipboarContent.text ?? ""));
+            updateListIfNeeded(clipboarContent.text!);
           }
         });
       });
+    });
+  }
+
+  void updateListIfNeeded(String clip) {
+    setState(() {
+      if (clips.contains(clip)) {
+        clips.remove(clip);
+        clips.add(clip);
+      } else {
+        clips.add(clip);
+      }
     });
   }
 
@@ -72,12 +82,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
           child: ListView(
-              children: context
-                      .watch<ClipNotifier>()
-                      .clips
-                      ?.map((clip) => Text(clip.text))
-                      .toList() ??
-                  [])),
+              children:
+                  clips.map((clip) => Text(Clip(clip).subText())).toList())),
     );
   }
 
