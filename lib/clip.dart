@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 class Clip {
   String text = "";
+  bool isSelected = false;
+  int index = 0;
+
   Clip(String s) {
     text = s.replaceAll(' ', '').replaceAll('　', '');
   }
@@ -12,6 +15,22 @@ class Clip {
     } else {
       return "$text...";
     }
+  }
+
+  Color backgroundColor() {
+    if (isSelected) {
+      return Colors.brown;
+    } else {
+      return Colors.white;
+    }
+  }
+
+  void incrementIndex() {
+    index++;
+  }
+
+  void decrementIndex() {
+    index--;
   }
 }
 

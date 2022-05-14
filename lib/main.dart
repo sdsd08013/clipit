@@ -47,7 +47,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final clipboardContentStream = StreamController<String>.broadcast();
-  List<String> clips = [];
+  List<Clip> clips = [];
+  String lastText = "";
+  int index = 0;
 
   @override
   void initState() {
@@ -56,16 +58,20 @@ class _MyHomePageState extends State<MyHomePage> {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
         Clipboard.getData('text/plain').then((clipboarContent) {
           if (clipboarContent != null) {
-            updateListIfNeeded(clipboarContent.text!);
+            if (lastText != clipboarContent.text!) {
+              updateListIfNeeded(Clip(clipboarContent.text!));
+              lastText = clipboarContent.text!;
+            }
           }
         });
       });
     });
   }
 
-  void updateListIfNeeded(String clip) {
+  void updateListIfNeeded(Clip clip) {
+    final Iterable<String> texts = clips.map((e) => e.text);
     setState(() {
-      if (clips.contains(clip)) {
+      if (texts.contains(clip.text)) {
         clips.remove(clip);
         clips.add(clip);
       } else {
@@ -74,17 +80,62 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
+  final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
+
+  void updateListViewState(Intent e) {
+    if (e.runtimeType == _ListViewUpIntent) {
+      decrementIndex();
+      setState(() {
+        clips[index].isSelected = true;
+        clips[index + 1].isSelected = false;
+      });
+    } else if (e.runtimeType == _ListViewDownIntent) {
+      incrementIndex();
+      setState(() {
+        clips[index].isSelected = true;
+        clips[index - 1].isSelected = false;
+      });
+    }
+  }
+
+  void incrementIndex() {
+    if (index == clips.length - 1) return;
+    index++;
+  }
+
+  void decrementIndex() {
+    if (index == 0) return;
+    index--;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-          child: ListView(
-              children:
-                  clips.map((clip) => Text(Clip(clip).subText())).toList())),
-    );
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Center(
+            child: FocusableActionDetector(
+                autofocus: true,
+                shortcuts: {
+                  _listViewUpKeySet: _ListViewUpIntent(),
+                  _listViewDownKeySet: _ListViewDownIntent()
+                },
+                actions: {
+                  _ListViewUpIntent:
+                      CallbackAction(onInvoke: (e) => updateListViewState(e)),
+                  _ListViewDownIntent:
+                      CallbackAction(onInvoke: (e) => updateListViewState(e)),
+                },
+                child: ListView.separated(
+                  itemBuilder: (context, index) => Text(clips[index].subText(),
+                      style: TextStyle(
+                          backgroundColor: clips[index].backgroundColor())),
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 0.5),
+                  itemCount: clips.length,
+                ))));
   }
 
   @override
@@ -92,3 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 }
+
+class _ListViewDownIntent extends Intent {}
+
+class _ListViewUpIntent extends Intent {}

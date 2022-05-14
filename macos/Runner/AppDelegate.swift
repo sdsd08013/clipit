@@ -8,6 +8,7 @@ class AppDelegate: FlutterAppDelegate {
     override init() {
         super.init()
         popover.behavior = NSPopover.Behavior.transient //to make the popover hide when the user clicks outside of it
+        /*
         if #available(macOS 10.12, *) {
             Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: {(timer:Timer) in
                 self.clipboardChanged()
@@ -15,14 +16,14 @@ class AppDelegate: FlutterAppDelegate {
         } else {
             // Fallback on earlier versions
         }
-        
+        */
         
     }
     
     func clipboardChanged(){
         let pasteboardString = NSPasteboard.general.string(forType: .string)
         if let theString = pasteboardString {
-            print("String is \(theString)")
+            //print("String is \(theString)")
             // Do cool things with the string
         }
     }
