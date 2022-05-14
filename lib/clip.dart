@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class Clip {
   String text = "";
   bool isSelected = false;
-  int index = 0;
 
   Clip(String s) {
     text = s.replaceAll(' ', '').replaceAll('　', '');
@@ -17,20 +16,12 @@ class Clip {
     }
   }
 
-  Color backgroundColor() {
+  Color backgroundColor(BuildContext context) {
     if (isSelected) {
-      return Colors.brown;
+      return Theme.of(context).highlightColor;
     } else {
-      return Colors.white;
+      return Theme.of(context).cardColor;
     }
-  }
-
-  void incrementIndex() {
-    index++;
-  }
-
-  void decrementIndex() {
-    index--;
   }
 }
 

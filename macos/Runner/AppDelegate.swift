@@ -1,10 +1,11 @@
 import Cocoa
 import FlutterMacOS
-
+/*
 @NSApplicationMain
 class AppDelegate: FlutterAppDelegate {
     var statusBar: StatusBarController?
     var popover = NSPopover.init()
+    
     override init() {
         super.init()
         popover.behavior = NSPopover.Behavior.transient //to make the popover hide when the user clicks outside of it
@@ -39,4 +40,14 @@ class AppDelegate: FlutterAppDelegate {
         mainFlutterWindow.close() //close the default flutter window
         super.applicationDidFinishLaunching(aNotification)
     }
+}
+ */
+import Cocoa
+import FlutterMacOS
+
+@NSApplicationMain
+class AppDelegate: FlutterAppDelegate {
+  override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+    return true
+  }
 }

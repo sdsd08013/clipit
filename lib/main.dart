@@ -30,15 +30,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -78,10 +69,14 @@ class _MyHomePageState extends State<MyHomePage> {
         clips.add(clip);
       }
     });
+    print("==============clips0:${clips[0].isSelected}");
+    print("==============clips1:${clips[1].isSelected}");
   }
 
   final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
   final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
+  final _listViewItemCopyKeySet =
+      LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
 
   void updateListViewState(Intent e) {
     if (e.runtimeType == _ListViewUpIntent) {
@@ -99,39 +94,45 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void copyToClipboard(String s) {
+    Clipboard.setData(ClipboardData(text: s));
+  }
+
   void incrementIndex() {
-    if (index == clips.length - 1) return;
+    if (index == clips.length - 1 || clips.length < 2) return;
     index++;
   }
 
   void decrementIndex() {
-    if (index == 0) return;
+    if (index == 0 || clips.length < 2) return;
     index--;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
         body: Center(
             child: FocusableActionDetector(
                 autofocus: true,
                 shortcuts: {
                   _listViewUpKeySet: _ListViewUpIntent(),
-                  _listViewDownKeySet: _ListViewDownIntent()
+                  _listViewDownKeySet: _ListViewDownIntent(),
+                  _listViewItemCopyKeySet: _ListViewItemCopyIntent()
                 },
                 actions: {
                   _ListViewUpIntent:
                       CallbackAction(onInvoke: (e) => updateListViewState(e)),
                   _ListViewDownIntent:
                       CallbackAction(onInvoke: (e) => updateListViewState(e)),
+                  _ListViewItemCopyIntent: CallbackAction(
+                      onInvoke: (e) => copyToClipboard(clips[index].text))
                 },
                 child: ListView.separated(
-                  itemBuilder: (context, index) => Text(clips[index].subText(),
-                      style: TextStyle(
-                          backgroundColor: clips[index].backgroundColor())),
+                  itemBuilder: (context, index) => Container(
+                      color: clips[index].backgroundColor(context),
+                      child: Text(
+                        clips[index].subText(),
+                      )),
                   separatorBuilder: (context, index) =>
                       const Divider(height: 0.5),
                   itemCount: clips.length,
@@ -147,3 +148,5 @@ class _MyHomePageState extends State<MyHomePage> {
 class _ListViewDownIntent extends Intent {}
 
 class _ListViewUpIntent extends Intent {}
+
+class _ListViewItemCopyIntent extends Intent {}
