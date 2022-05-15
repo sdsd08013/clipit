@@ -1,28 +1,38 @@
 import 'package:clipit/color.dart';
 import 'package:flutter/material.dart';
 
+class ClipDTO {
+  int id;
+  String text;
+  ClipDTO({required this.id, required this.text});
+}
+
 class Clip {
-  String text = "";
+  String text;
   bool isSelected = false;
 
-  Clip(String s) {
-    text = s.replaceAll(' ', '').replaceAll('　', '');
-  }
+  Clip({required this.text});
+  //text = s.replaceAll(' ', '').replaceAll('　', '');
 
   String subText() {
-    if (text.length > 50) {
-      return "${text.substring(0, 50)}...";
+    final trimText = text.replaceAll(' ', '').replaceAll('\n', '');
+    if (trimText.length > 50) {
+      return "${trimText.substring(0, 50)}...";
     } else {
-      return "$text...";
+      return "$trimText";
     }
+  }
+
+  Map<String, dynamic> toMap() {
+    return {'text': text, 'isSelected': isSelected};
   }
 
   Color backgroundColor(BuildContext context) {
     if (isSelected) {
       //return Theme.of(context).highlightColor;
-      return backgroundSelect;
+      return sideBackgroundSelect;
     } else {
-      return background;
+      return sideBackground;
       //return Theme.of(context).cardColor;
     }
   }
