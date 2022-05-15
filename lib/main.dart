@@ -50,10 +50,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return openDatabase(
       join(await getDatabasesPath(), 'clipit.db'),
       onCreate: (db, version) {
-        return db.execute('DELETE TABLE clips');
-        // return db.execute(
-        //   'CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT)',
-        // );
+        return db.execute(
+          'CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT)',
+        );
       },
       version: 1,
     );
@@ -61,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void retlieveClips() async {
     final db = await database;
+    //db.delete('clips');
     final List<Map<String, dynamic>> maps = await db.query('clips');
     final newclips =
         List.generate(maps.length, (index) => Clip(text: maps[index]['text']));
@@ -81,7 +81,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         Clipboard.getData('text/plain').then((clipboarContent) {
           if (clipboarContent != null) {
             if (lastText != clipboarContent.text!) {
-              saveClip(clipboarContent.text!);
               updateListIfNeeded(Clip(text: clipboarContent.text!));
               lastText = clipboarContent.text!;
             }
@@ -93,14 +92,17 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   void updateListIfNeeded(Clip clip) {
     final Iterable<String> texts = clips.map((e) => e.text);
-    setState(() {
-      if (texts.contains(clip.text)) {
+    if (texts.contains(clip.text)) {
+      setState(() {
         clips.removeWhere((element) => element.text == clip.text);
         clips.add(clip);
-      } else {
+      });
+    } else {
+      saveClip(clip.text);
+      setState(() {
         clips.add(clip);
-      }
-    });
+      });
+    }
   }
 
   final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
@@ -141,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   Future<int> saveClip(String clipText) async {
     final db = await database;
     return db.insert('clips', {'text': clipText},
-        conflictAlgorithm: ConflictAlgorithm.replace);
+        conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   void saveClips() async {
@@ -149,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final batch = db.batch();
     for (var clip in clips) {
       batch.insert('clips', clip.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace);
+          conflictAlgorithm: ConflictAlgorithm.ignore);
     }
     batch.commit();
   }
