@@ -110,38 +110,44 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Center(
-            child: FocusableActionDetector(
-                autofocus: true,
-                shortcuts: {
-                  _listViewUpKeySet: _ListViewUpIntent(),
-                  _listViewDownKeySet: _ListViewDownIntent(),
-                  _listViewItemCopyKeySet: _ListViewItemCopyIntent()
-                },
-                actions: {
-                  _ListViewUpIntent:
-                      CallbackAction(onInvoke: (e) => updateListViewState(e)),
-                  _ListViewDownIntent:
-                      CallbackAction(onInvoke: (e) => updateListViewState(e)),
-                  _ListViewItemCopyIntent: CallbackAction(
-                      onInvoke: (e) => copyToClipboard(clips[index].text))
-                },
-                child: Row(children: <Widget>[
-                  SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      child: ListView.separated(
-                        itemBuilder: (context, index) => Container(
-                            color: clips[index].backgroundColor(context),
-                            child: Text(
-                              clips[index].subText(),
-                            )),
-                        separatorBuilder: (context, index) =>
-                            const Divider(height: 0.5),
-                        itemCount: clips.length,
-                      )),
-                  // SizedBox(
-                  //     width: MediaQuery.of(context).size.width * 0.7,
-                  //     child: Text(clips[index].subText()))
-                ]))));
+            child: clips.isEmpty
+                ? const Text("empty ;)")
+                : FocusableActionDetector(
+                    autofocus: true,
+                    shortcuts: {
+                      _listViewUpKeySet: _ListViewUpIntent(),
+                      _listViewDownKeySet: _ListViewDownIntent(),
+                      _listViewItemCopyKeySet: _ListViewItemCopyIntent()
+                    },
+                    actions: {
+                      _ListViewUpIntent: CallbackAction(
+                          onInvoke: (e) => updateListViewState(e)),
+                      _ListViewDownIntent: CallbackAction(
+                          onInvoke: (e) => updateListViewState(e)),
+                      _ListViewItemCopyIntent: CallbackAction(
+                          onInvoke: (e) => copyToClipboard(clips[index].text))
+                    },
+                    child: Row(children: <Widget>[
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.3,
+                          child: ListView.separated(
+                            itemBuilder: (context, index) => Container(
+                                color: clips[index].backgroundColor(context),
+                                child: Text(
+                                  clips[index].subText(),
+                                )),
+                            separatorBuilder: (context, index) =>
+                                const Divider(height: 0.5),
+                            itemCount: clips.length,
+                          )),
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          //child: Container(child: Text(clips[index].subText())))
+                          child: Container(
+                              alignment: Alignment.topLeft,
+                              color: Theme.of(context).backgroundColor,
+                              child: Text(clips[index].subText())))
+                    ]))));
   }
 }
 
