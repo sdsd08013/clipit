@@ -1,3 +1,4 @@
+import 'package:clipit/color.dart';
 import 'package:flutter/material.dart';
 
 class Clip {
@@ -18,9 +19,11 @@ class Clip {
 
   Color backgroundColor(BuildContext context) {
     if (isSelected) {
-      return Theme.of(context).highlightColor;
+      //return Theme.of(context).highlightColor;
+      return backgroundSelect;
     } else {
-      return Theme.of(context).cardColor;
+      return background;
+      //return Theme.of(context).cardColor;
     }
   }
 }

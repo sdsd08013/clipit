@@ -1,4 +1,5 @@
 import 'package:clipit/clip.dart';
+import 'package:clipit/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -61,9 +62,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void updateListIfNeeded(Clip clip) {
     final Iterable<String> texts = clips.map((e) => e.text);
+    print("==========clip.text:${clip.text}");
+    print("===============texts:${texts}");
+    print("===============contains:${texts.contains(clip.text)}");
     setState(() {
       if (texts.contains(clip.text)) {
-        clips.remove(clip);
+        clips.removeWhere((element) => element.text == clip.text);
         clips.add(clip);
       } else {
         clips.add(clip);
@@ -132,8 +136,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           width: MediaQuery.of(context).size.width * 0.3,
                           child: ListView.separated(
                             itemBuilder: (context, index) => Container(
+                                padding: const EdgeInsets.all(8),
                                 color: clips[index].backgroundColor(context),
                                 child: Text(
+                                  style: const TextStyle(color: textColor),
                                   clips[index].subText(),
                                 )),
                             separatorBuilder: (context, index) =>
@@ -144,9 +150,16 @@ class _MyHomePageState extends State<MyHomePage> {
                           width: MediaQuery.of(context).size.width * 0.7,
                           //child: Container(child: Text(clips[index].subText())))
                           child: Container(
+                              decoration: const BoxDecoration(
+                                  border: Border(
+                                      left: BorderSide(
+                                          width: 2, color: textColor)),
+                                  color: background),
                               alignment: Alignment.topLeft,
-                              color: Theme.of(context).backgroundColor,
-                              child: Text(clips[index].subText())))
+                              padding: const EdgeInsets.all(8),
+                              child: Text(
+                                  style: const TextStyle(color: textColor),
+                                  clips[index].text)))
                     ]))));
   }
 }
