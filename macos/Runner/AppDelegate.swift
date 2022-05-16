@@ -57,11 +57,11 @@ class AppDelegate: FlutterAppDelegate {
         binaryChannel.setMethodCallHandler({
                   (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
                   // Note: this method is invoked on the UI thread.
-                    guard call.method == "getClipboardHtml" else {
+                    guard call.method == "getClipboardContent" else {
                       result(FlutterMethodNotImplemented)
                       return
                     }
-                    self.getClipboardHtml(result: result)
+                    self.getClipboardContent(result: result)
                 })
     }
      
@@ -69,9 +69,18 @@ class AppDelegate: FlutterAppDelegate {
         return true
     }
     
-    private func getClipboardHtml(result: FlutterResult) {
+    private func getClipboardContent(result: FlutterResult) {
         let html = NSPasteboard.general.string(forType: .html);
-        result(html)
+        let plain = NSPasteboard.general.string(forType: .string);
+
+        guard html == nil else {
+            result(html)
+            return
+        }
+        guard plain == nil else {
+            result(plain)
+            return
+        }
     }
 }
 

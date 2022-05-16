@@ -52,7 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return openDatabase(
       join(await getDatabasesPath(), 'clipit.db'),
       onCreate: (db, version) {
-        //db.query("DROP TABLE IF EXISTS clips");
         //db.delete('clips');
         return db.execute(
           'CREATE TABLE clips(id INTEGER PRIMARY KEY, plainText TEXT, htmlText TEXT)',
@@ -60,6 +59,10 @@ class _MyHomePageState extends State<MyHomePage> {
       },
       version: 1,
     );
+  }
+
+  void dropTable() async {
+    await deleteDatabase(await getDatabasesPath());
   }
 
   void retlieveClips() async {
@@ -81,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   getClipboardHtml(String plainText) async {
     try {
-      final result = await methodChannel.invokeMethod('getClipboardHtml');
+      final result = await methodChannel.invokeMethod('getClipboardContent');
       if (result != null) {
         updateListIfNeeded(Clip(plainText: plainText, htmlText: result));
         lastText = result;
@@ -95,11 +98,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    //retlieveClips();
+    //dropTable();
+    retlieveClips();
 
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
-        Clipboard.getData('text/html').then((clipboarContent) {
+        Clipboard.getData('text/plain').then((clipboarContent) {
           if (clipboarContent != null) {
             getClipboardHtml(clipboarContent.text!);
           }
