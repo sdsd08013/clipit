@@ -1,6 +1,7 @@
+/*
 import Cocoa
 import FlutterMacOS
-/*
+
 @NSApplicationMain
 class AppDelegate: FlutterAppDelegate {
     var statusBar: StatusBarController?
@@ -9,7 +10,7 @@ class AppDelegate: FlutterAppDelegate {
     override init() {
         super.init()
         popover.behavior = NSPopover.Behavior.transient //to make the popover hide when the user clicks outside of it
-        /*
+        
         if #available(macOS 10.12, *) {
             Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: {(timer:Timer) in
                 self.clipboardChanged()
@@ -17,14 +18,14 @@ class AppDelegate: FlutterAppDelegate {
         } else {
             // Fallback on earlier versions
         }
-        */
+        
         
     }
     
     func clipboardChanged(){
-        let pasteboardString = NSPasteboard.general.string(forType: .string)
+        let pasteboardString = NSPasteboard.general.string(forType:       NSPasteboard.PasteboardType.rtf)
         if let theString = pasteboardString {
-            //print("String is \(theString)")
+            print("String is \(theString)")
             // Do cool things with the string
         }
     }
@@ -41,13 +42,36 @@ class AppDelegate: FlutterAppDelegate {
         super.applicationDidFinishLaunching(aNotification)
     }
 }
- */
+*/
 import Cocoa
 import FlutterMacOS
 
 @NSApplicationMain
 class AppDelegate: FlutterAppDelegate {
-  override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
-    return true
-  }
+    
+    override func applicationDidFinishLaunching(_ notification: Notification) {
+        let controller: FlutterViewController = mainFlutterWindow?.contentViewController as! FlutterViewController
+        
+        let binaryChannel = FlutterMethodChannel(name: "clipboard/html",
+                                                 binaryMessenger:  controller.registrar(forPlugin: "SwapBuffers").messenger)
+        binaryChannel.setMethodCallHandler({
+                  (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+                  // Note: this method is invoked on the UI thread.
+                    guard call.method == "getClipboardHtml" else {
+                      result(FlutterMethodNotImplemented)
+                      return
+                    }
+                    self.getClipboardHtml(result: result)
+                })
+    }
+     
+    override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        return true
+    }
+    
+    private func getClipboardHtml(result: FlutterResult) {
+        let html = NSPasteboard.general.string(forType: .html);
+        result(html)
+    }
 }
+

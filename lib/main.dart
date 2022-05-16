@@ -17,7 +17,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -45,6 +44,8 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   List<Clip> clips = [];
   String lastText = "";
   int index = 0;
+  static const channelName = 'clipboard/html';
+  final methodChannel = const MethodChannel(channelName);
 
   Future<Database> get database async {
     return openDatabase(
@@ -70,20 +71,34 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     });
   }
 
+  getClipboardHtml() async {
+    try {
+      final result = await methodChannel.invokeMethod('getClipboardHtml');
+      updateListIfNeeded(Clip(text: result));
+      lastText = result;
+    } on PlatformException catch (e) {
+      print("error in getting clipboard image");
+      print(e);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     retlieveClips();
+    getClipboardHtml();
     WidgetsBinding.instance.addObserver(this);
 
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
-        Clipboard.getData('text/plain').then((clipboarContent) {
+        getClipboardHtml();
+        Clipboard.getData('text/html').then((clipboarContent) {
           if (clipboarContent != null) {
-            if (lastText != clipboarContent.text!) {
-              updateListIfNeeded(Clip(text: clipboarContent.text!));
-              lastText = clipboarContent.text!;
-            }
+            // print("===============text!!!!!!!:${clipboarContent.text}");
+            // if (lastText != clipboarContent.text!) {
+            //   updateListIfNeeded(Clip(text: clipboarContent.text!));
+            //   lastText = clipboarContent.text!;
+            // }
           }
         });
       });
