@@ -1,26 +1,31 @@
 import 'package:clipit/color.dart';
 import 'package:flutter/material.dart';
+import 'package:html/parser.dart';
 import 'package:html2md/html2md.dart' as html2md;
 
-class ClipDTO {
+class Clip {
   int id;
   String text;
-  ClipDTO({required this.id, required this.text});
-}
+  bool isSelected;
 
-class Clip {
-  String plainText;
-  String htmlText;
-  String mdText = "";
-  bool isSelected = false;
-
-  Clip({required this.htmlText, required this.plainText}) {
-    mdText = html2md.convert(htmlText);
-  }
+  Clip({required this.id, required this.text, required this.isSelected});
   //text = s.replaceAll(' ', '').replaceAll('　', '');
 
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');
+  }
+
+  String get mdText {
+    return html2md.convert(text);
+  }
+
+  String get plainText {
+    var doc = parse(text);
+    if (doc.documentElement != null) {
+      String parsedstring = doc.documentElement!.text;
+      return parsedstring;
+    }
+    return "";
   }
 
   String subText() {
@@ -32,7 +37,7 @@ class Clip {
   }
 
   Map<String, dynamic> toMap() {
-    return {'plainText': plainText, 'htmlText': htmlText};
+    return {'text': text};
   }
 
   Color backgroundColor(BuildContext context) {
@@ -43,13 +48,5 @@ class Clip {
       return sideBackground;
       //return Theme.of(context).cardColor;
     }
-  }
-}
-
-class ClipNotifier extends ChangeNotifier {
-  List<Clip>? clips;
-  void updateClips(Clip clip) {
-    clips?.add(clip);
-    notifyListeners();
   }
 }

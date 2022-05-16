@@ -1,10 +1,10 @@
 import 'package:clipit/clip.dart';
 import 'package:clipit/color.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:path/path.dart';
-import 'package:provider/provider.dart';
 import 'dart:async';
 import 'dart:core';
 
@@ -20,15 +20,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-        create: (context) => ClipNotifier(),
-        child: MaterialApp(
-          title: 'Clipit',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-          ),
-          home: const MyHomePage(title: 'Clipit'),
-        ));
+    return MaterialApp(
+      title: 'Clipit',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const MyHomePage(title: 'Clipit'),
+    );
   }
 }
 
@@ -54,7 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
       onCreate: (db, version) {
         //db.delete('clips');
         return db.execute(
-          'CREATE TABLE clips(id INTEGER PRIMARY KEY, plainText TEXT, htmlText TEXT)',
+          'CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT)',
         );
       },
       version: 1,
@@ -68,13 +66,22 @@ class _MyHomePageState extends State<MyHomePage> {
   void retlieveClips() async {
     final db = await database;
     //db.delete('clips');
-    final List<Map<String, dynamic>> maps = await db.query('clips');
+    final List<Map<String, dynamic>> maps =
+        await db.query('clips', orderBy: "id asc");
     if (maps.isNotEmpty) {
-      final newclips = List.generate(
-          maps.length,
-          (index) => Clip(
-              htmlText: maps[index]['htmlText'],
-              plainText: maps[index]['plainText']));
+      final newclips = List.generate(maps.length, (index) {
+        if (index == 0) {
+          return Clip(
+              id: maps[index]['id'],
+              text: maps[index]['text'],
+              isSelected: true);
+        } else {
+          return Clip(
+              id: maps[index]['id'],
+              text: maps[index]['text'],
+              isSelected: false);
+        }
+      });
 
       setState(() {
         clips = newclips;
@@ -82,11 +89,11 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  getClipboardHtml(String plainText) async {
+  getClipboardHtml() async {
     try {
       final result = await methodChannel.invokeMethod('getClipboardContent');
       if (result != null) {
-        updateListIfNeeded(Clip(plainText: plainText, htmlText: result));
+        updateListIfNeeded(result);
         lastText = result;
       }
     } on PlatformException catch (e) {
@@ -103,26 +110,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
-        Clipboard.getData('text/plain').then((clipboarContent) {
-          if (clipboarContent != null) {
-            getClipboardHtml(clipboarContent.text!);
-          }
-        });
+        getClipboardHtml();
       });
     });
   }
 
-  void updateListIfNeeded(Clip clip) {
-    final Iterable<String> texts = clips.map((e) => e.plainText);
-    if (texts.contains(clip.plainText)) {
+  void updateListIfNeeded(String result) async {
+    final exist = clips.firstWhereOrNull((element) => element.text == result);
+    if (exist != null) {
       setState(() {
-        clips.removeWhere((element) => element.plainText == clip.plainText);
-        clips.add(clip);
+        clips.removeWhere((element) => element.id == exist.id);
+        clips.insert(0, exist);
+        clips;
       });
     } else {
-      saveClip(clip.plainText);
+      final id = await saveClip(result);
       setState(() {
-        clips.add(clip);
+        clips.insert(0, Clip(id: id, text: result, isSelected: false));
+        clips;
       });
     }
   }
@@ -131,21 +136,33 @@ class _MyHomePageState extends State<MyHomePage> {
   final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
   final _listViewItemCopyKeySet =
       LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
+  final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
 
   void updateListViewState(Intent e) {
     if (e.runtimeType == _ListViewUpIntent) {
       decrementIndex();
       setState(() {
-        clips[index].isSelected = true;
         clips[index + 1].isSelected = false;
+        clips[index].isSelected = true;
       });
     } else if (e.runtimeType == _ListViewDownIntent) {
       incrementIndex();
       setState(() {
-        clips[index].isSelected = true;
         clips[index - 1].isSelected = false;
+        clips[index].isSelected = true;
       });
     }
+  }
+
+  void handleListViewDeleteAction() {
+    deleteClip();
+    final targetClip = clips[index];
+
+    setState(() {
+      clips.remove(targetClip);
+      clips;
+    });
+    decrementIndex();
   }
 
   void copyToClipboard(String s) {
@@ -160,6 +177,11 @@ class _MyHomePageState extends State<MyHomePage> {
   void decrementIndex() {
     if (index == 0 || clips.length < 2) return;
     index--;
+  }
+
+  Future<int> deleteClip() async {
+    final db = await database;
+    return db.delete('clips', where: 'id = ?', whereArgs: [clips[index].id]);
   }
 
   Future<int> saveClip(String clipText) async {
@@ -189,7 +211,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     shortcuts: {
                       _listViewUpKeySet: _ListViewUpIntent(),
                       _listViewDownKeySet: _ListViewDownIntent(),
-                      _listViewItemCopyKeySet: _ListViewItemCopyIntent()
+                      _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
+                      _listViewDeleteKeySet: _ListViewItemDeleteIntent()
                     },
                     actions: {
                       _ListViewUpIntent: CallbackAction(
@@ -197,7 +220,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       _ListViewDownIntent: CallbackAction(
                           onInvoke: (e) => updateListViewState(e)),
                       _ListViewItemCopyIntent: CallbackAction(
-                          onInvoke: (e) => copyToClipboard(clips[index].mdText))
+                          onInvoke: (e) =>
+                              copyToClipboard(clips[index].mdText)),
+                      _ListViewItemDeleteIntent: CallbackAction(
+                          onInvoke: (e) => handleListViewDeleteAction())
                     },
                     child: Row(children: <Widget>[
                       Container(
@@ -238,3 +264,5 @@ class _ListViewDownIntent extends Intent {}
 class _ListViewUpIntent extends Intent {}
 
 class _ListViewItemCopyIntent extends Intent {}
+
+class _ListViewItemDeleteIntent extends Intent {}
