@@ -2,6 +2,7 @@ import 'package:clipit/clip.dart';
 import 'package:clipit/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
@@ -40,7 +41,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+class _MyHomePageState extends State<MyHomePage> {
   List<Clip> clips = [];
   String lastText = "";
   int index = 0;
@@ -51,8 +52,10 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return openDatabase(
       join(await getDatabasesPath(), 'clipit.db'),
       onCreate: (db, version) {
+        //db.query("DROP TABLE IF EXISTS clips");
+        //db.delete('clips');
         return db.execute(
-          'CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT)',
+          'CREATE TABLE clips(id INTEGER PRIMARY KEY, plainText TEXT, htmlText TEXT)',
         );
       },
       version: 1,
@@ -63,19 +66,26 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     final db = await database;
     //db.delete('clips');
     final List<Map<String, dynamic>> maps = await db.query('clips');
-    final newclips =
-        List.generate(maps.length, (index) => Clip(text: maps[index]['text']));
+    if (maps.isNotEmpty) {
+      final newclips = List.generate(
+          maps.length,
+          (index) => Clip(
+              htmlText: maps[index]['htmlText'],
+              plainText: maps[index]['plainText']));
 
-    setState(() {
-      clips = newclips;
-    });
+      setState(() {
+        clips = newclips;
+      });
+    }
   }
 
-  getClipboardHtml() async {
+  getClipboardHtml(String plainText) async {
     try {
       final result = await methodChannel.invokeMethod('getClipboardHtml');
-      updateListIfNeeded(Clip(text: result));
-      lastText = result;
+      if (result != null) {
+        updateListIfNeeded(Clip(plainText: plainText, htmlText: result));
+        lastText = result;
+      }
     } on PlatformException catch (e) {
       print("error in getting clipboard image");
       print(e);
@@ -85,20 +95,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    retlieveClips();
-    getClipboardHtml();
-    WidgetsBinding.instance.addObserver(this);
+    //retlieveClips();
 
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
-        getClipboardHtml();
         Clipboard.getData('text/html').then((clipboarContent) {
           if (clipboarContent != null) {
-            // print("===============text!!!!!!!:${clipboarContent.text}");
-            // if (lastText != clipboarContent.text!) {
-            //   updateListIfNeeded(Clip(text: clipboarContent.text!));
-            //   lastText = clipboarContent.text!;
-            // }
+            getClipboardHtml(clipboarContent.text!);
           }
         });
       });
@@ -106,14 +109,14 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   void updateListIfNeeded(Clip clip) {
-    final Iterable<String> texts = clips.map((e) => e.text);
-    if (texts.contains(clip.text)) {
+    final Iterable<String> texts = clips.map((e) => e.plainText);
+    if (texts.contains(clip.plainText)) {
       setState(() {
-        clips.removeWhere((element) => element.text == clip.text);
+        clips.removeWhere((element) => element.plainText == clip.plainText);
         clips.add(clip);
       });
     } else {
-      saveClip(clip.text);
+      saveClip(clip.plainText);
       setState(() {
         clips.add(clip);
       });
@@ -172,19 +175,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.detached) {
-      saveClips();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: Center(
@@ -203,7 +193,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                       _ListViewDownIntent: CallbackAction(
                           onInvoke: (e) => updateListViewState(e)),
                       _ListViewItemCopyIntent: CallbackAction(
-                          onInvoke: (e) => copyToClipboard(clips[index].text))
+                          onInvoke: (e) => copyToClipboard(clips[index].mdText))
                     },
                     child: Row(children: <Widget>[
                       Container(
@@ -221,16 +211,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
                                 const Divider(color: sideDivider, height: 0.5),
                             itemCount: clips.length,
                           )),
-                      SizedBox(
+                      Container(
+                          alignment: Alignment.topLeft,
                           width: MediaQuery.of(context).size.width * 0.7,
-                          //child: Container(child: Text(clips[index].subText())))
-                          child: Container(
-                              alignment: Alignment.topLeft,
-                              padding: const EdgeInsets.all(8),
-                              color: background,
-                              child: Text(
-                                  style: const TextStyle(color: textColor),
-                                  clips[index].text)))
+                          child: Markdown(
+                              controller: ScrollController(),
+                              shrinkWrap: true,
+                              data: clips[index].mdText))
+                      // Expanded(
+                      //     flex: 1,
+                      //     child: SingleChildScrollView(
+                      //         scrollDirection: Axis.vertical,
+                      //         child: Expanded(
+                      //             child: Markdown(
+                      //                 data: clips[index].mdText)))))
                     ]))));
   }
 }

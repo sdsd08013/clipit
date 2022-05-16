@@ -1,5 +1,6 @@
 import 'package:clipit/color.dart';
 import 'package:flutter/material.dart';
+import 'package:html2md/html2md.dart' as html2md;
 
 class ClipDTO {
   int id;
@@ -8,23 +9,30 @@ class ClipDTO {
 }
 
 class Clip {
-  String text;
+  String plainText;
+  String htmlText;
+  String mdText = "";
   bool isSelected = false;
 
-  Clip({required this.text});
+  Clip({required this.htmlText, required this.plainText}) {
+    mdText = html2md.convert(htmlText);
+  }
   //text = s.replaceAll(' ', '').replaceAll('　', '');
 
+  String get trimText {
+    return plainText.replaceAll(' ', '').replaceAll('\n', '');
+  }
+
   String subText() {
-    final trimText = text.replaceAll(' ', '').replaceAll('\n', '');
     if (trimText.length > 50) {
       return "${trimText.substring(0, 50)}...";
     } else {
-      return "$trimText";
+      return trimText;
     }
   }
 
   Map<String, dynamic> toMap() {
-    return {'text': text, 'isSelected': isSelected};
+    return {'plainText': plainText, 'htmlText': htmlText};
   }
 
   Color backgroundColor(BuildContext context) {

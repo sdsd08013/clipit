@@ -39,6 +39,8 @@ dependencies:
   macos_ui: ^1.4.0
   sqflite: ^2.0.2+1
   path: ^1.8.1
+  html2md: ^1.2.6
+  flutter_markdown: ^0.6.10
 
 dev_dependencies:
   flutter_test:
