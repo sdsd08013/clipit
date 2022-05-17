@@ -1,11 +1,14 @@
 import 'package:clipit/clip.dart';
 import 'package:clipit/clip_repository.dart';
 import 'package:clipit/color.dart';
+import 'package:clipit/icon_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'dart:async';
 import 'dart:core';
+
+import 'package:macos_ui/macos_ui.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,17 +40,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   ClipList clips = ClipList(value: []);
-  String lastText = "";
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
   final clipRepository = ClipRepository();
+  double offset = 0;
+  double dragStartPos = 0;
 
   getClipboardHtml() async {
     try {
       final result = await methodChannel.invokeMethod('getClipboardContent');
       if (result != null) {
         updateListIfNeeded(result);
-        lastText = result;
       }
     } on PlatformException catch (e) {
       print("error in getting clipboard image");
@@ -143,30 +146,85 @@ class _MyHomePageState extends State<MyHomePage> {
                       _ListViewItemDeleteIntent: CallbackAction(
                           onInvoke: (e) => handleListViewDeleteAction())
                     },
-                    child: Row(children: <Widget>[
+                    child: Row(children: [
                       Container(
-                          color: sideBackground,
-                          width: MediaQuery.of(context).size.width * 0.3,
-                          child: ListView.separated(
-                            itemBuilder: (context, index) => Container(
+                          color: side1stBackground,
+                          width: MediaQuery.of(context).size.width * 0.2 -
+                              2 -
+                              offset,
+                          child: ListView(children: [
+                            Container(
                                 padding: const EdgeInsets.all(8),
-                                color:
-                                    clips.value[index].backgroundColor(context),
-                                child: Text(
-                                  style: const TextStyle(color: textColor),
-                                  clips.value[index].id.toString(),
-                                )),
-                            separatorBuilder: (context, index) =>
-                                const Divider(color: sideDivider, height: 0.5),
-                            itemCount: clips.value.length,
-                          )),
+                                color: side1stBackground,
+                                child: IconText(
+                                    icon: Icons.memory,
+                                    text: "memo",
+                                    color: textColor)),
+                            Container(
+                                padding: const EdgeInsets.all(8),
+                                color: side1stBackground,
+                                child: IconText(
+                                    icon: Icons.copy,
+                                    text: "clip",
+                                    color: textColor)),
+                          ])),
+                      MouseRegion(
+                          cursor: SystemMouseCursors.resizeColumn,
+                          child: GestureDetector(
+                              onHorizontalDragStart: (detail) {
+                                dragStartPos = detail.globalPosition.dx;
+                              },
+                              onHorizontalDragUpdate: (detail) {
+                                final appWidth =
+                                    MediaQuery.of(context).size.width;
+                                double newOffset =
+                                    dragStartPos - detail.globalPosition.dx;
+                                if (appWidth * 0.2 < newOffset ||
+                                    appWidth * 0.2 - newOffset > appWidth)
+                                  return;
+                                setState(() => {
+                                      offset = (dragStartPos -
+                                          detail.globalPosition.dx)
+                                    });
+                              },
+                              child: Container(
+                                width: 2,
+                                color: Colors.black,
+                              ))),
                       Container(
-                          alignment: Alignment.topLeft,
-                          width: MediaQuery.of(context).size.width * 0.7,
-                          child: Markdown(
-                              controller: ScrollController(),
-                              shrinkWrap: true,
-                              data: clips.currentClip.mdText))
+                        alignment: Alignment.topLeft,
+                        width: MediaQuery.of(context).size.width * 0.8 + offset,
+                        child: Row(children: <Widget>[
+                          Container(
+                              color: side2ndBackground,
+                              width: (MediaQuery.of(context).size.width * 0.8 +
+                                      offset) *
+                                  0.3,
+                              child: ListView.separated(
+                                itemBuilder: (context, index) => Container(
+                                    padding: const EdgeInsets.all(8),
+                                    color: clips.value[index]
+                                        .backgroundColor(context),
+                                    child: Text(
+                                      style: const TextStyle(color: textColor),
+                                      clips.value[index].subText(),
+                                    )),
+                                separatorBuilder: (context, index) =>
+                                    const Divider(
+                                        color: sideDivider, height: 0.5),
+                                itemCount: clips.value.length,
+                              )),
+                          Container(
+                              alignment: Alignment.topLeft,
+                              width: (MediaQuery.of(context).size.width * 0.8 +
+                                      offset) *
+                                  0.5,
+                              child: Markdown(
+                                  controller: ScrollController(),
+                                  shrinkWrap: true,
+                                  data: clips.currentClip.mdText))
+                        ]),
+                      )
                     ]))));
   }
 }
