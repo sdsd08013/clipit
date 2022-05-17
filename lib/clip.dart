@@ -37,7 +37,9 @@ class ClipList {
 
   void deleteCurrentClip() {
     // clipboardと同様のclipを削除しようとすると削除できなくなる
-    value.remove(currentClip);
+    final target = value[currentIndex];
+    value.remove(target);
+    decrement();
   }
 
   bool isExist(String result) {
