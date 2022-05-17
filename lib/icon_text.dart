@@ -13,7 +13,7 @@ class IconText extends StatelessWidget {
     return RichText(
       text: TextSpan(
         children: [
-          WidgetSpan(child: Icon(icon, size: 20, color: color)),
+          WidgetSpan(child: Icon(icon, color: color, size: 14)),
           TextSpan(text: text, style: TextStyle(color: color)),
         ],
       ),

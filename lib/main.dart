@@ -123,6 +123,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final appWidth = MediaQuery.of(context).size.width;
+    final ratio1 = 0.15;
+    final ratio2 = 0.85;
+    final ratio3 = 0.3;
+    final ratio4 = 0.7;
     return Scaffold(
         body: Center(
             child: clips.value.isEmpty
@@ -149,19 +154,19 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Row(children: [
                       Container(
                           color: side1stBackground,
-                          width: MediaQuery.of(context).size.width * 0.2 -
-                              2 -
-                              offset,
+                          width: appWidth * ratio1 - 2 - offset,
                           child: ListView(children: [
                             Container(
-                                padding: const EdgeInsets.all(8),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
                                 color: side1stBackground,
                                 child: IconText(
                                     icon: Icons.memory,
                                     text: "memo",
                                     color: textColor)),
                             Container(
-                                padding: const EdgeInsets.all(8),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
                                 color: side1stBackground,
                                 child: IconText(
                                     icon: Icons.copy,
@@ -179,8 +184,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     MediaQuery.of(context).size.width;
                                 double newOffset =
                                     dragStartPos - detail.globalPosition.dx;
-                                if (appWidth * 0.2 < newOffset ||
-                                    appWidth * 0.2 - newOffset > appWidth)
+                                if (appWidth * ratio1 < newOffset ||
+                                    appWidth * ratio1 - newOffset > appWidth)
                                   return;
                                 setState(() => {
                                       offset = (dragStartPos -
@@ -193,13 +198,11 @@ class _MyHomePageState extends State<MyHomePage> {
                               ))),
                       Container(
                         alignment: Alignment.topLeft,
-                        width: MediaQuery.of(context).size.width * 0.8 + offset,
+                        width: appWidth * ratio2 + offset,
                         child: Row(children: <Widget>[
                           Container(
                               color: side2ndBackground,
-                              width: (MediaQuery.of(context).size.width * 0.8 +
-                                      offset) *
-                                  0.3,
+                              width: (appWidth * ratio2 + offset) * ratio3,
                               child: ListView.separated(
                                 itemBuilder: (context, index) => Container(
                                     padding: const EdgeInsets.all(8),
@@ -216,9 +219,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               )),
                           Container(
                               alignment: Alignment.topLeft,
-                              width: (MediaQuery.of(context).size.width * 0.8 +
-                                      offset) *
-                                  0.5,
+                              width: (appWidth * ratio2 + offset) * ratio4,
                               child: Markdown(
                                   controller: ScrollController(),
                                   shrinkWrap: true,
