@@ -1,7 +1,49 @@
+import 'dart:ffi';
+
 import 'package:clipit/color.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:html2md/html2md.dart' as html2md;
+
+class ClipList {
+  int currentIndex = 0;
+  List<Clip> value;
+  ClipList({required this.value});
+
+  Clip get currentClip {
+    return value[currentIndex];
+  }
+
+  ClipList insertToFirst(Clip clip) {
+    value[currentIndex].isSelected = false;
+    value.insert(0, clip);
+    currentIndex = 0;
+    return this;
+  }
+
+  void decrement() {
+    if (currentIndex == 0 || value.length < 2) return;
+    value[currentIndex].isSelected = false;
+    value[currentIndex - 1].isSelected = true;
+    currentIndex--;
+  }
+
+  void increment() {
+    if (currentIndex == value.length - 1 || value.length < 2) return;
+    value[currentIndex].isSelected = false;
+    value[currentIndex + 1].isSelected = true;
+    currentIndex++;
+  }
+
+  void deleteCurrentClip() {
+    // clipboardと同様のclipを削除しようとすると削除できなくなる
+    value.remove(currentClip);
+  }
+
+  bool isExist(String result) {
+    return value.where((element) => element.text == result).isNotEmpty;
+  }
+}
 
 class Clip {
   int id;
@@ -9,7 +51,6 @@ class Clip {
   bool isSelected;
 
   Clip({required this.id, required this.text, required this.isSelected});
-  //text = s.replaceAll(' ', '').replaceAll('　', '');
 
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');

@@ -1,17 +1,13 @@
 import 'package:clipit/clip.dart';
+import 'package:clipit/clip_repository.dart';
 import 'package:clipit/color.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:path/path.dart';
 import 'dart:async';
 import 'dart:core';
 
-import 'package:sqflite/sqflite.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
   runApp(const MyApp());
 }
 
@@ -40,54 +36,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Clip> clips = [];
+  ClipList clips = ClipList(value: []);
   String lastText = "";
-  int index = 0;
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
-
-  Future<Database> get database async {
-    return openDatabase(
-      join(await getDatabasesPath(), 'clipit.db'),
-      onCreate: (db, version) {
-        //db.delete('clips');
-        return db.execute(
-          'CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT)',
-        );
-      },
-      version: 1,
-    );
-  }
-
-  void dropTable() async {
-    await deleteDatabase(await getDatabasesPath());
-  }
-
-  void retlieveClips() async {
-    final db = await database;
-    //db.delete('clips');
-    final List<Map<String, dynamic>> maps =
-        await db.query('clips', orderBy: "id asc");
-    if (maps.isNotEmpty) {
-      final newclips = List.generate(maps.length, (index) {
-        if (index == 0) {
-          return Clip(
-              id: maps[index]['id'],
-              text: maps[index]['text'],
-              isSelected: true);
-        } else {
-          return Clip(
-              id: maps[index]['id'],
-              text: maps[index]['text'],
-              isSelected: false);
-        }
-      });
-
-      setState(() {
-        clips = newclips;
-      });
-    }
-  }
+  final clipRepository = ClipRepository();
 
   getClipboardHtml() async {
     try {
@@ -102,11 +55,18 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> retlieveClips() async {
+    final retlievedClips = await clipRepository.getClips();
+    setState(() {
+      clips = retlievedClips ?? ClipList(value: []);
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    //dropTable();
     retlieveClips();
+    //dropTable();
 
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
@@ -116,95 +76,53 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void updateListIfNeeded(String result) async {
-    final exist = clips.firstWhereOrNull((element) => element.text == result);
-    if (exist != null) {
-      setState(() {
-        clips.removeWhere((element) => element.id == exist.id);
-        clips.insert(0, exist);
-        clips;
-      });
+    if (clips.isExist(result)) {
+      // setState(() {
+      //   clips.removeWhere((element) => element.id == exist.id);
+      //   clips.insert(0, exist);
+      //   clips;
+      // });
     } else {
-      final id = await saveClip(result);
+      final id = await clipRepository.saveClip(result);
       setState(() {
-        clips.insert(0, Clip(id: id, text: result, isSelected: false));
+        clips.insertToFirst(Clip(id: id, text: result, isSelected: true));
         clips;
       });
     }
   }
 
-  final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
-  final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
-  final _listViewItemCopyKeySet =
-      LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
-  final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
-
   void updateListViewState(Intent e) {
     if (e.runtimeType == _ListViewUpIntent) {
-      decrementIndex();
       setState(() {
-        clips[index + 1].isSelected = false;
-        clips[index].isSelected = true;
+        clips.decrement();
+        clips;
       });
     } else if (e.runtimeType == _ListViewDownIntent) {
-      incrementIndex();
       setState(() {
-        clips[index - 1].isSelected = false;
-        clips[index].isSelected = true;
+        clips.increment();
+        clips;
       });
     }
   }
 
   void handleListViewDeleteAction() {
-    deleteClip();
-    final targetClip = clips[index];
+    clipRepository.deleteClip(clips.currentClip.id);
 
     setState(() {
-      clips.remove(targetClip);
-      clips;
+      clips.deleteCurrentClip();
+      clips = clips;
     });
-    decrementIndex();
   }
 
   void copyToClipboard(String s) {
     Clipboard.setData(ClipboardData(text: s));
   }
 
-  void incrementIndex() {
-    if (index == clips.length - 1 || clips.length < 2) return;
-    index++;
-  }
-
-  void decrementIndex() {
-    if (index == 0 || clips.length < 2) return;
-    index--;
-  }
-
-  Future<int> deleteClip() async {
-    final db = await database;
-    return db.delete('clips', where: 'id = ?', whereArgs: [clips[index].id]);
-  }
-
-  Future<int> saveClip(String clipText) async {
-    final db = await database;
-    return db.insert('clips', {'text': clipText},
-        conflictAlgorithm: ConflictAlgorithm.ignore);
-  }
-
-  void saveClips() async {
-    final db = await database;
-    final batch = db.batch();
-    for (var clip in clips) {
-      batch.insert('clips', clip.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.ignore);
-    }
-    batch.commit();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: Center(
-            child: clips.isEmpty
+            child: clips.value.isEmpty
                 ? const Text("empty ;)")
                 : FocusableActionDetector(
                     autofocus: true,
@@ -221,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onInvoke: (e) => updateListViewState(e)),
                       _ListViewItemCopyIntent: CallbackAction(
                           onInvoke: (e) =>
-                              copyToClipboard(clips[index].mdText)),
+                              copyToClipboard(clips.currentClip.mdText)),
                       _ListViewItemDeleteIntent: CallbackAction(
                           onInvoke: (e) => handleListViewDeleteAction())
                     },
@@ -232,14 +150,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: ListView.separated(
                             itemBuilder: (context, index) => Container(
                                 padding: const EdgeInsets.all(8),
-                                color: clips[index].backgroundColor(context),
+                                color:
+                                    clips.value[index].backgroundColor(context),
                                 child: Text(
                                   style: const TextStyle(color: textColor),
-                                  clips[index].subText(),
+                                  clips.value[index].id.toString(),
                                 )),
                             separatorBuilder: (context, index) =>
                                 const Divider(color: sideDivider, height: 0.5),
-                            itemCount: clips.length,
+                            itemCount: clips.value.length,
                           )),
                       Container(
                           alignment: Alignment.topLeft,
@@ -247,14 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Markdown(
                               controller: ScrollController(),
                               shrinkWrap: true,
-                              data: clips[index].mdText))
-                      // Expanded(
-                      //     flex: 1,
-                      //     child: SingleChildScrollView(
-                      //         scrollDirection: Axis.vertical,
-                      //         child: Expanded(
-                      //             child: Markdown(
-                      //                 data: clips[index].mdText)))))
+                              data: clips.currentClip.mdText))
                     ]))));
   }
 }
@@ -266,3 +178,9 @@ class _ListViewUpIntent extends Intent {}
 class _ListViewItemCopyIntent extends Intent {}
 
 class _ListViewItemDeleteIntent extends Intent {}
+
+final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
+final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
+final _listViewItemCopyKeySet =
+    LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
+final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
