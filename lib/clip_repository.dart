@@ -9,9 +9,9 @@ class ClipRepository {
       join(await getDatabasesPath(), 'clipit.db'),
       onCreate: (db, version) {
         //db.delete('clips');
-        return db.execute(
-          'CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT)',
-        );
+        return db.execute('''
+          CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)
+          ''');
       },
       version: 1,
     );
@@ -29,15 +29,9 @@ class ClipRepository {
       return ClipList(
           value: List.generate(maps.length, (index) {
         if (index == 0) {
-          return Clip(
-              id: maps[index]['id'],
-              text: maps[index]['text'],
-              isSelected: true);
+          return Clip.fromMap(maps[index], true);
         } else {
-          return Clip(
-              id: maps[index]['id'],
-              text: maps[index]['text'],
-              isSelected: false);
+          return Clip.fromMap(maps[index], false);
         }
       }));
     }

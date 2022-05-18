@@ -4,19 +4,33 @@ import 'package:flutter/material.dart';
 class IconText extends StatelessWidget {
   final String text;
   final IconData icon;
-  final Color color;
+  final Color textColor;
+  final Color iconColor;
+  final void onTap;
 
-  IconText({required this.text, required this.icon, required this.color});
+  IconText(
+      {required this.text,
+      required this.icon,
+      required this.textColor,
+      required this.iconColor,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        children: [
-          WidgetSpan(child: Icon(icon, color: color, size: 14)),
-          TextSpan(text: text, style: TextStyle(color: color)),
-        ],
-      ),
-    );
+    return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+            onTap: () {
+              onTap;
+            },
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  WidgetSpan(child: Icon(icon, color: iconColor, size: 14)),
+                  TextSpan(text: " ", style: TextStyle(color: textColor)),
+                  TextSpan(text: text, style: TextStyle(color: textColor))
+                ],
+              ),
+            )));
   }
 }

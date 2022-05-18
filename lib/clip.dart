@@ -1,4 +1,5 @@
 import 'package:clipit/color.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:html2md/html2md.dart' as html2md;
@@ -13,9 +14,13 @@ class ClipList {
   }
 
   ClipList insertToFirst(Clip clip) {
-    value[currentIndex].isSelected = false;
-    value.insert(0, clip);
-    currentIndex = 0;
+    if (value.isEmpty) {
+      value = [clip];
+    } else {
+      value[currentIndex].isSelected = false;
+      value.insert(0, clip);
+      currentIndex = 0;
+    }
     return this;
   }
 
@@ -49,8 +54,16 @@ class Clip {
   int id;
   String text;
   bool isSelected;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
-  Clip({required this.id, required this.text, required this.isSelected});
+  Clip(
+      {required this.id,
+      required this.text,
+      required this.isSelected,
+      required this.createdAt,
+      required this.updatedAt});
 
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');
@@ -71,14 +84,18 @@ class Clip {
 
   String subText() {
     if (trimText.length > 50) {
-      return "${trimText.substring(0, 50)}...";
+      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
     } else {
-      return trimText;
+      return "$trimText\n${formatter.format(createdAt)}";
     }
   }
 
   Map<String, dynamic> toMap() {
-    return {'text': text};
+    return {
+      'text': text,
+      "created_at": createdAt.toUtc().toIso8601String(),
+      "updated_at": updatedAt.toUtc().toIso8601String()
+    };
   }
 
   Color backgroundColor(BuildContext context) {
@@ -90,4 +107,11 @@ class Clip {
       //return Theme.of(context).cardColor;
     }
   }
+
+  factory Clip.fromMap(Map<String, dynamic> json, bool isSelected) => Clip(
+      id: json['id'],
+      text: json['text'],
+      createdAt: DateTime.parse(json['created_at']).toLocal(),
+      updatedAt: DateTime.parse(json['updated_at']).toLocal(),
+      isSelected: isSelected);
 }

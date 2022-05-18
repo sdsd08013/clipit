@@ -69,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     retlieveClips();
-    //dropTable();
+    //clipRepository.dropTable();
 
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
@@ -88,7 +88,12 @@ class _MyHomePageState extends State<MyHomePage> {
     } else {
       final id = await clipRepository.saveClip(result);
       setState(() {
-        clips.insertToFirst(Clip(id: id, text: result, isSelected: true));
+        clips.insertToFirst(Clip(
+            id: id,
+            text: result,
+            isSelected: true,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now()));
         clips;
       });
     }
@@ -117,17 +122,17 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void copyToClipboard(String s) {
-    Clipboard.setData(ClipboardData(text: s));
+  void copyToClipboard() {
+    Clipboard.setData(ClipboardData(text: clips.currentClip.plainText));
   }
 
   @override
   Widget build(BuildContext context) {
     final appWidth = MediaQuery.of(context).size.width;
-    final ratio1 = 0.15;
-    final ratio2 = 0.85;
-    final ratio3 = 0.3;
-    final ratio4 = 0.7;
+    const ratio1 = 0.15;
+    const ratio2 = 0.85;
+    const ratio3 = 0.3;
+    const ratio4 = 0.7;
     return Scaffold(
         body: Center(
             child: clips.value.isEmpty
@@ -145,9 +150,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           onInvoke: (e) => updateListViewState(e)),
                       _ListViewDownIntent: CallbackAction(
                           onInvoke: (e) => updateListViewState(e)),
-                      _ListViewItemCopyIntent: CallbackAction(
-                          onInvoke: (e) =>
-                              copyToClipboard(clips.currentClip.mdText)),
+                      _ListViewItemCopyIntent:
+                          CallbackAction(onInvoke: (e) => copyToClipboard()),
                       _ListViewItemDeleteIntent: CallbackAction(
                           onInvoke: (e) => handleListViewDeleteAction())
                     },
@@ -159,19 +163,36 @@ class _MyHomePageState extends State<MyHomePage> {
                             Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: side1stBackground,
+                                color: side1stBackgroundSelect,
                                 child: IconText(
-                                    icon: Icons.memory,
-                                    text: "memo",
-                                    color: textColor)),
+                                  icon: Icons.copy,
+                                  text: "clip",
+                                  textColor: textColor,
+                                  iconColor: iconColor,
+                                  onTap: {print("tap1st")},
+                                )),
                             Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(16, 8, 16, 8),
                                 color: side1stBackground,
                                 child: IconText(
-                                    icon: Icons.copy,
-                                    text: "clip",
-                                    color: textColor)),
+                                  icon: Icons.memory,
+                                  text: "archived",
+                                  textColor: textColor,
+                                  iconColor: iconColor,
+                                  onTap: {print("tap2nd")},
+                                )),
+                            Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                color: side1stBackground,
+                                child: IconText(
+                                  icon: Icons.delete,
+                                  text: "trash",
+                                  textColor: textColor,
+                                  iconColor: iconColor,
+                                  onTap: {print("tap2nd")},
+                                )),
                           ])),
                       MouseRegion(
                           cursor: SystemMouseCursors.resizeColumn,
@@ -220,10 +241,51 @@ class _MyHomePageState extends State<MyHomePage> {
                           Container(
                               alignment: Alignment.topLeft,
                               width: (appWidth * ratio2 + offset) * ratio4,
-                              child: Markdown(
-                                  controller: ScrollController(),
-                                  shrinkWrap: true,
-                                  data: clips.currentClip.mdText))
+                              child: Column(children: [
+                                Container(
+                                  color: side1stBackground,
+                                  height: 50,
+                                  child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        Padding(
+                                            padding: const EdgeInsets.all(4),
+                                            child: IconButton(
+                                              onPressed: () =>
+                                                  copyToClipboard(),
+                                              color: iconColor,
+                                              icon: const Icon(
+                                                Icons.copy,
+                                              ),
+                                              tooltip: 'Copy to clipboard',
+                                            )),
+                                        Padding(
+                                            padding: const EdgeInsets.all(4),
+                                            child: IconButton(
+                                              onPressed: () =>
+                                                  copyToClipboard(),
+                                              color: iconColor,
+                                              icon: const Icon(
+                                                Icons.memory,
+                                              ),
+                                              tooltip: 'Archive and save',
+                                            )),
+                                        Padding(
+                                            padding: const EdgeInsets.all(4),
+                                            child: IconButton(
+                                              onPressed: () =>
+                                                  copyToClipboard(),
+                                              color: iconColor,
+                                              icon: const Icon(Icons.delete),
+                                              tooltip: 'move to trash',
+                                            ))
+                                      ]),
+                                ),
+                                Markdown(
+                                    controller: ScrollController(),
+                                    shrinkWrap: true,
+                                    data: clips.currentClip.mdText)
+                              ]))
                         ]),
                       )
                     ]))));

@@ -43,6 +43,7 @@ dependencies:
   flutter_markdown: ^0.6.10
   flutter_html: ^2.2.1
   collection: ^1.16.0
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:
