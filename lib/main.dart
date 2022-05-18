@@ -8,8 +8,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'dart:async';
 import 'dart:core';
 
-import 'package:macos_ui/macos_ui.dart';
-
 void main() {
   runApp(const MyApp());
 }
@@ -50,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final result = await methodChannel.invokeMethod('getClipboardContent');
       if (result != null) {
-        updateListIfNeeded(result);
+        createOrUpdateClip(result);
       }
     } on PlatformException catch (e) {
       print("error in getting clipboard image");
@@ -78,13 +76,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void updateListIfNeeded(String result) async {
+  void createOrUpdateClip(String result) async {
     if (clips.isExist(result)) {
-      // setState(() {
-      //   clips.removeWhere((element) => element.id == exist.id);
-      //   clips.insert(0, exist);
-      //   clips;
-      // });
+      if (clips.shouldUpdate(result)) {
+        setState(() {
+          clips.updateCurrentClip();
+          clips;
+        });
+        await clipRepository.updateClip(clips.currentClip);
+      }
     } else {
       final id = await clipRepository.saveClip(result);
       setState(() {
@@ -92,6 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
             id: id,
             text: result,
             isSelected: true,
+            count: 1,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now()));
         clips;
@@ -114,6 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleListViewDeleteAction() {
+    // TODO: 最新のclipboardと同じtextは消せないようにする
     clipRepository.deleteClip(clips.currentClip.id);
 
     setState(() {
@@ -214,8 +216,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                     });
                               },
                               child: Container(
-                                width: 2,
-                                color: Colors.black,
+                                width: 1,
+                                color: dividerColor,
                               ))),
                       Container(
                         alignment: Alignment.topLeft,
@@ -235,7 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     )),
                                 separatorBuilder: (context, index) =>
                                     const Divider(
-                                        color: sideDivider, height: 0.5),
+                                        color: dividerColor, height: 0.5),
                                 itemCount: clips.value.length,
                               )),
                           Container(

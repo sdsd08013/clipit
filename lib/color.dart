@@ -1,6 +1,7 @@
 import 'dart:ui';
 
-const sideDivider = Color.fromRGBO(76, 80, 86, 1);
+const sideDividerColor = Color.fromRGBO(76, 80, 86, 1);
+const dividerColor = Color.fromRGBO(106, 110, 116, 1);
 const side2ndBackgroundSelect = Color.fromRGBO(36, 86, 201, 1);
 const side2ndBackground = Color.fromRGBO(32, 28, 37, 1);
 const side1stBackgroundSelect = Color.fromRGBO(64, 62, 68, 1);

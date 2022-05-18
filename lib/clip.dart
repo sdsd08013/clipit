@@ -1,4 +1,5 @@
 import 'package:clipit/color.dart';
+import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
@@ -38,6 +39,12 @@ class ClipList {
     currentIndex++;
   }
 
+  void updateCurrentClip() {
+    final target = value[currentIndex];
+    target.count++;
+    value[currentIndex] = target;
+  }
+
   void deleteCurrentClip() {
     // clipboardと同様のclipを削除しようとすると削除できなくなる
     final target = value[currentIndex];
@@ -48,12 +55,24 @@ class ClipList {
   bool isExist(String result) {
     return value.where((element) => element.text == result).isNotEmpty;
   }
+
+  bool shouldUpdate(String result) {
+    final clip = value.where((element) => element.text == result).firstOrNull;
+    if (clip == null) {
+      return true;
+    } else {
+      return clip.updatedAt
+          .add(const Duration(hours: 1))
+          .isBefore(DateTime.now());
+    }
+  }
 }
 
 class Clip {
   int id;
   String text;
   bool isSelected;
+  int count;
   final DateTime createdAt;
   final DateTime updatedAt;
   final formatter = DateFormat("yyyy/MM/dd HH:mm");
@@ -61,6 +80,7 @@ class Clip {
   Clip(
       {required this.id,
       required this.text,
+      required this.count,
       required this.isSelected,
       required this.createdAt,
       required this.updatedAt});
@@ -84,9 +104,9 @@ class Clip {
 
   String subText() {
     if (trimText.length > 50) {
-      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
+      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}\n$count";
     } else {
-      return "$trimText\n${formatter.format(createdAt)}";
+      return "$trimText\n${formatter.format(createdAt)}\n$count";
     }
   }
 
@@ -111,6 +131,7 @@ class Clip {
   factory Clip.fromMap(Map<String, dynamic> json, bool isSelected) => Clip(
       id: json['id'],
       text: json['text'],
+      count: json['count'],
       createdAt: DateTime.parse(json['created_at']).toLocal(),
       updatedAt: DateTime.parse(json['updated_at']).toLocal(),
       isSelected: isSelected);

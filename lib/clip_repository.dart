@@ -10,7 +10,7 @@ class ClipRepository {
       onCreate: (db, version) {
         //db.delete('clips');
         return db.execute('''
-          CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)
+          CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT NOT NULL, count INTEGER, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)
           ''');
       },
       version: 1,
@@ -57,5 +57,10 @@ class ClipRepository {
           conflictAlgorithm: ConflictAlgorithm.ignore);
     }
     batch.commit();
+  }
+
+  Future<void> updateClip(Clip clip) async {
+    final db = await database;
+    db.update('clips', clip.toMap(), where: 'id=?', whereArgs: [clip.id]);
   }
 }
