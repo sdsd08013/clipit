@@ -1,4 +1,4 @@
-import 'package:clipit/clip.dart';
+import 'package:clipit/models/clip.dart';
 import 'package:clipit/clip_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
@@ -43,6 +43,21 @@ class _MyHomePageState extends State<MyHomePage> {
   final clipRepository = ClipRepository();
   double offset = 0;
   double dragStartPos = 0;
+  final listViewController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    retlieveClips();
+    //clipRepository.dropTable();
+
+    Future.delayed(Duration.zero, () {
+      Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        getClipboardHtml();
+      });
+    });
+  }
 
   getClipboardHtml() async {
     try {
@@ -60,19 +75,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final retlievedClips = await clipRepository.getClips();
     setState(() {
       clips = retlievedClips ?? ClipList(value: []);
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    retlieveClips();
-    //clipRepository.dropTable();
-
-    Future.delayed(Duration.zero, () {
-      Timer.periodic(const Duration(milliseconds: 100), (timer) {
-        getClipboardHtml();
-      });
     });
   }
 
@@ -100,18 +102,25 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void updateListViewState(Intent e) {
-    if (e.runtimeType == _ListViewUpIntent) {
-      setState(() {
-        clips.decrement();
-        clips;
-      });
-    } else if (e.runtimeType == _ListViewDownIntent) {
-      setState(() {
-        clips.increment();
-        clips;
-      });
-    }
+  void handleListViewItemTap(int index) {
+    clips.switchClip(index);
+    setState(() {
+      clips;
+    });
+  }
+
+  void handleListDown() {
+    setState(() {
+      clips.increment();
+      clips;
+    });
+  }
+
+  void handleListUp() {
+    setState(() {
+      clips.decrement();
+      clips;
+    });
   }
 
   void handleListViewDeleteAction() {
@@ -125,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void copyToClipboard() {
-    Clipboard.setData(ClipboardData(text: clips.currentClip.plainText));
+    Clipboard.setData(ClipboardData(text: clips.currentClip.text));
   }
 
   @override
@@ -148,10 +157,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       _listViewDeleteKeySet: _ListViewItemDeleteIntent()
                     },
                     actions: {
-                      _ListViewUpIntent: CallbackAction(
-                          onInvoke: (e) => updateListViewState(e)),
-                      _ListViewDownIntent: CallbackAction(
-                          onInvoke: (e) => updateListViewState(e)),
+                      _ListViewUpIntent:
+                          CallbackAction(onInvoke: (e) => handleListUp()),
+                      _ListViewDownIntent:
+                          CallbackAction(onInvoke: (e) => handleListDown()),
                       _ListViewItemCopyIntent:
                           CallbackAction(onInvoke: (e) => copyToClipboard()),
                       _ListViewItemDeleteIntent: CallbackAction(
@@ -171,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   text: "clip",
                                   textColor: textColor,
                                   iconColor: iconColor,
-                                  onTap: {print("tap1st")},
+                                  onTap: {},
                                 )),
                             Container(
                                 padding:
@@ -182,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   text: "archived",
                                   textColor: textColor,
                                   iconColor: iconColor,
-                                  onTap: {print("tap2nd")},
+                                  onTap: {},
                                 )),
                             Container(
                                 padding:
@@ -193,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   text: "trash",
                                   textColor: textColor,
                                   iconColor: iconColor,
-                                  onTap: {print("tap2nd")},
+                                  onTap: {},
                                 )),
                           ])),
                       MouseRegion(
@@ -227,14 +236,21 @@ class _MyHomePageState extends State<MyHomePage> {
                               color: side2ndBackground,
                               width: (appWidth * ratio2 + offset) * ratio3,
                               child: ListView.separated(
-                                itemBuilder: (context, index) => Container(
-                                    padding: const EdgeInsets.all(8),
-                                    color: clips.value[index]
-                                        .backgroundColor(context),
-                                    child: Text(
-                                      style: const TextStyle(color: textColor),
-                                      clips.value[index].subText(),
-                                    )),
+                                controller: listViewController,
+                                itemBuilder: (context, index) =>
+                                    GestureDetector(
+                                        onTap: () {
+                                          handleListViewItemTap(index);
+                                        },
+                                        child: Container(
+                                            padding: const EdgeInsets.all(8),
+                                            color: clips.value[index]
+                                                .backgroundColor(context),
+                                            child: Text(
+                                              style: const TextStyle(
+                                                  color: textColor),
+                                              clips.value[index].subText(),
+                                            ))),
                                 separatorBuilder: (context, index) =>
                                     const Divider(
                                         color: dividerColor, height: 0.5),

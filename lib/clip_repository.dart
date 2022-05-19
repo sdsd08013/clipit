@@ -1,7 +1,7 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'clip.dart';
+import 'models/clip.dart';
 
 class ClipRepository {
   Future<Database> get database async {
@@ -23,8 +23,7 @@ class ClipRepository {
 
   Future<ClipList?> getClips() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps =
-        await db.query('clips', orderBy: "id desc");
+    final List<Map<String, dynamic>> maps = await db.query('clips');
     if (maps.isNotEmpty) {
       return ClipList(
           value: List.generate(maps.length, (index) {
@@ -45,8 +44,15 @@ class ClipRepository {
 
   Future<int> saveClip(String clipText) async {
     final db = await database;
-    return db.insert('clips', {'text': clipText},
-        conflictAlgorithm: ConflictAlgorithm.ignore);
+    return db.insert(
+        'clips',
+        {
+          "text": clipText,
+          "count": 1,
+          "created_at": DateTime.now().toUtc().toIso8601String(),
+          "updated_at": DateTime.now().toUtc().toIso8601String()
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> saveClips(List<Clip> clips) async {

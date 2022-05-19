@@ -39,9 +39,17 @@ class ClipList {
     currentIndex++;
   }
 
+  void switchClip(int targetIndex) {
+    final target = value[targetIndex];
+    currentClip.isSelected = false;
+    target.isSelected = true;
+    currentIndex = targetIndex;
+  }
+
   void updateCurrentClip() {
     final target = value[currentIndex];
     target.count++;
+    target.updatedAt = DateTime.now();
     value[currentIndex] = target;
   }
 
@@ -74,7 +82,7 @@ class Clip {
   bool isSelected;
   int count;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  DateTime updatedAt;
   final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
   Clip(
@@ -103,7 +111,7 @@ class Clip {
   }
 
   String subText() {
-    if (trimText.length > 50) {
+    if (trimText.length > 30) {
       return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}\n$count";
     } else {
       return "$trimText\n${formatter.format(createdAt)}\n$count";

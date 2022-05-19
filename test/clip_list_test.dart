@@ -1,4 +1,4 @@
-import 'package:clipit/clip.dart';
+import 'package:clipit/models/clip.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -40,5 +40,31 @@ void main() {
     ]);
 
     expect(list.shouldUpdate('text1'), true);
+  });
+  test('new text make isExist returns false', () {
+    final list = ClipList(value: [
+      Clip(
+          id: 1,
+          text: 'text1',
+          count: 1,
+          isSelected: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now())
+    ]);
+
+    expect(list.isExist('text2'), false);
+  });
+  test('existing text make isExist returns true', () {
+    final list = ClipList(value: [
+      Clip(
+          id: 1,
+          text: 'text1',
+          count: 1,
+          isSelected: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now())
+    ]);
+
+    expect(list.isExist('text1'), true);
   });
 }
