@@ -13,6 +13,7 @@ import 'dart:async';
 import 'dart:core';
 
 import 'models/note.dart';
+import 'models/trash.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,6 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final listViewController = ScrollController();
   ClipList clips = ClipList(value: []);
   NoteList notes = NoteList(value: []);
+  TrashList trashes = TrashList(value: []);
   double offset = 0;
   double dragStartPos = 0;
   SideType type = SideType.CLIP;
@@ -202,147 +204,179 @@ class _MyHomePageState extends State<MyHomePage> {
     const ratio4 = 0.7;
     return Scaffold(
         body: Center(
-            child: clips.value.isEmpty
-                ? const Text("empty ;)")
-                : FocusableActionDetector(
-                    autofocus: true,
-                    shortcuts: {
-                      _listViewUpKeySet: _ListViewUpIntent(),
-                      _listViewDownKeySet: _ListViewDownIntent(),
-                      _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
-                      _listViewDeleteKeySet: _ListViewItemDeleteIntent()
-                    },
-                    actions: {
-                      _ListViewUpIntent:
-                          CallbackAction(onInvoke: (e) => handleListUp()),
-                      _ListViewDownIntent:
-                          CallbackAction(onInvoke: (e) => handleListDown()),
-                      _ListViewItemCopyIntent:
-                          CallbackAction(onInvoke: (e) => copyToClipboard()),
-                      _ListViewItemDeleteIntent: CallbackAction(
-                          onInvoke: (e) => handleListViewDeleteAction())
-                    },
-                    child: Row(children: [
-                      Container(
-                          color: side1stBackground,
-                          width: appWidth * ratio1 - 2 - offset,
-                          child: ListView(children: [
-                            Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: type == SideType.CLIP
-                                    ? side1stBackgroundSelect
-                                    : side1stBackground,
-                                child: IconText(
-                                  icon: Icons.copy,
-                                  text: "clip",
-                                  textColor: textColor,
-                                  iconColor: iconColor,
-                                  onTap: () => handleSideBarTap(SideType.CLIP),
-                                )),
-                            Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: type == SideType.ARCHIVED
-                                    ? side1stBackgroundSelect
-                                    : side1stBackground,
-                                child: IconText(
-                                  icon: Icons.memory,
-                                  text: "archived",
-                                  textColor: textColor,
-                                  iconColor: iconColor,
-                                  onTap: () =>
-                                      handleSideBarTap(SideType.ARCHIVED),
-                                )),
-                            Container(
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: type == SideType.TRASH
-                                    ? side1stBackgroundSelect
-                                    : side1stBackground,
-                                child: IconText(
-                                  icon: Icons.delete,
-                                  text: "trash",
-                                  textColor: textColor,
-                                  iconColor: iconColor,
-                                  onTap: () => handleSideBarTap(SideType.TRASH),
-                                )),
-                          ])),
-                      MouseRegion(
-                          cursor: SystemMouseCursors.resizeColumn,
-                          child: GestureDetector(
-                              onHorizontalDragStart: (detail) {
-                                dragStartPos = detail.globalPosition.dx;
-                              },
-                              onHorizontalDragUpdate: (detail) {
-                                final appWidth =
-                                    MediaQuery.of(context).size.width;
-                                double newOffset =
-                                    dragStartPos - detail.globalPosition.dx;
-                                if (appWidth * ratio1 < newOffset ||
-                                    appWidth * ratio1 - newOffset > appWidth)
-                                  return;
-                                setState(() => {
-                                      offset = (dragStartPos -
-                                          detail.globalPosition.dx)
-                                    });
-                              },
-                              child: Container(
-                                width: 1,
-                                color: dividerColor,
-                              ))),
-                      Container(
-                        alignment: Alignment.topLeft,
-                        width: appWidth * ratio2 + offset,
-                        child: Row(children: <Widget>[
-                          if (type == SideType.CLIP) ...[
-                            ContentsListView(
-                              controller: listViewController,
-                              width: (appWidth * ratio2 + offset) * ratio3,
-                              onItemTap: (index) =>
-                                  handleListViewItemTap(index),
-                              items: clips.value,
-                            ),
-                            Container(
-                                alignment: Alignment.topLeft,
-                                width: (appWidth * ratio2 + offset) * ratio4,
-                                child: Column(children: [
-                                  ContentsHeader(
-                                      handleArchiveClipTap: () =>
-                                          handleArchiveItemTap(),
-                                      handleCopyToClipboardTap: () =>
-                                          copyToClipboard()),
-                                  Markdown(
-                                      controller: ScrollController(),
-                                      shrinkWrap: true,
-                                      data: clips.currentItem.mdText)
-                                ]))
-                          ] else if (type == SideType.ARCHIVED) ...[
-                            ContentsListView(
-                              controller: listViewController,
-                              width: (appWidth * ratio2 + offset) * ratio3,
-                              onItemTap: (index) =>
-                                  handleListViewItemTap(index),
-                              items: notes.value,
-                            ),
-                            Container(
-                                alignment: Alignment.topLeft,
-                                width: (appWidth * ratio2 + offset) * ratio4,
-                                child: Column(children: [
-                                  ContentsHeader(
-                                      handleArchiveClipTap: () =>
-                                          handleArchiveItemTap(),
-                                      handleCopyToClipboardTap: () =>
-                                          copyToClipboard()),
-                                  Markdown(
-                                      controller: ScrollController(),
-                                      shrinkWrap: true,
-                                      data: notes.currentItem.mdText)
-                                ]))
-                          ]
-                        ]),
-                      )
-                    ]))));
+            child: FocusableActionDetector(
+                autofocus: true,
+                shortcuts: {
+                  _listViewUpKeySet: _ListViewUpIntent(),
+                  _listViewDownKeySet: _ListViewDownIntent(),
+                  _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
+                  _listViewDeleteKeySet: _ListViewItemDeleteIntent()
+                },
+                actions: {
+                  _ListViewUpIntent:
+                      CallbackAction(onInvoke: (e) => handleListUp()),
+                  _ListViewDownIntent:
+                      CallbackAction(onInvoke: (e) => handleListDown()),
+                  _ListViewItemCopyIntent:
+                      CallbackAction(onInvoke: (e) => copyToClipboard()),
+                  _ListViewItemDeleteIntent: CallbackAction(
+                      onInvoke: (e) => handleListViewDeleteAction())
+                },
+                child: Row(children: [
+                  Container(
+                      color: side1stBackground,
+                      width: appWidth * ratio1 - 2 - offset,
+                      child: ListView(children: [
+                        Container(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            color: type == SideType.CLIP
+                                ? side1stBackgroundSelect
+                                : side1stBackground,
+                            child: IconText(
+                              icon: Icons.copy,
+                              text: "clip",
+                              textColor: textColor,
+                              iconColor: iconColor,
+                              onTap: () => handleSideBarTap(SideType.CLIP),
+                            )),
+                        Container(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            color: type == SideType.ARCHIVED
+                                ? side1stBackgroundSelect
+                                : side1stBackground,
+                            child: IconText(
+                              icon: Icons.memory,
+                              text: "archived",
+                              textColor: textColor,
+                              iconColor: iconColor,
+                              onTap: () => handleSideBarTap(SideType.ARCHIVED),
+                            )),
+                        Container(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            color: type == SideType.TRASH
+                                ? side1stBackgroundSelect
+                                : side1stBackground,
+                            child: IconText(
+                              icon: Icons.delete,
+                              text: "trash",
+                              textColor: textColor,
+                              iconColor: iconColor,
+                              onTap: () => handleSideBarTap(SideType.TRASH),
+                            )),
+                      ])),
+                  MouseRegion(
+                      cursor: SystemMouseCursors.resizeColumn,
+                      child: GestureDetector(
+                          onHorizontalDragStart: (detail) {
+                            dragStartPos = detail.globalPosition.dx;
+                          },
+                          onHorizontalDragUpdate: (detail) {
+                            final appWidth = MediaQuery.of(context).size.width;
+                            double newOffset =
+                                dragStartPos - detail.globalPosition.dx;
+                            if (appWidth * ratio1 < newOffset ||
+                                appWidth * ratio1 - newOffset > appWidth)
+                              return;
+                            setState(() => {
+                                  offset =
+                                      (dragStartPos - detail.globalPosition.dx)
+                                });
+                          },
+                          child: Container(
+                            width: 1,
+                            color: dividerColor,
+                          ))),
+                  Container(
+                      alignment: Alignment.topLeft,
+                      width: appWidth * ratio2 + offset,
+                      child: (() {
+                        if (type == SideType.CLIP) {
+                          if (clips.value.isEmpty) {
+                            return const Text("clip is empty ;)");
+                          } else {
+                            return Row(children: <Widget>[
+                              ContentsListView(
+                                controller: listViewController,
+                                width: (appWidth * ratio2 + offset) * ratio3,
+                                onItemTap: (index) =>
+                                    handleListViewItemTap(index),
+                                items: clips.value,
+                              ),
+                              Container(
+                                  alignment: Alignment.topLeft,
+                                  width: (appWidth * ratio2 + offset) * ratio4,
+                                  child: Column(children: [
+                                    ContentsHeader(
+                                        handleArchiveClipTap: () =>
+                                            handleArchiveItemTap(),
+                                        handleCopyToClipboardTap: () =>
+                                            copyToClipboard()),
+                                    Markdown(
+                                        controller: ScrollController(),
+                                        shrinkWrap: true,
+                                        data: clips.currentItem.mdText)
+                                  ]))
+                            ]);
+                          }
+                        } else if (type == SideType.ARCHIVED) {
+                          if (notes.value.isEmpty) {
+                            return const Text("note is empty ;)");
+                          } else {
+                            return Row(children: <Widget>[
+                              ContentsListView(
+                                controller: listViewController,
+                                width: (appWidth * ratio2 + offset) * ratio3,
+                                onItemTap: (index) =>
+                                    handleListViewItemTap(index),
+                                items: notes.value,
+                              ),
+                              Container(
+                                  alignment: Alignment.topLeft,
+                                  width: (appWidth * ratio2 + offset) * ratio4,
+                                  child: Column(children: [
+                                    ContentsHeader(
+                                        handleArchiveClipTap: () =>
+                                            handleArchiveItemTap(),
+                                        handleCopyToClipboardTap: () =>
+                                            copyToClipboard()),
+                                    Markdown(
+                                        controller: ScrollController(),
+                                        shrinkWrap: true,
+                                        data: notes.currentItem.mdText)
+                                  ]))
+                            ]);
+                          }
+                        } else if (type == SideType.TRASH) {
+                          if (trashes.value.isEmpty) {
+                            return const Text("trash is empty ;)");
+                          } else {
+                            return Row(children: <Widget>[
+                              ContentsListView(
+                                controller: listViewController,
+                                width: (appWidth * ratio2 + offset) * ratio3,
+                                onItemTap: (index) =>
+                                    handleListViewItemTap(index),
+                                items: trashes.value,
+                              ),
+                              Container(
+                                  alignment: Alignment.topLeft,
+                                  width: (appWidth * ratio2 + offset) * ratio4,
+                                  child: Column(children: [
+                                    ContentsHeader(
+                                        handleArchiveClipTap: () =>
+                                            handleArchiveItemTap(),
+                                        handleCopyToClipboardTap: () =>
+                                            copyToClipboard()),
+                                    Markdown(
+                                        controller: ScrollController(),
+                                        shrinkWrap: true,
+                                        data: trashes.currentItem.mdText)
+                                  ]))
+                            ]);
+                          }
+                        }
+                      })())
+                ]))));
   }
 }
 
