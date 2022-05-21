@@ -16,9 +16,9 @@ class NoteRepository {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<NoteList?> getClips() async {
+  Future<NoteList?> getNotes() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('clips');
+    final List<Map<String, dynamic>> maps = await db.query('notes');
     if (maps.isNotEmpty) {
       return NoteList(
           value: List.generate(maps.length, (index) {

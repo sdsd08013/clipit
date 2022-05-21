@@ -5,6 +5,7 @@ import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
 import 'package:clipit/repositories/note_repository.dart';
 import 'package:clipit/views/contents_header.dart';
+import 'package:clipit/views/contents_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -72,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       final result = await methodChannel.invokeMethod('getClipboardContent');
       if (result != null) {
-        createOrUpdateClip(result);
+        createOrUpdateItem(result);
       }
     } on PlatformException catch (e) {
       print("error in getting clipboard image");
@@ -88,14 +89,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> retlieveNotes() async {
-    final retlievedNotes = await noteRepository.getClips();
+    final retlievedNotes = await noteRepository.getNotes();
     print("retliveenotse:${retlievedNotes}");
     setState(() {
       notes = retlievedNotes ?? NoteList(value: []);
     });
   }
 
-  void createOrUpdateClip(String result) async {
+  void createOrUpdateItem(String result) async {
     if (notes.isExist(result)) return;
     if (clips.isExist(result)) {
       if (clips.shouldUpdate(result)) {
@@ -103,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
           clips.updateTargetClip(result);
           clips;
         });
-        await clipRepository.updateClip(clips.currentClip);
+        await clipRepository.updateClip(clips.currentItem);
       }
     } else {
       final id = await clipRepository.saveClip(result);
@@ -126,14 +127,15 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void handleArchiveClipTap() async {
-    final target = clips.currentClip;
+  void handleArchiveItemTap() async {
+    final target = clips.currentItem;
     clipRepository.deleteClip(target.id);
     clips.deleteTargetClip(target);
     final noteId = await noteRepository.saveNote(target.text);
     notes.insertToFirst(Note(
         id: noteId,
         text: target.text,
+        isSelected: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now()));
     setState(() {
@@ -143,10 +145,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleListViewItemTap(int index) {
-    clips.switchClip(index);
-    setState(() {
-      clips;
-    });
+    if (type == SideType.CLIP) {
+      clips.switchItem(index);
+      setState(() {
+        clips;
+      });
+    } else if (type == SideType.ARCHIVED) {
+      notes.switchItem(index);
+      setState(() {
+        notes;
+      });
+    }
   }
 
   void handleListDown() {
@@ -157,15 +166,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleListUp() {
-    setState(() {
-      clips.decrement();
-      clips;
-    });
+    if (type == SideType.CLIP) {
+      setState(() {
+        clips.decrement();
+        clips;
+      });
+    } else if (type == SideType.ARCHIVED) {
+      setState(() {
+        notes.decrement();
+        notes;
+      });
+    }
   }
 
   void handleListViewDeleteAction() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
-    clipRepository.deleteClip(clips.currentClip.id);
+    clipRepository.deleteClip(clips.currentItem.id);
 
     setState(() {
       clips.deleteCurrentClip();
@@ -174,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void copyToClipboard() {
-    Clipboard.setData(ClipboardData(text: clips.currentClip.text));
+    Clipboard.setData(ClipboardData(text: clips.currentItem.text));
   }
 
   @override
@@ -280,81 +296,48 @@ class _MyHomePageState extends State<MyHomePage> {
                         width: appWidth * ratio2 + offset,
                         child: Row(children: <Widget>[
                           if (type == SideType.CLIP) ...[
-                            Container(
-                                color: side2ndBackground,
-                                width: (appWidth * ratio2 + offset) * ratio3,
-                                child: ListView.separated(
-                                  controller: listViewController,
-                                  itemBuilder: (context, index) =>
-                                      GestureDetector(
-                                          onTap: () {
-                                            handleListViewItemTap(index);
-                                          },
-                                          child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              color: clips.value[index]
-                                                  .backgroundColor(context),
-                                              child: Text(
-                                                style: const TextStyle(
-                                                    color: textColor),
-                                                clips.value[index].subText(),
-                                              ))),
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(
-                                          color: dividerColor, height: 0.5),
-                                  itemCount: clips.value.length,
-                                )),
+                            ContentsListView(
+                              controller: listViewController,
+                              width: (appWidth * ratio2 + offset) * ratio3,
+                              onItemTap: (index) =>
+                                  handleListViewItemTap(index),
+                              items: clips.value,
+                            ),
                             Container(
                                 alignment: Alignment.topLeft,
                                 width: (appWidth * ratio2 + offset) * ratio4,
                                 child: Column(children: [
                                   ContentsHeader(
                                       handleArchiveClipTap: () =>
-                                          handleArchiveClipTap(),
+                                          handleArchiveItemTap(),
                                       handleCopyToClipboardTap: () =>
                                           copyToClipboard()),
                                   Markdown(
                                       controller: ScrollController(),
                                       shrinkWrap: true,
-                                      data: clips.currentClip.mdText)
+                                      data: clips.currentItem.mdText)
                                 ]))
                           ] else if (type == SideType.ARCHIVED) ...[
-                            Container(
-                                color: side2ndBackground,
-                                width: (appWidth * ratio2 + offset) * ratio3,
-                                child: ListView.separated(
-                                  controller: listViewController,
-                                  itemBuilder: (context, index) =>
-                                      GestureDetector(
-                                          onTap: () {
-                                            handleListViewItemTap(index);
-                                          },
-                                          child: Container(
-                                              padding: const EdgeInsets.all(8),
-                                              color: side1stBackground,
-                                              child: Text(
-                                                style: const TextStyle(
-                                                    color: textColor),
-                                                notes.value[index].subText(),
-                                              ))),
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(
-                                          color: dividerColor, height: 0.5),
-                                  itemCount: notes.value.length,
-                                )),
+                            ContentsListView(
+                              controller: listViewController,
+                              width: (appWidth * ratio2 + offset) * ratio3,
+                              onItemTap: (index) =>
+                                  handleListViewItemTap(index),
+                              items: notes.value,
+                            ),
                             Container(
                                 alignment: Alignment.topLeft,
                                 width: (appWidth * ratio2 + offset) * ratio4,
                                 child: Column(children: [
                                   ContentsHeader(
                                       handleArchiveClipTap: () =>
-                                          handleArchiveClipTap(),
+                                          handleArchiveItemTap(),
                                       handleCopyToClipboardTap: () =>
                                           copyToClipboard()),
                                   Markdown(
                                       controller: ScrollController(),
                                       shrinkWrap: true,
-                                      data: clips.currentClip.mdText)
+                                      data: notes.currentItem.mdText)
                                 ]))
                           ]
                         ]),

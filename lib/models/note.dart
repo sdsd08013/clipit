@@ -1,5 +1,7 @@
+import 'package:clipit/models/selectable.dart';
 import 'package:html/parser.dart';
 import 'package:intl/intl.dart';
+import 'package:html2md/html2md.dart' as html2md;
 
 final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
@@ -7,11 +9,13 @@ class Note {
   int id;
   String text;
   final DateTime createdAt;
+  bool isSelected;
   DateTime updatedAt;
 
   Note(
       {required this.id,
       required this.text,
+      required this.isSelected,
       required this.createdAt,
       required this.updatedAt});
 
@@ -28,6 +32,10 @@ class Note {
     return "";
   }
 
+  String get mdText {
+    return html2md.convert(text);
+  }
+
   String subText() {
     if (trimText.length > 30) {
       return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
@@ -39,18 +47,13 @@ class Note {
   factory Note.fromMap(Map<String, dynamic> json, bool isSelected) => Note(
       id: json['id'],
       text: json['text'],
+      isSelected: false,
       createdAt: DateTime.parse(json['created_at']).toLocal(),
       updatedAt: DateTime.parse(json['updated_at']).toLocal());
 }
 
-class NoteList {
-  int currentIndex = 0;
-  List<Note> value;
-  NoteList({required this.value});
-
-  Note get currentClip {
-    return value[currentIndex];
-  }
+class NoteList extends Selectable {
+  NoteList({required super.value});
 
   NoteList insertToFirst(Note note) {
     if (value.isEmpty) {
@@ -60,9 +63,5 @@ class NoteList {
       currentIndex = 0;
     }
     return this;
-  }
-
-  bool isExist(String result) {
-    return value.where((element) => element.text == result).isNotEmpty;
   }
 }
