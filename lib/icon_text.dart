@@ -6,9 +6,9 @@ class IconText extends StatelessWidget {
   final IconData icon;
   final Color textColor;
   final Color iconColor;
-  final void onTap;
+  final VoidCallback onTap;
 
-  IconText(
+  const IconText(
       {required this.text,
       required this.icon,
       required this.textColor,
@@ -21,7 +21,7 @@ class IconText extends StatelessWidget {
         cursor: SystemMouseCursors.click,
         child: GestureDetector(
             onTap: () {
-              onTap;
+              onTap.call();
             },
             child: RichText(
               text: TextSpan(

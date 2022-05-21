@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:html/parser.dart';
 import 'package:html2md/html2md.dart' as html2md;
 
+import 'note.dart';
+
 class ClipList {
   int currentIndex = 0;
   List<Clip> value;
@@ -46,11 +48,25 @@ class ClipList {
     currentIndex = targetIndex;
   }
 
+  void updateTargetClip(String result) {
+    final target = value.where((element) => element.text == result).firstOrNull;
+    if (target != null) {
+      target.count++;
+      target.updatedAt = DateTime.now();
+      value[currentIndex] = target;
+    }
+  }
+
   void updateCurrentClip() {
     final target = value[currentIndex];
     target.count++;
     target.updatedAt = DateTime.now();
     value[currentIndex] = target;
+  }
+
+  void deleteTargetClip(Clip target) {
+    value.remove(target);
+    decrement();
   }
 
   void deleteCurrentClip() {
@@ -70,7 +86,7 @@ class ClipList {
       return true;
     } else {
       return clip.updatedAt
-          .add(const Duration(hours: 1))
+          .add(const Duration(minutes: 1))
           .isBefore(DateTime.now());
     }
   }

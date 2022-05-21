@@ -1,12 +1,16 @@
 import 'package:clipit/models/clip.dart';
-import 'package:clipit/clip_repository.dart';
+import 'package:clipit/models/side_type.dart';
+import 'package:clipit/repositories/clip_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
+import 'package:clipit/repositories/note_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'dart:async';
 import 'dart:core';
+
+import 'models/note.dart';
 
 void main() {
   runApp(const MyApp());
@@ -37,19 +41,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  ClipList clips = ClipList(value: []);
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
   final clipRepository = ClipRepository();
+  final noteRepository = NoteRepository();
+  final listViewController = ScrollController();
+  ClipList clips = ClipList(value: []);
+  NoteList notes = NoteList(value: []);
   double offset = 0;
   double dragStartPos = 0;
-  final listViewController = ScrollController();
+  SideType type = SideType.CLIP;
 
   @override
   void initState() {
     super.initState();
 
     retlieveClips();
+    retlieveNotes();
     //clipRepository.dropTable();
 
     Future.delayed(Duration.zero, () {
@@ -78,11 +86,19 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  Future<void> retlieveNotes() async {
+    final retlievedNotes = await noteRepository.getClips();
+    print("retliveenotse:${retlievedNotes}");
+    setState(() {
+      notes = retlievedNotes ?? NoteList(value: []);
+    });
+  }
+
   void createOrUpdateClip(String result) async {
     if (clips.isExist(result)) {
       if (clips.shouldUpdate(result)) {
         setState(() {
-          clips.updateCurrentClip();
+          clips.updateTargetClip(result);
           clips;
         });
         await clipRepository.updateClip(clips.currentClip);
@@ -100,6 +116,29 @@ class _MyHomePageState extends State<MyHomePage> {
         clips;
       });
     }
+  }
+
+  void handleSideBarTap(SideType newType) {
+    print("=========");
+    setState(() {
+      type = newType;
+    });
+  }
+
+  void handleArchiveClipTap() async {
+    final target = clips.currentClip;
+    clipRepository.deleteClip(target.id);
+    clips.deleteTargetClip(target);
+    final noteId = await noteRepository.saveNote(target.text);
+    notes.insertToFirst(Note(
+        id: noteId,
+        text: target.text,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now()));
+    setState(() {
+      clips;
+      notes;
+    });
   }
 
   void handleListViewItemTap(int index) {
@@ -174,136 +213,220 @@ class _MyHomePageState extends State<MyHomePage> {
                             Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: side1stBackgroundSelect,
+                                color: type == SideType.CLIP
+                                    ? side1stBackgroundSelect
+                                    : side1stBackground,
                                 child: IconText(
                                   icon: Icons.copy,
                                   text: "clip",
                                   textColor: textColor,
                                   iconColor: iconColor,
-                                  onTap: {},
+                                  onTap: () => handleSideBarTap(SideType.CLIP),
                                 )),
                             Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: side1stBackground,
+                                color: type == SideType.ARCHIVED
+                                    ? side1stBackgroundSelect
+                                    : side1stBackground,
                                 child: IconText(
                                   icon: Icons.memory,
                                   text: "archived",
                                   textColor: textColor,
                                   iconColor: iconColor,
-                                  onTap: {},
+                                  onTap: () =>
+                                      handleSideBarTap(SideType.ARCHIVED),
                                 )),
                             Container(
                                 padding:
                                     const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: side1stBackground,
+                                color: type == SideType.TRASH
+                                    ? side1stBackgroundSelect
+                                    : side1stBackground,
                                 child: IconText(
                                   icon: Icons.delete,
                                   text: "trash",
                                   textColor: textColor,
                                   iconColor: iconColor,
-                                  onTap: {},
+                                  onTap: () => handleSideBarTap(SideType.TRASH),
                                 )),
                           ])),
-                      MouseRegion(
-                          cursor: SystemMouseCursors.resizeColumn,
-                          child: GestureDetector(
-                              onHorizontalDragStart: (detail) {
-                                dragStartPos = detail.globalPosition.dx;
-                              },
-                              onHorizontalDragUpdate: (detail) {
-                                final appWidth =
-                                    MediaQuery.of(context).size.width;
-                                double newOffset =
-                                    dragStartPos - detail.globalPosition.dx;
-                                if (appWidth * ratio1 < newOffset ||
-                                    appWidth * ratio1 - newOffset > appWidth)
-                                  return;
-                                setState(() => {
-                                      offset = (dragStartPos -
-                                          detail.globalPosition.dx)
-                                    });
-                              },
-                              child: Container(
-                                width: 1,
-                                color: dividerColor,
-                              ))),
+                      if (true)
+                        MouseRegion(
+                            cursor: SystemMouseCursors.resizeColumn,
+                            child: GestureDetector(
+                                onHorizontalDragStart: (detail) {
+                                  dragStartPos = detail.globalPosition.dx;
+                                },
+                                onHorizontalDragUpdate: (detail) {
+                                  final appWidth =
+                                      MediaQuery.of(context).size.width;
+                                  double newOffset =
+                                      dragStartPos - detail.globalPosition.dx;
+                                  if (appWidth * ratio1 < newOffset ||
+                                      appWidth * ratio1 - newOffset > appWidth)
+                                    return;
+                                  setState(() => {
+                                        offset = (dragStartPos -
+                                            detail.globalPosition.dx)
+                                      });
+                                },
+                                child: Container(
+                                  width: 1,
+                                  color: dividerColor,
+                                ))),
                       Container(
                         alignment: Alignment.topLeft,
                         width: appWidth * ratio2 + offset,
                         child: Row(children: <Widget>[
-                          Container(
-                              color: side2ndBackground,
-                              width: (appWidth * ratio2 + offset) * ratio3,
-                              child: ListView.separated(
-                                controller: listViewController,
-                                itemBuilder: (context, index) =>
-                                    GestureDetector(
-                                        onTap: () {
-                                          handleListViewItemTap(index);
-                                        },
-                                        child: Container(
-                                            padding: const EdgeInsets.all(8),
-                                            color: clips.value[index]
-                                                .backgroundColor(context),
-                                            child: Text(
-                                              style: const TextStyle(
-                                                  color: textColor),
-                                              clips.value[index].subText(),
-                                            ))),
-                                separatorBuilder: (context, index) =>
-                                    const Divider(
-                                        color: dividerColor, height: 0.5),
-                                itemCount: clips.value.length,
-                              )),
-                          Container(
-                              alignment: Alignment.topLeft,
-                              width: (appWidth * ratio2 + offset) * ratio4,
-                              child: Column(children: [
-                                Container(
-                                  color: side1stBackground,
-                                  height: 50,
-                                  child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Padding(
-                                            padding: const EdgeInsets.all(4),
-                                            child: IconButton(
-                                              onPressed: () =>
-                                                  copyToClipboard(),
-                                              color: iconColor,
-                                              icon: const Icon(
-                                                Icons.copy,
-                                              ),
-                                              tooltip: 'Copy to clipboard',
-                                            )),
-                                        Padding(
-                                            padding: const EdgeInsets.all(4),
-                                            child: IconButton(
-                                              onPressed: () =>
-                                                  copyToClipboard(),
-                                              color: iconColor,
-                                              icon: const Icon(
-                                                Icons.memory,
-                                              ),
-                                              tooltip: 'Archive and save',
-                                            )),
-                                        Padding(
-                                            padding: const EdgeInsets.all(4),
-                                            child: IconButton(
-                                              onPressed: () =>
-                                                  copyToClipboard(),
-                                              color: iconColor,
-                                              icon: const Icon(Icons.delete),
-                                              tooltip: 'move to trash',
-                                            ))
-                                      ]),
-                                ),
-                                Markdown(
-                                    controller: ScrollController(),
-                                    shrinkWrap: true,
-                                    data: clips.currentClip.mdText)
-                              ]))
+                          if (type == SideType.CLIP) ...[
+                            Container(
+                                color: side2ndBackground,
+                                width: (appWidth * ratio2 + offset) * ratio3,
+                                child: ListView.separated(
+                                  controller: listViewController,
+                                  itemBuilder: (context, index) =>
+                                      GestureDetector(
+                                          onTap: () {
+                                            handleListViewItemTap(index);
+                                          },
+                                          child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              color: clips.value[index]
+                                                  .backgroundColor(context),
+                                              child: Text(
+                                                style: const TextStyle(
+                                                    color: textColor),
+                                                clips.value[index].subText(),
+                                              ))),
+                                  separatorBuilder: (context, index) =>
+                                      const Divider(
+                                          color: dividerColor, height: 0.5),
+                                  itemCount: clips.value.length,
+                                )),
+                            Container(
+                                alignment: Alignment.topLeft,
+                                width: (appWidth * ratio2 + offset) * ratio4,
+                                child: Column(children: [
+                                  Container(
+                                    color: side1stBackground,
+                                    height: 50,
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    copyToClipboard(),
+                                                color: iconColor,
+                                                icon: const Icon(
+                                                  Icons.copy,
+                                                ),
+                                                tooltip: 'Copy to clipboard',
+                                              )),
+                                          Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    handleArchiveClipTap(),
+                                                color: iconColor,
+                                                icon: const Icon(
+                                                  Icons.memory,
+                                                ),
+                                                tooltip: 'Archive and save',
+                                              )),
+                                          Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    copyToClipboard(),
+                                                color: iconColor,
+                                                icon: const Icon(Icons.delete),
+                                                tooltip: 'move to trash',
+                                              ))
+                                        ]),
+                                  ),
+                                  Markdown(
+                                      controller: ScrollController(),
+                                      shrinkWrap: true,
+                                      data: clips.currentClip.mdText)
+                                ]))
+                          ] else if (type == SideType.ARCHIVED) ...[
+                            Container(
+                                color: side2ndBackground,
+                                width: (appWidth * ratio2 + offset) * ratio3,
+                                child: ListView.separated(
+                                  controller: listViewController,
+                                  itemBuilder: (context, index) =>
+                                      GestureDetector(
+                                          onTap: () {
+                                            handleListViewItemTap(index);
+                                          },
+                                          child: Container(
+                                              padding: const EdgeInsets.all(8),
+                                              color: side1stBackground,
+                                              child: Text(
+                                                style: const TextStyle(
+                                                    color: textColor),
+                                                notes.value[index].subText(),
+                                              ))),
+                                  separatorBuilder: (context, index) =>
+                                      const Divider(
+                                          color: dividerColor, height: 0.5),
+                                  itemCount: notes.value.length,
+                                )),
+                            Container(
+                                alignment: Alignment.topLeft,
+                                width: (appWidth * ratio2 + offset) * ratio4,
+                                child: Column(children: [
+                                  Container(
+                                    color: side1stBackground,
+                                    height: 50,
+                                    child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    copyToClipboard(),
+                                                color: iconColor,
+                                                icon: const Icon(
+                                                  Icons.copy,
+                                                ),
+                                                tooltip: 'Copy to clipboard',
+                                              )),
+                                          Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    handleArchiveClipTap(),
+                                                color: iconColor,
+                                                icon: const Icon(
+                                                  Icons.memory,
+                                                ),
+                                                tooltip: 'Archive and save',
+                                              )),
+                                          Padding(
+                                              padding: const EdgeInsets.all(4),
+                                              child: IconButton(
+                                                onPressed: () =>
+                                                    copyToClipboard(),
+                                                color: iconColor,
+                                                icon: const Icon(Icons.delete),
+                                                tooltip: 'move to trash',
+                                              ))
+                                        ]),
+                                  ),
+                                  Markdown(
+                                      controller: ScrollController(),
+                                      shrinkWrap: true,
+                                      data: clips.currentClip.mdText)
+                                ]))
+                          ]
                         ]),
                       )
                     ]))));

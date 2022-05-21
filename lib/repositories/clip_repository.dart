@@ -1,22 +1,8 @@
-import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-
-import 'models/clip.dart';
+import '../models/clip.dart';
+import 'database.dart';
 
 class ClipRepository {
-  Future<Database> get database async {
-    return openDatabase(
-      join(await getDatabasesPath(), 'clipit.db'),
-      onCreate: (db, version) {
-        //db.delete('clips');
-        return db.execute('''
-          CREATE TABLE clips(id INTEGER PRIMARY KEY, text TEXT NOT NULL, count INTEGER, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)
-          ''');
-      },
-      version: 1,
-    );
-  }
-
   Future<void> dropTable() async {
     await deleteDatabase(await getDatabasesPath());
   }
