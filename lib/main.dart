@@ -4,6 +4,7 @@ import 'package:clipit/repositories/clip_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
 import 'package:clipit/repositories/note_repository.dart';
+import 'package:clipit/views/contents_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -95,6 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void createOrUpdateClip(String result) async {
+    if (notes.isExist(result)) return;
     if (clips.isExist(result)) {
       if (clips.shouldUpdate(result)) {
         setState(() {
@@ -119,7 +121,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleSideBarTap(SideType newType) {
-    print("=========");
     setState(() {
       type = newType;
     });
@@ -251,30 +252,29 @@ class _MyHomePageState extends State<MyHomePage> {
                                   onTap: () => handleSideBarTap(SideType.TRASH),
                                 )),
                           ])),
-                      if (true)
-                        MouseRegion(
-                            cursor: SystemMouseCursors.resizeColumn,
-                            child: GestureDetector(
-                                onHorizontalDragStart: (detail) {
-                                  dragStartPos = detail.globalPosition.dx;
-                                },
-                                onHorizontalDragUpdate: (detail) {
-                                  final appWidth =
-                                      MediaQuery.of(context).size.width;
-                                  double newOffset =
-                                      dragStartPos - detail.globalPosition.dx;
-                                  if (appWidth * ratio1 < newOffset ||
-                                      appWidth * ratio1 - newOffset > appWidth)
-                                    return;
-                                  setState(() => {
-                                        offset = (dragStartPos -
-                                            detail.globalPosition.dx)
-                                      });
-                                },
-                                child: Container(
-                                  width: 1,
-                                  color: dividerColor,
-                                ))),
+                      MouseRegion(
+                          cursor: SystemMouseCursors.resizeColumn,
+                          child: GestureDetector(
+                              onHorizontalDragStart: (detail) {
+                                dragStartPos = detail.globalPosition.dx;
+                              },
+                              onHorizontalDragUpdate: (detail) {
+                                final appWidth =
+                                    MediaQuery.of(context).size.width;
+                                double newOffset =
+                                    dragStartPos - detail.globalPosition.dx;
+                                if (appWidth * ratio1 < newOffset ||
+                                    appWidth * ratio1 - newOffset > appWidth)
+                                  return;
+                                setState(() => {
+                                      offset = (dragStartPos -
+                                          detail.globalPosition.dx)
+                                    });
+                              },
+                              child: Container(
+                                width: 1,
+                                color: dividerColor,
+                              ))),
                       Container(
                         alignment: Alignment.topLeft,
                         width: appWidth * ratio2 + offset,
@@ -308,46 +308,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 alignment: Alignment.topLeft,
                                 width: (appWidth * ratio2 + offset) * ratio4,
                                 child: Column(children: [
-                                  Container(
-                                    color: side1stBackground,
-                                    height: 50,
-                                    child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    copyToClipboard(),
-                                                color: iconColor,
-                                                icon: const Icon(
-                                                  Icons.copy,
-                                                ),
-                                                tooltip: 'Copy to clipboard',
-                                              )),
-                                          Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    handleArchiveClipTap(),
-                                                color: iconColor,
-                                                icon: const Icon(
-                                                  Icons.memory,
-                                                ),
-                                                tooltip: 'Archive and save',
-                                              )),
-                                          Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    copyToClipboard(),
-                                                color: iconColor,
-                                                icon: const Icon(Icons.delete),
-                                                tooltip: 'move to trash',
-                                              ))
-                                        ]),
-                                  ),
+                                  ContentsHeader(
+                                      handleArchiveClipTap: () =>
+                                          handleArchiveClipTap(),
+                                      handleCopyToClipboardTap: () =>
+                                          copyToClipboard()),
                                   Markdown(
                                       controller: ScrollController(),
                                       shrinkWrap: true,
@@ -381,46 +346,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                 alignment: Alignment.topLeft,
                                 width: (appWidth * ratio2 + offset) * ratio4,
                                 child: Column(children: [
-                                  Container(
-                                    color: side1stBackground,
-                                    height: 50,
-                                    child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    copyToClipboard(),
-                                                color: iconColor,
-                                                icon: const Icon(
-                                                  Icons.copy,
-                                                ),
-                                                tooltip: 'Copy to clipboard',
-                                              )),
-                                          Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    handleArchiveClipTap(),
-                                                color: iconColor,
-                                                icon: const Icon(
-                                                  Icons.memory,
-                                                ),
-                                                tooltip: 'Archive and save',
-                                              )),
-                                          Padding(
-                                              padding: const EdgeInsets.all(4),
-                                              child: IconButton(
-                                                onPressed: () =>
-                                                    copyToClipboard(),
-                                                color: iconColor,
-                                                icon: const Icon(Icons.delete),
-                                                tooltip: 'move to trash',
-                                              ))
-                                        ]),
-                                  ),
+                                  ContentsHeader(
+                                      handleArchiveClipTap: () =>
+                                          handleArchiveClipTap(),
+                                      handleCopyToClipboardTap: () =>
+                                          copyToClipboard()),
                                   Markdown(
                                       controller: ScrollController(),
                                       shrinkWrap: true,

@@ -61,4 +61,8 @@ class NoteList {
     }
     return this;
   }
+
+  bool isExist(String result) {
+    return value.where((element) => element.text == result).isNotEmpty;
+  }
 }
