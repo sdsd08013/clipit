@@ -54,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TrashList trashes = TrashList(value: []);
   double offset = 0;
   double dragStartPos = 0;
-  SideType type = SideType.CLIP;
+  ScreenType type = ScreenType.CLIP;
   String lastText = "";
 
   @override
@@ -126,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void handleSideBarTap(SideType newType) {
+  void handleSideBarTap(ScreenType newType) {
     setState(() {
       type = newType;
     });
@@ -150,12 +150,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleListViewItemTap(int index) {
-    if (type == SideType.CLIP) {
+    if (type == ScreenType.CLIP) {
       clips.switchItem(index);
       setState(() {
         clips;
       });
-    } else if (type == SideType.ARCHIVED) {
+    } else if (type == ScreenType.PINNED) {
       notes.switchItem(index);
       setState(() {
         notes;
@@ -171,12 +171,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleListUp() {
-    if (type == SideType.CLIP) {
+    if (type == ScreenType.CLIP) {
       setState(() {
         clips.decrementIndex();
         clips;
       });
-    } else if (type == SideType.ARCHIVED) {
+    } else if (type == ScreenType.PINNED) {
       setState(() {
         notes.decrementIndex();
         notes;
@@ -186,12 +186,14 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void handleListViewDeleteAction() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
-    clipRepository.deleteClip(clips.currentItem.id);
+    if (type == ScreenType.CLIP) {
+      clipRepository.deleteClip(clips.currentItem.id);
 
-    setState(() {
-      clips.deleteCurrentClip();
-      clips = clips;
-    });
+      setState(() {
+        clips.deleteCurrentClip();
+        clips = clips;
+      });
+    } else if (type == ScreenType.PINNED) {}
   }
 
   void copyToClipboard() {
@@ -229,43 +231,66 @@ class _MyHomePageState extends State<MyHomePage> {
                   Container(
                       color: side1stBackground,
                       width: appWidth * ratio1 - 2 - offset,
-                      child: ListView(children: [
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                            color: type == SideType.CLIP
-                                ? side1stBackgroundSelect
-                                : side1stBackground,
-                            child: IconText(
-                              icon: Icons.copy,
-                              text: "clip",
-                              textColor: textColor,
-                              iconColor: iconColor,
-                              onTap: () => handleSideBarTap(SideType.CLIP),
-                            )),
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                            color: type == SideType.ARCHIVED
-                                ? side1stBackgroundSelect
-                                : side1stBackground,
-                            child: IconText(
-                              icon: Icons.memory,
-                              text: "archived",
-                              textColor: textColor,
-                              iconColor: iconColor,
-                              onTap: () => handleSideBarTap(SideType.ARCHIVED),
-                            )),
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                            color: type == SideType.TRASH
-                                ? side1stBackgroundSelect
-                                : side1stBackground,
-                            child: IconText(
-                              icon: Icons.delete,
-                              text: "trash",
-                              textColor: textColor,
-                              iconColor: iconColor,
-                              onTap: () => handleSideBarTap(SideType.TRASH),
-                            )),
+                      child: Stack(children: [
+                        Column(children: [
+                          Container(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                              width: double.infinity,
+                              color: type == ScreenType.CLIP
+                                  ? side1stBackgroundSelect
+                                  : side1stBackground,
+                              child: IconText(
+                                icon: Icons.copy,
+                                text: "clip",
+                                textColor: textColor,
+                                iconColor: iconColor,
+                                onTap: () => handleSideBarTap(ScreenType.CLIP),
+                              )),
+                          Container(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                              width: double.infinity,
+                              color: type == ScreenType.PINNED
+                                  ? side1stBackgroundSelect
+                                  : side1stBackground,
+                              child: IconText(
+                                icon: Icons.push_pin_sharp,
+                                text: "pinned",
+                                textColor: textColor,
+                                iconColor: iconColor,
+                                onTap: () =>
+                                    handleSideBarTap(ScreenType.PINNED),
+                              )),
+                          Container(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                              width: double.infinity,
+                              color: type == ScreenType.TRASH
+                                  ? side1stBackgroundSelect
+                                  : side1stBackground,
+                              child: IconText(
+                                icon: Icons.delete,
+                                text: "trash",
+                                textColor: textColor,
+                                iconColor: iconColor,
+                                onTap: () => handleSideBarTap(ScreenType.TRASH),
+                              )),
+                        ]),
+                        Align(
+                            alignment: Alignment.bottomLeft,
+                            child: Container(
+                                width: double.infinity,
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                                color: type == ScreenType.SETTING
+                                    ? side1stBackgroundSelect
+                                    : side1stBackground,
+                                child: IconText(
+                                  icon: Icons.settings,
+                                  text: "setting",
+                                  textColor: textColor,
+                                  iconColor: iconColor,
+                                  onTap: () =>
+                                      handleSideBarTap(ScreenType.SETTING),
+                                ))),
                       ])),
                   MouseRegion(
                       cursor: SystemMouseCursors.resizeColumn,
@@ -293,9 +318,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       alignment: Alignment.topLeft,
                       width: appWidth * ratio2 + offset,
                       child: (() {
-                        if (type == SideType.CLIP) {
+                        if (type == ScreenType.CLIP) {
                           if (clips.value.isEmpty) {
-                            return const Text("clip is empty ;)");
+                            return const Text("clip is empty ;(");
                           } else {
                             return Row(children: <Widget>[
                               ContentsListView(
@@ -310,10 +335,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: (appWidth * ratio2 + offset) * ratio4,
                                   child: Column(children: [
                                     ContentsHeader(
-                                        handleArchiveClipTap: () =>
+                                        handleMoveToPinTap: () =>
                                             handleArchiveItemTap(),
                                         handleCopyToClipboardTap: () =>
-                                            copyToClipboard()),
+                                            copyToClipboard(),
+                                        handleMoveToTrashTap: () =>
+                                            handleListViewDeleteAction()),
                                     Markdown(
                                         controller: ScrollController(),
                                         shrinkWrap: true,
@@ -321,9 +348,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ]))
                             ]);
                           }
-                        } else if (type == SideType.ARCHIVED) {
+                        } else if (type == ScreenType.PINNED) {
                           if (notes.value.isEmpty) {
-                            return const Text("note is empty ;)");
+                            return const Text("note is empty ;(");
                           } else {
                             return Row(children: <Widget>[
                               ContentsListView(
@@ -338,10 +365,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: (appWidth * ratio2 + offset) * ratio4,
                                   child: Column(children: [
                                     ContentsHeader(
-                                        handleArchiveClipTap: () =>
+                                        handleMoveToPinTap: () =>
                                             handleArchiveItemTap(),
                                         handleCopyToClipboardTap: () =>
-                                            copyToClipboard()),
+                                            copyToClipboard(),
+                                        handleMoveToTrashTap: () =>
+                                            handleListViewDeleteAction()),
                                     Markdown(
                                         controller: ScrollController(),
                                         shrinkWrap: true,
@@ -349,9 +378,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ]))
                             ]);
                           }
-                        } else if (type == SideType.TRASH) {
+                        } else if (type == ScreenType.TRASH) {
                           if (trashes.value.isEmpty) {
-                            return const Text("trash is empty ;)");
+                            return const Text("trash is empty ;(");
                           } else {
                             return Row(children: <Widget>[
                               ContentsListView(
@@ -366,10 +395,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                   width: (appWidth * ratio2 + offset) * ratio4,
                                   child: Column(children: [
                                     ContentsHeader(
-                                        handleArchiveClipTap: () =>
-                                            handleArchiveItemTap(),
-                                        handleCopyToClipboardTap: () =>
-                                            copyToClipboard()),
+                                      handleMoveToPinTap: () =>
+                                          handleArchiveItemTap(),
+                                      handleCopyToClipboardTap: () =>
+                                          copyToClipboard(),
+                                      handleMoveToTrashTap: () =>
+                                          handleListViewDeleteAction(),
+                                    ),
                                     Markdown(
                                         controller: ScrollController(),
                                         shrinkWrap: true,

@@ -1,1 +1,1 @@
-enum SideType { CLIP, ARCHIVED, TRASH }
+enum ScreenType { CLIP, PINNED, TRASH, SETTING }

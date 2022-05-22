@@ -43,9 +43,12 @@ class ClipList extends Selectable {
     // clipboardと同様のclipを削除しようとすると削除できなくなる
     final target = value[currentIndex];
     value.remove(target);
-    if (currentIndex == 0) return;
-    value[currentIndex - 1].isSelected = true;
-    currentIndex--;
+    if (currentIndex == 0) {
+      value[currentIndex].isSelected = true;
+    } else {
+      value[currentIndex - 1].isSelected = true;
+      currentIndex--;
+    }
   }
 }
 

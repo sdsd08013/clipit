@@ -3,23 +3,26 @@ import '../color.dart';
 
 class ContentsHeader extends StatelessWidget {
   final VoidCallback handleCopyToClipboardTap;
-  final VoidCallback handleArchiveClipTap;
+  final VoidCallback handleMoveToPinTap;
+  final VoidCallback handleMoveToTrashTap;
 
   const ContentsHeader(
       {Key? key,
       required this.handleCopyToClipboardTap,
-      required this.handleArchiveClipTap})
+      required this.handleMoveToPinTap,
+      required this.handleMoveToTrashTap})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: side1stBackground,
-        height: 50,
+        color: headerBackground,
+        height: 40,
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
           Padding(
               padding: const EdgeInsets.all(4),
               child: IconButton(
+                iconSize: 20,
                 onPressed: () => handleCopyToClipboardTap(),
                 color: iconColor,
                 icon: const Icon(
@@ -30,17 +33,17 @@ class ContentsHeader extends StatelessWidget {
           Padding(
               padding: const EdgeInsets.all(4),
               child: IconButton(
-                onPressed: () => handleArchiveClipTap(),
+                iconSize: 20,
+                onPressed: () => handleMoveToPinTap(),
                 color: iconColor,
-                icon: const Icon(
-                  Icons.memory,
-                ),
-                tooltip: 'Archive and save',
+                icon: const Icon(Icons.push_pin_sharp),
+                tooltip: 'Pin the Data',
               )),
           Padding(
               padding: const EdgeInsets.all(4),
               child: IconButton(
-                onPressed: () => handleCopyToClipboardTap(),
+                iconSize: 20,
+                onPressed: () => handleMoveToTrashTap(),
                 color: iconColor,
                 icon: const Icon(Icons.delete),
                 tooltip: 'move to trash',
