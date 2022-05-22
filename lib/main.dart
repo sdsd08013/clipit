@@ -96,7 +96,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> retlieveNotes() async {
     final retlievedNotes = await noteRepository.getNotes();
-    print("retliveenotse:${retlievedNotes}");
     setState(() {
       notes = retlievedNotes ?? NoteList(value: []);
     });
