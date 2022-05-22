@@ -9,7 +9,10 @@ class ClipRepository {
 
   Future<ClipList?> getClips() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('clips');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'clips',
+      orderBy: "id DESC",
+    );
     if (maps.isNotEmpty) {
       return ClipList(
           value: List.generate(maps.length, (index) {

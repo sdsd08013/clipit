@@ -18,7 +18,10 @@ class NoteRepository {
 
   Future<NoteList?> getNotes() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('notes');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'notes',
+      orderBy: "id DESC",
+    );
     if (maps.isNotEmpty) {
       return NoteList(
           value: List.generate(maps.length, (index) {

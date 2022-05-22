@@ -9,15 +9,15 @@ class Selectable {
     return value[currentIndex];
   }
 
-  void decrement() {
-    if (currentIndex == 0 || value.length < 2) return;
+  void decrementIndex() {
+    if (currentIndex == 0) return;
     value[currentIndex].isSelected = false;
     value[currentIndex - 1].isSelected = true;
     currentIndex--;
   }
 
-  void increment() {
-    if (currentIndex == value.length - 1 || value.length < 2) return;
+  void incrementIndex() {
+    if (currentIndex == value.length - 1) return;
     value[currentIndex].isSelected = false;
     value[currentIndex + 1].isSelected = true;
     currentIndex++;

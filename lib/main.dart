@@ -55,6 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double offset = 0;
   double dragStartPos = 0;
   SideType type = SideType.CLIP;
+  String lastText = "";
 
   @override
   void initState() {
@@ -74,8 +75,11 @@ class _MyHomePageState extends State<MyHomePage> {
   getClipboardHtml() async {
     try {
       final result = await methodChannel.invokeMethod('getClipboardContent');
-      if (result != null) {
-        createOrUpdateItem(result);
+      if (result != lastText) {
+        if (result != null) {
+          createOrUpdateItem(result);
+          lastText = result;
+        }
       }
     } on PlatformException catch (e) {
       print("error in getting clipboard image");
@@ -162,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void handleListDown() {
     setState(() {
-      clips.increment();
+      clips.incrementIndex();
       clips;
     });
   }
@@ -170,12 +174,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void handleListUp() {
     if (type == SideType.CLIP) {
       setState(() {
-        clips.decrement();
+        clips.decrementIndex();
         clips;
       });
     } else if (type == SideType.ARCHIVED) {
       setState(() {
-        notes.decrement();
+        notes.decrementIndex();
         notes;
       });
     }

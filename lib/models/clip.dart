@@ -36,14 +36,14 @@ class ClipList extends Selectable {
 
   void deleteTargetClip(Clip target) {
     value.remove(target);
-    decrement();
+    decrementIndex();
   }
 
   void deleteCurrentClip() {
     // clipboardと同様のclipを削除しようとすると削除できなくなる
     final target = value[currentIndex];
     value.remove(target);
-    decrement();
+    decrementIndex();
   }
 }
 
