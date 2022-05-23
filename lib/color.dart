@@ -10,3 +10,7 @@ const headerBackground = Color.fromRGBO(52, 62, 60, 1);
 const background = Color.fromRGBO(40, 41, 45, 1);
 const iconColor = Color.fromRGBO(30, 151, 255, 1);
 const textColor = Color.fromRGBO(196, 199, 197, 1);
+
+const preText = Color.fromRGBO(38, 38, 38, 1);
+const preBackground = Color.fromRGBO(248, 248, 248, 1);
+const preBorder = Color.fromRGBO(221, 221, 221, 1);

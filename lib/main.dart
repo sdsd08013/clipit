@@ -362,7 +362,17 @@ class _MyHomePageState extends State<MyHomePage> {
                                       controller: ScrollController(),
                                       shrinkWrap: true,
                                       selectable: true,
+                                      builders: {'pre': CustomBlockBuilder()},
                                       data: clips.currentItem.mdText,
+                                      extensionSet: md.ExtensionSet(
+                                        md.ExtensionSet.gitHubFlavored
+                                            .blockSyntaxes,
+                                        [
+                                          md.EmojiSyntax(),
+                                          ...md.ExtensionSet.gitHubFlavored
+                                              .inlineSyntaxes
+                                        ],
+                                      ),
                                     )
                                   ]))
                             ]);
