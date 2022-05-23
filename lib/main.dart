@@ -8,7 +8,9 @@ import 'package:clipit/views/contents_header.dart';
 import 'package:clipit/views/contents_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'dart:async';
 import 'dart:core';
 
@@ -164,10 +166,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleListDown() {
-    setState(() {
-      clips.incrementIndex();
-      clips;
-    });
+    print("--------->");
+    print(notes.currentItem.mdText);
+    if (type == ScreenType.CLIP) {
+      setState(() {
+        clips.incrementIndex();
+        clips;
+      });
+    } else if (type == ScreenType.PINNED) {
+      setState(() {
+        notes.incrementIndex();
+        notes;
+      });
+    }
   }
 
   void handleListUp() {
@@ -197,7 +208,11 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void copyToClipboard() {
-    Clipboard.setData(ClipboardData(text: clips.currentItem.text));
+    if (type == ScreenType.CLIP) {
+      Clipboard.setData(ClipboardData(text: clips.currentItem.text));
+    } else if (type == ScreenType.PINNED) {
+      Clipboard.setData(ClipboardData(text: notes.currentItem.text));
+    }
   }
 
   @override
@@ -240,8 +255,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ? side1stBackgroundSelect
                                   : side1stBackground,
                               child: IconText(
-                                icon: Icons.copy,
-                                text: "clip",
+                                icon: Icons.history,
+                                text: "history",
                                 textColor: textColor,
                                 iconColor: iconColor,
                                 onTap: () => handleSideBarTap(ScreenType.CLIP),
@@ -341,10 +356,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                             copyToClipboard(),
                                         handleMoveToTrashTap: () =>
                                             handleListViewDeleteAction()),
+                                    // Expanded(
+                                    //     child: Text(clips.currentItem.mdText))
                                     Markdown(
-                                        controller: ScrollController(),
-                                        shrinkWrap: true,
-                                        data: clips.currentItem.mdText)
+                                      controller: ScrollController(),
+                                      shrinkWrap: true,
+                                      selectable: true,
+                                      data: clips.currentItem.mdText,
+                                    )
                                   ]))
                             ]);
                           }
@@ -371,10 +390,22 @@ class _MyHomePageState extends State<MyHomePage> {
                                             copyToClipboard(),
                                         handleMoveToTrashTap: () =>
                                             handleListViewDeleteAction()),
-                                    Markdown(
-                                        controller: ScrollController(),
-                                        shrinkWrap: true,
-                                        data: notes.currentItem.mdText)
+                                    Expanded(
+                                        child: Container(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                16, 8, 16, 8),
+                                            child: TextFormField(
+                                                key: Key(notes.currentItem.id
+                                                    .toString()),
+                                                expands: true,
+                                                maxLines: null,
+                                                minLines: null,
+                                                initialValue:
+                                                    notes.currentItem.mdText)))
+                                    // Markdown(
+                                    //     controller: ScrollController(),
+                                    //     shrinkWrap: true,
+                                    //     data: notes.currentItem.mdText)
                                   ]))
                             ]);
                           }
