@@ -1,23 +1,21 @@
 import 'package:clipit/models/selectable.dart';
+import 'package:collection/collection.dart';
 import 'package:html/parser.dart';
 import 'package:intl/intl.dart';
 import 'package:html2md/html2md.dart' as html2md;
 
 import 'note.dart';
 
-class Trash {
-  int id;
-  String text;
-  final DateTime createdAt;
-  bool isSelected;
-  DateTime updatedAt;
+class Trash extends Selectable {
+  bool isSelected = false;
 
   Trash(
-      {required this.id,
-      required this.text,
-      required this.isSelected,
-      required this.createdAt,
-      required this.updatedAt});
+      {required id,
+      required text,
+      required isSelected,
+      required createdAt,
+      required updatedAt})
+      : super(id: id, text: text, createdAt: createdAt, updatedAt: updatedAt);
 
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');
@@ -30,10 +28,6 @@ class Trash {
       return parsedstring;
     }
     return "";
-  }
-
-  String get mdText {
-    return html2md.convert(text);
   }
 
   String subText() {
@@ -52,7 +46,7 @@ class Trash {
       updatedAt: DateTime.parse(json['updated_at']).toLocal());
 }
 
-class TrashList extends Selectable {
+class TrashList extends SelectableList {
   TrashList({required super.value});
 
   TrashList insertToFirst(Note note) {

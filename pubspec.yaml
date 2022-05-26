@@ -44,6 +44,7 @@ dependencies:
   flutter_html: ^2.2.1
   collection: ^1.16.0
   intl: ^0.17.0
+  flutter_highlight: ^0.7.0
 
 dev_dependencies:
   flutter_test:

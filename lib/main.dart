@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:clipit/models/clip.dart';
 import 'package:clipit/models/side_type.dart';
 import 'package:clipit/repositories/clip_repository.dart';
@@ -166,8 +168,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void handleListDown() {
-    print("--------->");
-    print(notes.currentItem.mdText);
     if (type == ScreenType.CLIP) {
       setState(() {
         clips.incrementIndex();
@@ -356,23 +356,12 @@ class _MyHomePageState extends State<MyHomePage> {
                                             copyToClipboard(),
                                         handleMoveToTrashTap: () =>
                                             handleListViewDeleteAction()),
-                                    // Expanded(
-                                    //     child: Text(clips.currentItem.mdText))
                                     Markdown(
                                       controller: ScrollController(),
                                       shrinkWrap: true,
                                       selectable: true,
                                       builders: {'pre': CustomBlockBuilder()},
                                       data: clips.currentItem.mdText,
-                                      extensionSet: md.ExtensionSet(
-                                        md.ExtensionSet.gitHubFlavored
-                                            .blockSyntaxes,
-                                        [
-                                          md.EmojiSyntax(),
-                                          ...md.ExtensionSet.gitHubFlavored
-                                              .inlineSyntaxes
-                                        ],
-                                      ),
                                     )
                                   ]))
                             ]);
@@ -443,8 +432,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       handleMoveToTrashTap: () =>
                                           handleListViewDeleteAction(),
                                     ),
-                                    Markdown(
-                                        controller: ScrollController(),
+                                    MarkdownBody(
                                         shrinkWrap: true,
                                         data: trashes.currentItem.mdText)
                                   ]))

@@ -1,9 +1,27 @@
 import 'package:collection/collection.dart';
+import 'package:html2md/html2md.dart' as html2md;
 
 class Selectable {
+  int id;
+  String text;
+  final DateTime createdAt;
+  DateTime updatedAt;
+  Selectable(
+      {required this.id,
+      required this.text,
+      required this.createdAt,
+      required this.updatedAt});
+
+  String get mdText {
+    print("==============>text:${text}");
+    return html2md.convert(text);
+  }
+}
+
+class SelectableList {
   int currentIndex = 0;
   List<dynamic> value;
-  Selectable({required this.value});
+  SelectableList({required this.value});
 
   dynamic get currentItem {
     return value[currentIndex];

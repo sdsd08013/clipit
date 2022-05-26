@@ -1,10 +1,12 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:clipit/models/selectable.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 import 'package:html/parser.dart';
-import 'package:html2md/html2md.dart' as html2md;
 
-class ClipList extends Selectable {
+class ClipList extends SelectableList {
   ClipList({required super.value});
 
   ClipList insertToFirst(Clip clip) {
@@ -52,29 +54,22 @@ class ClipList extends Selectable {
   }
 }
 
-class Clip {
-  int id;
-  String text;
-  bool isSelected;
-  int count;
-  final DateTime createdAt;
-  DateTime updatedAt;
+class Clip extends Selectable {
+  bool isSelected = false;
+  int count = 0;
   final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
   Clip(
-      {required this.id,
-      required this.text,
-      required this.count,
-      required this.isSelected,
-      required this.createdAt,
-      required this.updatedAt});
+      {required id,
+      required text,
+      required count,
+      required isSelected,
+      required createdAt,
+      required updatedAt})
+      : super(id: id, text: text, createdAt: createdAt, updatedAt: updatedAt);
 
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');
-  }
-
-  String get mdText {
-    return html2md.convert(text);
   }
 
   String get plainText {
