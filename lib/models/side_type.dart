@@ -13,6 +13,14 @@ import 'package:flutter_highlight/themes/github.dart';
 
 enum ScreenType { CLIP, PINNED, TRASH, SETTING }
 
+class CodeBuilder extends MarkdownElementBuilder {
+  @override
+  Widget visitText(md.Text text, TextStyle? preferredStyle) {
+    print("code:${text.text}");
+    return Text(text.text, style: TextStyle(color: Colors.red));
+  }
+}
+
 class CustomBlockBuilder extends MarkdownElementBuilder {
 // SEE: https://github.com/dart-lang/language/issues/559
   String trimLeadingWhitespace(String text) {
@@ -35,7 +43,13 @@ class CustomBlockBuilder extends MarkdownElementBuilder {
 
   @override
   Widget visitText(md.Text text, TextStyle? preferredStyle) {
-    print("===============>${text}");
+    print("pre:${text.text}");
+    final trim = text.text
+        .split(new RegExp(r'(?:\r?\n|\r)'))
+        .where((s) => s.trim().length != 0)
+        .join('\n');
+    print(trim);
+
     return Container(
         padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
         width: double.infinity,
@@ -44,8 +58,7 @@ class CustomBlockBuilder extends MarkdownElementBuilder {
           border: Border.all(color: preBorder),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Text(trimLeadingWhitespace(text.text),
-            style: TextStyle(color: preText)));
+        child: Text(trim, style: TextStyle(color: preText)));
   }
 }
 

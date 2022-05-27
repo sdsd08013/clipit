@@ -13,8 +13,7 @@ class Selectable {
       required this.updatedAt});
 
   String get mdText {
-    print("==============>text:${text}");
-    return html2md.convert(text);
+    return html2md.convert(text, styleOptions: {'codeBlockStyle': 'fenced'});
   }
 }
 

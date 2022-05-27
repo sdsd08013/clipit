@@ -14,3 +14,6 @@ const textColor = Color.fromRGBO(196, 199, 197, 1);
 const preText = Color.fromRGBO(38, 38, 38, 1);
 const preBackground = Color.fromRGBO(248, 248, 248, 1);
 const preBorder = Color.fromRGBO(221, 221, 221, 1);
+
+const codeText = Color.fromRGBO(210, 75, 112, 1);
+const codeBackground = Color.fromRGBO(246, 246, 246, 1);

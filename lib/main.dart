@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:clipit/models/clip.dart';
 import 'package:clipit/models/side_type.dart';
 import 'package:clipit/repositories/clip_repository.dart';
@@ -10,7 +8,6 @@ import 'package:clipit/views/contents_header.dart';
 import 'package:clipit/views/contents_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'dart:async';
@@ -30,9 +27,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Clipit',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme:
+          ThemeData(primarySwatch: Colors.blue, fontFamily: "RictyDiminished"),
       home: const MyHomePage(title: 'Clipit'),
     );
   }
@@ -360,8 +356,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                       controller: ScrollController(),
                                       shrinkWrap: true,
                                       selectable: true,
-                                      builders: {'pre': CustomBlockBuilder()},
+                                      builders: {
+                                        'pre': CustomBlockBuilder(),
+                                      },
+                                      styleSheet: MarkdownStyleSheet(
+                                          code: TextStyle(
+                                              color: codeText,
+                                              backgroundColor: codeBackground)),
                                       data: clips.currentItem.mdText,
+                                      extensionSet: md.ExtensionSet(
+                                        md.ExtensionSet.gitHubFlavored
+                                            .blockSyntaxes,
+                                        [
+                                          md.EmojiSyntax(),
+                                          ...md.ExtensionSet.gitHubFlavored
+                                              .inlineSyntaxes
+                                        ],
+                                      ),
                                     )
                                   ]))
                             ]);
