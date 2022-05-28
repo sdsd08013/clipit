@@ -7,6 +7,7 @@ import 'package:clipit/repositories/note_repository.dart';
 import 'package:clipit/views/contents_main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:macos_ui/macos_ui.dart';
 import 'dart:async';
 import 'dart:core';
 import 'models/note.dart';
@@ -22,25 +23,39 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Clipit',
-      theme:
-          ThemeData(primarySwatch: Colors.blue, fontFamily: "RictyDiminished"),
-      home: const MyHomePage(title: 'Clipit'),
+    return MacosApp(
+      theme: MacosThemeData(
+          typography: MacosTypography(
+              largeTitle: const TextStyle(
+                  color: textColor, fontFamily: "RictyDiminished"),
+              title1: const TextStyle(
+                  color: textColor, fontFamily: "RictyDiminished"),
+              title2: const TextStyle(
+                  color: textColor, fontFamily: "RictyDiminished"),
+              title3: const TextStyle(
+                  color: textColor, fontFamily: "RictyDiminished"),
+              headline: const TextStyle(
+                  color: textColor, fontFamily: "RictyDiminished"),
+              subheadline: const TextStyle(
+                  color: textColor, fontFamily: "RictyDiminished"),
+              body: const TextStyle(
+                  color: textColor, fontFamily: "RictyDiminished"),
+              color: Colors.white)),
+      home: const Home(title: 'Clipit'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+class Home extends StatefulWidget {
+  const Home({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<Home> createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeState extends State<Home> {
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
   final clipRepository = ClipRepository();
@@ -220,174 +235,169 @@ class _MyHomePageState extends State<MyHomePage> {
     const ratio2 = 0.85;
     const ratio3 = 0.3;
     const ratio4 = 0.7;
-    return Scaffold(
-        body: Center(
-            child: FocusableActionDetector(
-                autofocus: true,
-                shortcuts: {
-                  _listViewUpKeySet: _ListViewUpIntent(),
-                  _listViewDownKeySet: _ListViewDownIntent(),
-                  _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
-                  _listViewDeleteKeySet: _ListViewItemDeleteIntent()
-                },
-                actions: {
-                  _ListViewUpIntent:
-                      CallbackAction(onInvoke: (e) => handleListUp()),
-                  _ListViewDownIntent:
-                      CallbackAction(onInvoke: (e) => handleListDown()),
-                  _ListViewItemCopyIntent:
-                      CallbackAction(onInvoke: (e) => copyToClipboard()),
-                  _ListViewItemDeleteIntent: CallbackAction(
-                      onInvoke: (e) => handleListViewDeleteAction())
-                },
-                child: Row(children: [
-                  Container(
-                      color: side1stBackground,
-                      width: appWidth * ratio1 - 2 - offset,
-                      child: Stack(children: [
-                        Column(children: [
-                          Container(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+    return Stack(children: [
+      Center(
+          child: FocusableActionDetector(
+              autofocus: true,
+              shortcuts: {
+                _listViewUpKeySet: _ListViewUpIntent(),
+                _listViewDownKeySet: _ListViewDownIntent(),
+                _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
+                _listViewDeleteKeySet: _ListViewItemDeleteIntent()
+              },
+              actions: {
+                _ListViewUpIntent:
+                    CallbackAction(onInvoke: (e) => handleListUp()),
+                _ListViewDownIntent:
+                    CallbackAction(onInvoke: (e) => handleListDown()),
+                _ListViewItemCopyIntent:
+                    CallbackAction(onInvoke: (e) => copyToClipboard()),
+                _ListViewItemDeleteIntent: CallbackAction(
+                    onInvoke: (e) => handleListViewDeleteAction())
+              },
+              child: Row(children: [
+                Container(
+                    color: side1stBackground,
+                    width: appWidth * ratio1 - 2 - offset,
+                    child: Stack(children: [
+                      Column(children: [
+                        Container(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            width: double.infinity,
+                            color: type == ScreenType.CLIP
+                                ? side1stBackgroundSelect
+                                : side1stBackground,
+                            child: IconText(
+                              icon: Icons.history,
+                              text: "history",
+                              textColor: textColor,
+                              iconColor: iconColor,
+                              onTap: () => handleSideBarTap(ScreenType.CLIP),
+                            )),
+                        Container(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            width: double.infinity,
+                            color: type == ScreenType.PINNED
+                                ? side1stBackgroundSelect
+                                : side1stBackground,
+                            child: IconText(
+                              icon: Icons.push_pin_sharp,
+                              text: "pinned",
+                              textColor: textColor,
+                              iconColor: iconColor,
+                              onTap: () => handleSideBarTap(ScreenType.PINNED),
+                            )),
+                        Container(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                            width: double.infinity,
+                            color: type == ScreenType.TRASH
+                                ? side1stBackgroundSelect
+                                : side1stBackground,
+                            child: IconText(
+                              icon: Icons.delete,
+                              text: "trash",
+                              textColor: textColor,
+                              iconColor: iconColor,
+                              onTap: () => handleSideBarTap(ScreenType.TRASH),
+                            )),
+                      ]),
+                      Align(
+                          alignment: Alignment.bottomLeft,
+                          child: Container(
                               width: double.infinity,
-                              color: type == ScreenType.CLIP
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                              color: type == ScreenType.SETTING
                                   ? side1stBackgroundSelect
                                   : side1stBackground,
                               child: IconText(
-                                icon: Icons.history,
-                                text: "history",
-                                textColor: textColor,
-                                iconColor: iconColor,
-                                onTap: () => handleSideBarTap(ScreenType.CLIP),
-                              )),
-                          Container(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                              width: double.infinity,
-                              color: type == ScreenType.PINNED
-                                  ? side1stBackgroundSelect
-                                  : side1stBackground,
-                              child: IconText(
-                                icon: Icons.push_pin_sharp,
-                                text: "pinned",
+                                icon: Icons.settings,
+                                text: "setting",
                                 textColor: textColor,
                                 iconColor: iconColor,
                                 onTap: () =>
-                                    handleSideBarTap(ScreenType.PINNED),
-                              )),
-                          Container(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                              width: double.infinity,
-                              color: type == ScreenType.TRASH
-                                  ? side1stBackgroundSelect
-                                  : side1stBackground,
-                              child: IconText(
-                                icon: Icons.delete,
-                                text: "trash",
-                                textColor: textColor,
-                                iconColor: iconColor,
-                                onTap: () => handleSideBarTap(ScreenType.TRASH),
-                              )),
-                        ]),
-                        Align(
-                            alignment: Alignment.bottomLeft,
-                            child: Container(
-                                width: double.infinity,
-                                padding:
-                                    const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                                color: type == ScreenType.SETTING
-                                    ? side1stBackgroundSelect
-                                    : side1stBackground,
-                                child: IconText(
-                                  icon: Icons.settings,
-                                  text: "setting",
-                                  textColor: textColor,
-                                  iconColor: iconColor,
-                                  onTap: () =>
-                                      handleSideBarTap(ScreenType.SETTING),
-                                ))),
-                      ])),
-                  MouseRegion(
-                      cursor: SystemMouseCursors.resizeColumn,
-                      child: GestureDetector(
-                          onHorizontalDragStart: (detail) {
-                            dragStartPos = detail.globalPosition.dx;
-                          },
-                          onHorizontalDragUpdate: (detail) {
-                            final appWidth = MediaQuery.of(context).size.width;
-                            double newOffset =
-                                dragStartPos - detail.globalPosition.dx;
-                            if (appWidth * ratio1 < newOffset ||
-                                appWidth * ratio1 - newOffset > appWidth)
-                              return;
-                            setState(() => {
-                                  offset =
-                                      (dragStartPos - detail.globalPosition.dx)
-                                });
-                          },
-                          child: Container(
-                            width: 1,
-                            color: dividerColor,
-                          ))),
-                  Container(
-                      alignment: Alignment.topLeft,
-                      width: appWidth * ratio2 + offset,
-                      child: (() {
-                        if (type == ScreenType.CLIP) {
-                          if (clips.value.isEmpty) {
-                            return const Text("clip is empty ;(");
-                          } else {
-                            return ContentsMainView(
-                                handleArchiveItemTap: handleArchiveItemTap,
-                                handleListViewItemTap: handleListViewItemTap,
-                                handleCopyToClipboardTap: copyToClipboard,
-                                handleDeleteItemTap: handleListViewDeleteAction,
-                                handleEditItemTap: handleEditItemAction,
-                                isEditable: type == ScreenType.PINNED,
-                                controller: ScrollController(),
-                                listWidth:
-                                    (appWidth * ratio2 + offset) * ratio3,
-                                contentsWidth:
-                                    (appWidth * ratio2 + offset) * ratio4,
-                                items: clips);
-                          }
-                        } else if (type == ScreenType.PINNED) {
-                          if (notes.value.isEmpty) {
-                            return const Text("note is empty ;(");
-                          } else {
-                            return ContentsMainView(
-                                handleArchiveItemTap: handleArchiveItemTap,
-                                handleListViewItemTap: handleListViewItemTap,
-                                handleCopyToClipboardTap: copyToClipboard,
-                                handleDeleteItemTap: handleListViewDeleteAction,
-                                handleEditItemTap: handleEditItemAction,
-                                isEditable: type == ScreenType.PINNED,
-                                controller: ScrollController(),
-                                listWidth:
-                                    (appWidth * ratio2 + offset) * ratio3,
-                                contentsWidth:
-                                    (appWidth * ratio2 + offset) * ratio4,
-                                items: notes);
-                          }
-                        } else if (type == ScreenType.TRASH) {
-                          if (trashes.value.isEmpty) {
-                            return const Text("trashes is empty ;(");
-                          } else {
-                            return ContentsMainView(
-                                handleArchiveItemTap: handleArchiveItemTap,
-                                handleListViewItemTap: handleListViewItemTap,
-                                handleCopyToClipboardTap: copyToClipboard,
-                                handleDeleteItemTap: handleListViewDeleteAction,
-                                handleEditItemTap: handleEditItemAction,
-                                isEditable: type == ScreenType.PINNED,
-                                controller: ScrollController(),
-                                listWidth:
-                                    (appWidth * ratio2 + offset) * ratio3,
-                                contentsWidth:
-                                    (appWidth * ratio2 + offset) * ratio4,
-                                items: trashes);
-                          }
+                                    handleSideBarTap(ScreenType.SETTING),
+                              ))),
+                    ])),
+                MouseRegion(
+                    cursor: SystemMouseCursors.resizeColumn,
+                    child: GestureDetector(
+                        onHorizontalDragStart: (detail) {
+                          dragStartPos = detail.globalPosition.dx;
+                        },
+                        onHorizontalDragUpdate: (detail) {
+                          final appWidth = MediaQuery.of(context).size.width;
+                          double newOffset =
+                              dragStartPos - detail.globalPosition.dx;
+                          if (appWidth * ratio1 < newOffset ||
+                              appWidth * ratio1 - newOffset > appWidth) return;
+                          setState(() => {
+                                offset =
+                                    (dragStartPos - detail.globalPosition.dx)
+                              });
+                        },
+                        child: Container(
+                          width: 1,
+                          color: dividerColor,
+                        ))),
+                Container(
+                    alignment: Alignment.topLeft,
+                    width: appWidth * ratio2 + offset,
+                    child: (() {
+                      if (type == ScreenType.CLIP) {
+                        if (clips.value.isEmpty) {
+                          return const Text("clip is empty ;(");
+                        } else {
+                          return ContentsMainView(
+                              handleArchiveItemTap: handleArchiveItemTap,
+                              handleListViewItemTap: handleListViewItemTap,
+                              handleCopyToClipboardTap: copyToClipboard,
+                              handleDeleteItemTap: handleListViewDeleteAction,
+                              handleEditItemTap: handleEditItemAction,
+                              isEditable: type == ScreenType.PINNED,
+                              controller: ScrollController(),
+                              listWidth: (appWidth * ratio2 + offset) * ratio3,
+                              contentsWidth:
+                                  (appWidth * ratio2 + offset) * ratio4,
+                              items: clips);
                         }
-                      })())
-                ]))));
+                      } else if (type == ScreenType.PINNED) {
+                        if (notes.value.isEmpty) {
+                          return const Text("note is empty ;(");
+                        } else {
+                          return ContentsMainView(
+                              handleArchiveItemTap: handleArchiveItemTap,
+                              handleListViewItemTap: handleListViewItemTap,
+                              handleCopyToClipboardTap: copyToClipboard,
+                              handleDeleteItemTap: handleListViewDeleteAction,
+                              handleEditItemTap: handleEditItemAction,
+                              isEditable: type == ScreenType.PINNED,
+                              controller: ScrollController(),
+                              listWidth: (appWidth * ratio2 + offset) * ratio3,
+                              contentsWidth:
+                                  (appWidth * ratio2 + offset) * ratio4,
+                              items: notes);
+                        }
+                      } else if (type == ScreenType.TRASH) {
+                        if (trashes.value.isEmpty) {
+                          return const Text("trashes is empty ;(");
+                        } else {
+                          return ContentsMainView(
+                              handleArchiveItemTap: handleArchiveItemTap,
+                              handleListViewItemTap: handleListViewItemTap,
+                              handleCopyToClipboardTap: copyToClipboard,
+                              handleDeleteItemTap: handleListViewDeleteAction,
+                              handleEditItemTap: handleEditItemAction,
+                              isEditable: type == ScreenType.PINNED,
+                              controller: ScrollController(),
+                              listWidth: (appWidth * ratio2 + offset) * ratio3,
+                              contentsWidth:
+                                  (appWidth * ratio2 + offset) * ratio4,
+                              items: trashes);
+                        }
+                      }
+                    })())
+              ])))
+    ]);
   }
 }
 

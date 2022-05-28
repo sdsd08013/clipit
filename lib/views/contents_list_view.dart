@@ -35,7 +35,8 @@ class ContentsListView extends StatelessWidget {
                   child: RichText(
                     text: TextSpan(
                       text: items[index].subText(),
-                      style: const TextStyle(color: textColor),
+                      style: const TextStyle(
+                          color: textColor, fontFamily: "RictyDiminished"),
                     ),
                   ))),
           separatorBuilder: (context, index) =>

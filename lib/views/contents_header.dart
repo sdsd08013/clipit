@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:macos_ui/macos_ui.dart';
 import '../color.dart';
 
 class ContentsHeader extends StatelessWidget {
@@ -25,43 +26,31 @@ class ContentsHeader extends StatelessWidget {
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
           Padding(
               padding: const EdgeInsets.all(4),
-              child: IconButton(
-                iconSize: 20,
+              child: MacosIconButton(
                 onPressed: () => handleCopyToClipboardTap(),
-                color: iconColor,
                 icon: const Icon(
                   Icons.copy,
                 ),
-                tooltip: 'Copy to clipboard',
               )),
           Padding(
               padding: const EdgeInsets.all(4),
-              child: IconButton(
-                iconSize: 20,
+              child: MacosIconButton(
                 onPressed: () => handleMoveToPinTap(),
-                color: iconColor,
                 icon: const Icon(Icons.push_pin_sharp),
-                tooltip: 'Pin the Data',
               )),
           Padding(
               padding: const EdgeInsets.all(4),
-              child: IconButton(
-                iconSize: 20,
+              child: MacosIconButton(
                 onPressed: () => handleMoveToTrashTap(),
-                color: iconColor,
                 icon: const Icon(Icons.delete),
-                tooltip: 'move to trash',
               )),
           Visibility(
               visible: isEditable,
               child: Padding(
                   padding: const EdgeInsets.all(4),
-                  child: IconButton(
-                    iconSize: 20,
+                  child: MacosIconButton(
                     onPressed: () => handleEditItemTap(),
-                    color: iconColor,
                     icon: const Icon(Icons.edit),
-                    tooltip: 'edit pinned item',
                   ))),
         ]));
   }

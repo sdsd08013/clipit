@@ -51,14 +51,13 @@ class CustomBlockBuilder extends MarkdownElementBuilder {
     print(trim);
 
     return Container(
-        padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
         width: double.infinity,
         decoration: BoxDecoration(
-          color: preBackground,
-          border: Border.all(color: preBorder),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(trim, style: TextStyle(color: preText)));
+            color: preBackground,
+            borderRadius: BorderRadius.circular(2),
+            border: Border.all(color: preBorder)),
+        child: Text(trim, style: const TextStyle(color: preText)));
   }
 }
 
