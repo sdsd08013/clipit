@@ -2,14 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../color.dart';
+import '../models/selectable.dart';
 
 typedef Int2VoidFunc = void Function(int);
 
 class ContentsListView extends StatelessWidget {
-  final width;
+  final double width;
   final ScrollController controller;
   final Int2VoidFunc onItemTap;
-  final items;
+  final List<Selectable> items;
   ContentsListView(
       {required this.width,
       required this.controller,

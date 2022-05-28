@@ -4,16 +4,13 @@ import 'package:clipit/repositories/clip_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
 import 'package:clipit/repositories/note_repository.dart';
-import 'package:clipit/views/contents_header.dart';
-import 'package:clipit/views/contents_list_view.dart';
+import 'package:clipit/views/contents_main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:markdown/markdown.dart' as md;
 import 'dart:async';
 import 'dart:core';
-
 import 'models/note.dart';
+import 'models/selectable.dart';
 import 'models/trash.dart';
 
 void main() {
@@ -56,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double dragStartPos = 0;
   ScreenType type = ScreenType.CLIP;
   String lastText = "";
+  SelectableList lists = SelectableList(value: []);
 
   @override
   void initState() {
@@ -203,6 +201,10 @@ class _MyHomePageState extends State<MyHomePage> {
     } else if (type == ScreenType.PINNED) {}
   }
 
+  void handleEditItemAction() {
+    print("edit item");
+  }
+
   void copyToClipboard() {
     if (type == ScreenType.CLIP) {
       Clipboard.setData(ClipboardData(text: clips.currentItem.text));
@@ -333,121 +335,55 @@ class _MyHomePageState extends State<MyHomePage> {
                           if (clips.value.isEmpty) {
                             return const Text("clip is empty ;(");
                           } else {
-                            return Row(children: <Widget>[
-                              ContentsListView(
-                                controller: listViewController,
-                                width: (appWidth * ratio2 + offset) * ratio3,
-                                onItemTap: (index) =>
-                                    handleListViewItemTap(index),
-                                items: clips.value,
-                              ),
-                              Container(
-                                  alignment: Alignment.topLeft,
-                                  width: (appWidth * ratio2 + offset) * ratio4,
-                                  child: Column(children: [
-                                    ContentsHeader(
-                                        handleMoveToPinTap: () =>
-                                            handleArchiveItemTap(),
-                                        handleCopyToClipboardTap: () =>
-                                            copyToClipboard(),
-                                        handleMoveToTrashTap: () =>
-                                            handleListViewDeleteAction()),
-                                    Markdown(
-                                      controller: ScrollController(),
-                                      shrinkWrap: true,
-                                      selectable: true,
-                                      builders: {
-                                        'pre': CustomBlockBuilder(),
-                                      },
-                                      styleSheet: MarkdownStyleSheet(
-                                          code: TextStyle(
-                                              color: codeText,
-                                              backgroundColor: codeBackground)),
-                                      data: clips.currentItem.mdText,
-                                      extensionSet: md.ExtensionSet(
-                                        md.ExtensionSet.gitHubFlavored
-                                            .blockSyntaxes,
-                                        [
-                                          md.EmojiSyntax(),
-                                          ...md.ExtensionSet.gitHubFlavored
-                                              .inlineSyntaxes
-                                        ],
-                                      ),
-                                    )
-                                  ]))
-                            ]);
+                            return ContentsMainView(
+                                handleArchiveItemTap: handleArchiveItemTap,
+                                handleListViewItemTap: handleListViewItemTap,
+                                handleCopyToClipboardTap: copyToClipboard,
+                                handleDeleteItemTap: handleListViewDeleteAction,
+                                handleEditItemTap: handleEditItemAction,
+                                isEditable: type == ScreenType.PINNED,
+                                controller: ScrollController(),
+                                listWidth:
+                                    (appWidth * ratio2 + offset) * ratio3,
+                                contentsWidth:
+                                    (appWidth * ratio2 + offset) * ratio4,
+                                items: clips);
                           }
                         } else if (type == ScreenType.PINNED) {
                           if (notes.value.isEmpty) {
                             return const Text("note is empty ;(");
                           } else {
-                            return Row(children: <Widget>[
-                              ContentsListView(
-                                controller: listViewController,
-                                width: (appWidth * ratio2 + offset) * ratio3,
-                                onItemTap: (index) =>
-                                    handleListViewItemTap(index),
-                                items: notes.value,
-                              ),
-                              Container(
-                                  alignment: Alignment.topLeft,
-                                  width: (appWidth * ratio2 + offset) * ratio4,
-                                  child: Column(children: [
-                                    ContentsHeader(
-                                        handleMoveToPinTap: () =>
-                                            handleArchiveItemTap(),
-                                        handleCopyToClipboardTap: () =>
-                                            copyToClipboard(),
-                                        handleMoveToTrashTap: () =>
-                                            handleListViewDeleteAction()),
-                                    Expanded(
-                                        child: Container(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                16, 8, 16, 8),
-                                            child: TextFormField(
-                                                key: Key(notes.currentItem.id
-                                                    .toString()),
-                                                expands: true,
-                                                maxLines: null,
-                                                minLines: null,
-                                                initialValue:
-                                                    notes.currentItem.mdText)))
-                                    // Markdown(
-                                    //     controller: ScrollController(),
-                                    //     shrinkWrap: true,
-                                    //     data: notes.currentItem.mdText)
-                                  ]))
-                            ]);
+                            return ContentsMainView(
+                                handleArchiveItemTap: handleArchiveItemTap,
+                                handleListViewItemTap: handleListViewItemTap,
+                                handleCopyToClipboardTap: copyToClipboard,
+                                handleDeleteItemTap: handleListViewDeleteAction,
+                                handleEditItemTap: handleEditItemAction,
+                                isEditable: type == ScreenType.PINNED,
+                                controller: ScrollController(),
+                                listWidth:
+                                    (appWidth * ratio2 + offset) * ratio3,
+                                contentsWidth:
+                                    (appWidth * ratio2 + offset) * ratio4,
+                                items: notes);
                           }
                         } else if (type == ScreenType.TRASH) {
                           if (trashes.value.isEmpty) {
-                            return const Text("trash is empty ;(");
+                            return const Text("trashes is empty ;(");
                           } else {
-                            return Row(children: <Widget>[
-                              ContentsListView(
-                                controller: listViewController,
-                                width: (appWidth * ratio2 + offset) * ratio3,
-                                onItemTap: (index) =>
-                                    handleListViewItemTap(index),
-                                items: trashes.value,
-                              ),
-                              Container(
-                                  alignment: Alignment.topLeft,
-                                  width: (appWidth * ratio2 + offset) * ratio4,
-                                  child: Column(children: [
-                                    ContentsHeader(
-                                      handleMoveToPinTap: () =>
-                                          handleArchiveItemTap(),
-                                      handleCopyToClipboardTap: () =>
-                                          copyToClipboard(),
-                                      handleMoveToTrashTap: () =>
-                                          handleListViewDeleteAction(),
-                                    ),
-                                    MarkdownBody(
-                                        shrinkWrap: true,
-                                        data: trashes.currentItem.mdText)
-                                  ]))
-                            ]);
+                            return ContentsMainView(
+                                handleArchiveItemTap: handleArchiveItemTap,
+                                handleListViewItemTap: handleListViewItemTap,
+                                handleCopyToClipboardTap: copyToClipboard,
+                                handleDeleteItemTap: handleListViewDeleteAction,
+                                handleEditItemTap: handleEditItemAction,
+                                isEditable: type == ScreenType.PINNED,
+                                controller: ScrollController(),
+                                listWidth:
+                                    (appWidth * ratio2 + offset) * ratio3,
+                                contentsWidth:
+                                    (appWidth * ratio2 + offset) * ratio4,
+                                items: trashes);
                           }
                         }
                       })())

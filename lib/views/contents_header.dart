@@ -5,18 +5,22 @@ class ContentsHeader extends StatelessWidget {
   final VoidCallback handleCopyToClipboardTap;
   final VoidCallback handleMoveToPinTap;
   final VoidCallback handleMoveToTrashTap;
+  final VoidCallback handleEditItemTap;
+  final bool isEditable;
 
   const ContentsHeader(
       {Key? key,
+      required this.isEditable,
       required this.handleCopyToClipboardTap,
       required this.handleMoveToPinTap,
-      required this.handleMoveToTrashTap})
+      required this.handleMoveToTrashTap,
+      required this.handleEditItemTap})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: headerBackground,
+        color: side2ndBackground,
         height: 40,
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
           Padding(
@@ -47,7 +51,18 @@ class ContentsHeader extends StatelessWidget {
                 color: iconColor,
                 icon: const Icon(Icons.delete),
                 tooltip: 'move to trash',
-              ))
+              )),
+          Visibility(
+              visible: isEditable,
+              child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: IconButton(
+                    iconSize: 20,
+                    onPressed: () => handleEditItemTap(),
+                    color: iconColor,
+                    icon: const Icon(Icons.edit),
+                    tooltip: 'edit pinned item',
+                  ))),
         ]));
   }
 }

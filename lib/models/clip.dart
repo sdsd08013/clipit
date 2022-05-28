@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
-
 import 'package:clipit/models/selectable.dart';
 import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
@@ -15,22 +12,26 @@ class ClipList extends SelectableList {
     } else {
       value[currentIndex].isSelected = false;
       value.insert(0, clip);
+      value[0].isSelected = true;
       currentIndex = 0;
     }
     return this;
   }
 
   void updateTargetClip(String result) {
-    final target = value.where((element) => element.text == result).firstOrNull;
+    final Clip target =
+        value.where((element) => element.text == result).firstOrNull as Clip;
     if (target != null) {
       target.count++;
       target.updatedAt = DateTime.now();
+      target.isSelected = true;
+      value[currentIndex].isSelected = false;
       value[currentIndex] = target;
     }
   }
 
   void updateCurrentClip() {
-    final target = value[currentIndex];
+    final target = value[currentIndex] as Clip;
     target.count++;
     target.updatedAt = DateTime.now();
     value[currentIndex] = target;
@@ -55,18 +56,22 @@ class ClipList extends SelectableList {
 }
 
 class Clip extends Selectable {
-  bool isSelected = false;
-  int count = 0;
+  int count;
   final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
   Clip(
       {required id,
       required text,
-      required count,
+      required this.count,
       required isSelected,
       required createdAt,
       required updatedAt})
-      : super(id: id, text: text, createdAt: createdAt, updatedAt: updatedAt);
+      : super(
+            id: id,
+            text: text,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            isSelected: isSelected);
 
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');

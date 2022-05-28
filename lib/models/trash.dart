@@ -7,36 +7,18 @@ import 'package:html2md/html2md.dart' as html2md;
 import 'note.dart';
 
 class Trash extends Selectable {
-  bool isSelected = false;
-
   Trash(
       {required id,
       required text,
       required isSelected,
       required createdAt,
       required updatedAt})
-      : super(id: id, text: text, createdAt: createdAt, updatedAt: updatedAt);
-
-  String get trimText {
-    return plainText.replaceAll(' ', '').replaceAll('\n', '');
-  }
-
-  String get plainText {
-    var doc = parse(text);
-    if (doc.documentElement != null) {
-      String parsedstring = doc.documentElement!.text;
-      return parsedstring;
-    }
-    return "";
-  }
-
-  String subText() {
-    if (trimText.length > 30) {
-      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
-    } else {
-      return "$trimText\n${formatter.format(createdAt)}";
-    }
-  }
+      : super(
+            id: id,
+            text: text,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            isSelected: isSelected);
 
   factory Trash.fromMap(Map<String, dynamic> json, bool isSelected) => Trash(
       id: json['id'],

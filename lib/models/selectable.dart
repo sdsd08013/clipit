@@ -1,25 +1,54 @@
 import 'package:collection/collection.dart';
+import 'package:html/parser.dart';
 import 'package:html2md/html2md.dart' as html2md;
+import 'package:intl/intl.dart';
+
+final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
 class Selectable {
   int id;
   String text;
   final DateTime createdAt;
   DateTime updatedAt;
+  bool isSelected;
   Selectable(
       {required this.id,
       required this.text,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      required this.isSelected});
 
   String get mdText {
+    final t = html2md.convert(text, styleOptions: {'codeBlockStyle': 'fenced'});
+    print(t);
     return html2md.convert(text, styleOptions: {'codeBlockStyle': 'fenced'});
+  }
+
+  String get trimText {
+    return plainText.replaceAll(' ', '').replaceAll('\n', '');
+  }
+
+  String get plainText {
+    var doc = parse(text);
+    if (doc.documentElement != null) {
+      String parsedstring = doc.documentElement!.text;
+      return parsedstring;
+    }
+    return "";
+  }
+
+  String subText() {
+    if (trimText.length > 30) {
+      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
+    } else {
+      return "$trimText\n${formatter.format(createdAt)}";
+    }
   }
 }
 
 class SelectableList {
   int currentIndex = 0;
-  List<dynamic> value;
+  List<Selectable> value;
   SelectableList({required this.value});
 
   dynamic get currentItem {
