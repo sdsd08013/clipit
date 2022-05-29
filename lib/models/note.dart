@@ -28,6 +28,9 @@ class Note extends Selectable {
 }
 
 class NoteList extends SelectableList {
+  @override
+  String listTitle = "pinned";
+
   NoteList({required super.value});
 
   NoteList insertToFirst(Note note) {

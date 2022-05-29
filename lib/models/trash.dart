@@ -29,6 +29,9 @@ class Trash extends Selectable {
 }
 
 class TrashList extends SelectableList {
+  @override
+  String listTitle = "trashes";
+
   TrashList({required super.value});
 
   TrashList insertToFirst(Note note) {

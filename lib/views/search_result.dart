@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../color.dart';
 import '../models/selectable.dart';
 
 class SearchResultView extends StatelessWidget {
@@ -9,12 +10,25 @@ class SearchResultView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+        shrinkWrap: true,
         itemBuilder: (context, parentIndex) => Text("index:${parentIndex}"),
         separatorBuilder: (context, parentIndex) => ListView.separated(
-            itemBuilder: (context, childIndex) =>
-                Text("child->index:${childIndex}"),
+            shrinkWrap: true,
+            itemBuilder: (context, childIndex) => Container(
+                height: 75,
+                padding: const EdgeInsets.all(8),
+                color: results[parentIndex].value[childIndex].isSelected
+                    ? side2ndBackgroundSelect
+                    : side2ndBackground,
+                child: RichText(
+                  text: TextSpan(
+                    text: results[parentIndex].value[childIndex].subText(),
+                    style: const TextStyle(
+                        color: textColor, fontFamily: "RictyDiminished"),
+                  ),
+                )),
             separatorBuilder: (context, childIndex) =>
-                Divider(color: Colors.white),
+                const Divider(color: dividerColor, height: 0.5),
             itemCount: results[parentIndex].value.length),
         itemCount: results.length);
   }

@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:html/parser.dart';
 
 class ClipList extends SelectableList {
+  @override
+  String listTitle = "history";
   ClipList({required super.value});
 
   ClipList insertToFirst(Clip clip) {

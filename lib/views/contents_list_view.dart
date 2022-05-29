@@ -32,7 +32,7 @@ class ContentsListView extends StatelessWidget {
                 onItemTap.call(index);
               },
               child: Container(
-                  height: 80,
+                  height: 75,
                   padding: const EdgeInsets.all(8),
                   color: items[index].isSelected
                       ? side2ndBackgroundSelect

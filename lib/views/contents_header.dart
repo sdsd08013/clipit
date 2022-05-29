@@ -2,6 +2,7 @@ import 'package:clipit/views/contents_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
 import '../color.dart';
+import 'modified_macos_search_field.dart';
 
 class ContentsHeader extends StatelessWidget {
   final VoidCallback handleCopyToClipboardTap;
@@ -70,10 +71,9 @@ class ContentsHeader extends StatelessWidget {
                           onFocusChange: (value) {
                             handleSearchFormFocusChange(value);
                           },
-                          child: MacosSearchField(
+                          child: ModifiedMacosSearchField(
                               maxLines: 1,
                               focusNode: searchFocusNode,
-                              results: [],
                               onChanged: (string) =>
                                   {handleSearchFormInput(string)})))))
         ]));

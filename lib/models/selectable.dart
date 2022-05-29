@@ -46,6 +46,7 @@ class Selectable {
 
 class SelectableList {
   int currentIndex = 0;
+  String listTitle = "";
   List<Selectable> value;
   SelectableList({required this.value});
 

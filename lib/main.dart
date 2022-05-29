@@ -258,20 +258,29 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void handleSearchFormInput(text) {
-    final searchedClips =
-        clips.value.where((element) => element.text.contains(text)).toList();
-    final searchedNotes =
-        notes.value.where((element) => element.text.contains(text)).toList();
-    final results = [
-      ClipList(value: searchedClips),
-      NoteList(value: searchedNotes)
-    ];
+  void handleSearchFormInput(String text) {
+    if (text.isEmpty) {
+      listFocusNode.requestFocus();
+      searchFocusNode.unfocus();
+      setState(() {
+        searchResults = [];
+        showSearchResult = false;
+      });
+    } else {
+      final searchedClips =
+          clips.value.where((element) => element.text.contains(text)).toList();
+      final searchedNotes =
+          notes.value.where((element) => element.text.contains(text)).toList();
+      final results = [
+        ClipList(value: searchedClips),
+        NoteList(value: searchedNotes)
+      ];
 
-    setState(() {
-      //searchResults = results;
-      showSearchResult = true;
-    });
+      setState(() {
+        searchResults = results;
+        showSearchResult = true;
+      });
+    }
   }
 
   @override
