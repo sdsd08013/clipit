@@ -269,7 +269,7 @@ class _HomeState extends State<Home> {
     ];
 
     setState(() {
-      searchResults = results;
+      //searchResults = results;
       showSearchResult = true;
     });
   }

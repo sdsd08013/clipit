@@ -80,53 +80,46 @@ class ContentsMainView extends StatelessWidget {
                   ),
                   alignment: Alignment.topLeft,
                   width: contentsWidth,
-                  child: Expanded(
-                      child: Markdown(
-                          controller: ScrollController(),
-                          shrinkWrap: true,
-                          selectable: true,
-                          builders: {
-                            'pre': CustomBlockBuilder(),
-                          },
-                          styleSheet: MarkdownStyleSheet(
-                              h1: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h2: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h3: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h4: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h5: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h6: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              p: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished",
-                                  height: 1.2),
-                              pPadding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                              h1Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                              h2Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                              img: const TextStyle(fontSize: 10),
-                              code: const TextStyle(
-                                  color: codeText,
-                                  backgroundColor: codeBackground,
-                                  fontFamily: "RictyDiminished")),
-                          data: items.currentItem.mdText,
-                          extensionSet: md.ExtensionSet(
-                            md.ExtensionSet.gitHubFlavored.blockSyntaxes,
-                            [
-                              md.EmojiSyntax(),
-                              ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes
-                            ],
-                          ))))
+                  child: Markdown(
+                      controller: ScrollController(),
+                      shrinkWrap: true,
+                      selectable: true,
+                      builders: {
+                        'pre': CustomBlockBuilder(),
+                      },
+                      styleSheet: MarkdownStyleSheet(
+                          h1: const TextStyle(
+                              color: textColor, fontFamily: "RictyDiminished"),
+                          h2: const TextStyle(
+                              color: textColor, fontFamily: "RictyDiminished"),
+                          h3: const TextStyle(
+                              color: textColor, fontFamily: "RictyDiminished"),
+                          h4: const TextStyle(
+                              color: textColor, fontFamily: "RictyDiminished"),
+                          h5: const TextStyle(
+                              color: textColor, fontFamily: "RictyDiminished"),
+                          h6: const TextStyle(
+                              color: textColor, fontFamily: "RictyDiminished"),
+                          p: const TextStyle(
+                              color: textColor,
+                              fontFamily: "RictyDiminished",
+                              height: 1.2),
+                          pPadding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                          h1Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                          h2Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                          img: const TextStyle(fontSize: 10),
+                          code: const TextStyle(
+                              color: codeText,
+                              backgroundColor: codeBackground,
+                              fontFamily: "RictyDiminished")),
+                      data: items.currentItem.mdText,
+                      extensionSet: md.ExtensionSet(
+                        md.ExtensionSet.gitHubFlavored.blockSyntaxes,
+                        [
+                          md.EmojiSyntax(),
+                          ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes
+                        ],
+                      )))
             ]);
           }
         }

@@ -19,8 +19,6 @@ class Selectable {
       required this.isSelected});
 
   String get mdText {
-    final t = html2md.convert(text, styleOptions: {'codeBlockStyle': 'fenced'});
-    print(t);
     return html2md.convert(text, styleOptions: {'codeBlockStyle': 'fenced'});
   }
 

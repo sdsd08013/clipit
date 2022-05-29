@@ -16,7 +16,6 @@ enum ScreenType { CLIP, PINNED, TRASH, SETTING }
 class CodeBuilder extends MarkdownElementBuilder {
   @override
   Widget visitText(md.Text text, TextStyle? preferredStyle) {
-    print("code:${text.text}");
     return Text(text.text, style: TextStyle(color: Colors.red));
   }
 }
@@ -43,12 +42,10 @@ class CustomBlockBuilder extends MarkdownElementBuilder {
 
   @override
   Widget visitText(md.Text text, TextStyle? preferredStyle) {
-    print("pre:${text.text}");
     final trim = text.text
         .split(new RegExp(r'(?:\r?\n|\r)'))
         .where((s) => s.trim().length != 0)
         .join('\n');
-    print(trim);
 
     return Container(
         padding: const EdgeInsets.fromLTRB(4, 8, 4, 8),
