@@ -69,6 +69,9 @@ class _HomeState extends State<Home> {
   ScreenType type = ScreenType.CLIP;
   String lastText = "";
   SelectableList lists = SelectableList(value: []);
+  bool showSearchbar = false;
+  final searchFocusNode = FocusNode();
+  final listFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -228,6 +231,21 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void startSearch() {
+    searchFocusNode.requestFocus();
+    setState(() {
+      showSearchbar = true;
+    });
+  }
+
+  void handleSearchFormFocusChanged(hasFocus) {
+    if (hasFocus) {
+    } else {
+      searchFocusNode.unfocus();
+      listFocusNode.requestFocus();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appWidth = MediaQuery.of(context).size.width;
@@ -239,11 +257,13 @@ class _HomeState extends State<Home> {
       Center(
           child: FocusableActionDetector(
               autofocus: true,
+              focusNode: listFocusNode,
               shortcuts: {
                 _listViewUpKeySet: _ListViewUpIntent(),
                 _listViewDownKeySet: _ListViewDownIntent(),
                 _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
-                _listViewDeleteKeySet: _ListViewItemDeleteIntent()
+                _listViewDeleteKeySet: _ListViewItemDeleteIntent(),
+                _searchKeySet: _SearchIntent()
               },
               actions: {
                 _ListViewUpIntent:
@@ -253,7 +273,8 @@ class _HomeState extends State<Home> {
                 _ListViewItemCopyIntent:
                     CallbackAction(onInvoke: (e) => copyToClipboard()),
                 _ListViewItemDeleteIntent: CallbackAction(
-                    onInvoke: (e) => handleListViewDeleteAction())
+                    onInvoke: (e) => handleListViewDeleteAction()),
+                _SearchIntent: CallbackAction(onInvoke: (e) => startSearch())
               },
               child: Row(children: [
                 Container(
@@ -348,12 +369,16 @@ class _HomeState extends State<Home> {
                           return const Text("clip is empty ;(");
                         } else {
                           return ContentsMainView(
+                              searchFocusNode: searchFocusNode,
+                              handleSearchFormFocusChange: (hasFocus) =>
+                                  handleSearchFormFocusChanged(hasFocus),
                               handleArchiveItemTap: handleArchiveItemTap,
                               handleListViewItemTap: handleListViewItemTap,
                               handleCopyToClipboardTap: copyToClipboard,
                               handleDeleteItemTap: handleListViewDeleteAction,
                               handleEditItemTap: handleEditItemAction,
                               isEditable: type == ScreenType.PINNED,
+                              isSearchable: showSearchbar,
                               controller: ScrollController(),
                               listWidth: (appWidth * ratio2 + offset) * ratio3,
                               contentsWidth:
@@ -365,12 +390,16 @@ class _HomeState extends State<Home> {
                           return const Text("note is empty ;(");
                         } else {
                           return ContentsMainView(
+                              searchFocusNode: searchFocusNode,
+                              handleSearchFormFocusChange: (hasFocus) =>
+                                  handleSearchFormFocusChanged(hasFocus),
                               handleArchiveItemTap: handleArchiveItemTap,
                               handleListViewItemTap: handleListViewItemTap,
                               handleCopyToClipboardTap: copyToClipboard,
                               handleDeleteItemTap: handleListViewDeleteAction,
                               handleEditItemTap: handleEditItemAction,
                               isEditable: type == ScreenType.PINNED,
+                              isSearchable: showSearchbar,
                               controller: ScrollController(),
                               listWidth: (appWidth * ratio2 + offset) * ratio3,
                               contentsWidth:
@@ -382,12 +411,16 @@ class _HomeState extends State<Home> {
                           return const Text("trashes is empty ;(");
                         } else {
                           return ContentsMainView(
+                              searchFocusNode: searchFocusNode,
+                              handleSearchFormFocusChange: (hasFocus) =>
+                                  handleSearchFormFocusChanged(hasFocus),
                               handleArchiveItemTap: handleArchiveItemTap,
                               handleListViewItemTap: handleListViewItemTap,
                               handleCopyToClipboardTap: copyToClipboard,
                               handleDeleteItemTap: handleListViewDeleteAction,
                               handleEditItemTap: handleEditItemAction,
                               isEditable: type == ScreenType.PINNED,
+                              isSearchable: showSearchbar,
                               controller: ScrollController(),
                               listWidth: (appWidth * ratio2 + offset) * ratio3,
                               contentsWidth:
@@ -396,7 +429,15 @@ class _HomeState extends State<Home> {
                         }
                       }
                     })())
-              ])))
+              ]))),
+      Visibility(
+          visible: false,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: markdownBackground,
+            ),
+            child: const Text("for search window"),
+          )),
     ]);
   }
 }
@@ -409,8 +450,11 @@ class _ListViewItemCopyIntent extends Intent {}
 
 class _ListViewItemDeleteIntent extends Intent {}
 
+class _SearchIntent extends Intent {}
+
 final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
 final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
 final _listViewItemCopyKeySet =
     LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
 final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
+final _searchKeySet = LogicalKeySet(LogicalKeyboardKey.slash);

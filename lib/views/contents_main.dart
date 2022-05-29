@@ -15,11 +15,14 @@ class ContentsMainView extends StatelessWidget {
   final VoidCallback handleCopyToClipboardTap;
   final VoidCallback handleDeleteItemTap;
   final VoidCallback handleEditItemTap;
+  final Bool2VoidFunc handleSearchFormFocusChange;
   final bool isEditable;
+  final bool isSearchable;
   final ScrollController controller;
   final double listWidth;
   final double contentsWidth;
   final SelectableList items;
+  final FocusNode searchFocusNode;
 
   ContentsMainView(
       {required this.handleArchiveItemTap,
@@ -27,10 +30,13 @@ class ContentsMainView extends StatelessWidget {
       required this.handleCopyToClipboardTap,
       required this.handleDeleteItemTap,
       required this.handleEditItemTap,
+      required this.handleSearchFormFocusChange,
       required this.isEditable,
+      required this.isSearchable,
       required this.controller,
       required this.listWidth,
       required this.contentsWidth,
+      required this.searchFocusNode,
       required this.items});
   @override
   Widget build(BuildContext context) {
@@ -49,6 +55,10 @@ class ContentsMainView extends StatelessWidget {
           child: Column(children: [
             ContentsHeader(
                 isEditable: isEditable,
+                isSearchable: isSearchable,
+                searchFocusNode: searchFocusNode,
+                handleSearchFormFocusChange: (hasFocus) =>
+                    handleSearchFormFocusChange(hasFocus),
                 handleMoveToPinTap: () => handleArchiveItemTap(),
                 handleCopyToClipboardTap: () => handleCopyToClipboardTap(),
                 handleMoveToTrashTap: () => handleDeleteItemTap(),

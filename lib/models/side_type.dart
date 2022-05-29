@@ -57,7 +57,9 @@ class CustomBlockBuilder extends MarkdownElementBuilder {
             color: preBackground,
             borderRadius: BorderRadius.circular(2),
             border: Border.all(color: preBorder)),
-        child: Text(trim, style: const TextStyle(color: preText)));
+        child: Text(trim,
+            style: const TextStyle(
+                color: preText, fontFamily: "RictyDiminished")));
   }
 }
 

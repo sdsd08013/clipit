@@ -1,3 +1,4 @@
+import 'package:clipit/views/contents_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
 import '../color.dart';
@@ -7,14 +8,20 @@ class ContentsHeader extends StatelessWidget {
   final VoidCallback handleMoveToPinTap;
   final VoidCallback handleMoveToTrashTap;
   final VoidCallback handleEditItemTap;
+  final Bool2VoidFunc handleSearchFormFocusChange;
   final bool isEditable;
+  final bool isSearchable;
+  final FocusNode searchFocusNode;
 
   const ContentsHeader(
       {Key? key,
       required this.isEditable,
+      required this.isSearchable,
       required this.handleCopyToClipboardTap,
       required this.handleMoveToPinTap,
       required this.handleMoveToTrashTap,
+      required this.handleSearchFormFocusChange,
+      required this.searchFocusNode,
       required this.handleEditItemTap})
       : super(key: key);
 
@@ -52,6 +59,19 @@ class ContentsHeader extends StatelessWidget {
                     onPressed: () => handleEditItemTap(),
                     icon: const Icon(Icons.edit),
                   ))),
+          Visibility(
+              visible: isSearchable,
+              child: Expanded(
+                  child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: Focus(
+                          onFocusChange: (value) {
+                            handleSearchFormFocusChange(value);
+                          },
+                          child: MacosSearchField(
+                              maxLines: 1,
+                              focusNode: searchFocusNode,
+                              onChanged: (string) => {print(string)})))))
         ]));
   }
 }

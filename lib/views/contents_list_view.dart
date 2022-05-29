@@ -5,6 +5,7 @@ import '../color.dart';
 import '../models/selectable.dart';
 
 typedef Int2VoidFunc = void Function(int);
+typedef Bool2VoidFunc = void Function(bool);
 
 class ContentsListView extends StatelessWidget {
   final double width;
@@ -28,6 +29,7 @@ class ContentsListView extends StatelessWidget {
                 onItemTap.call(index);
               },
               child: Container(
+                  height: 80,
                   padding: const EdgeInsets.all(8),
                   color: items[index].isSelected
                       ? side2ndBackgroundSelect
