@@ -7,6 +7,12 @@ class ClipRepository {
     await deleteDatabase(await getDatabasesPath());
   }
 
+  Future<ClipList?> search(text) async {
+    final db = await database;
+    final maps =
+        await db.query("clips", where: "name LIKE ?", whereArgs: ["%${text}%"]);
+  }
+
   Future<ClipList?> getClips() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(

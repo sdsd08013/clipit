@@ -9,6 +9,7 @@ class ContentsHeader extends StatelessWidget {
   final VoidCallback handleMoveToTrashTap;
   final VoidCallback handleEditItemTap;
   final Bool2VoidFunc handleSearchFormFocusChange;
+  final String2VoidFunc handleSearchFormInput;
   final bool isEditable;
   final bool isSearchable;
   final FocusNode searchFocusNode;
@@ -21,6 +22,7 @@ class ContentsHeader extends StatelessWidget {
       required this.handleMoveToPinTap,
       required this.handleMoveToTrashTap,
       required this.handleSearchFormFocusChange,
+      required this.handleSearchFormInput,
       required this.searchFocusNode,
       required this.handleEditItemTap})
       : super(key: key);
@@ -28,7 +30,7 @@ class ContentsHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        color: side2ndBackground,
+        color: side1stBackground,
         height: 40,
         child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
           Padding(
@@ -71,7 +73,9 @@ class ContentsHeader extends StatelessWidget {
                           child: MacosSearchField(
                               maxLines: 1,
                               focusNode: searchFocusNode,
-                              onChanged: (string) => {print(string)})))))
+                              results: [],
+                              onChanged: (string) =>
+                                  {handleSearchFormInput(string)})))))
         ]));
   }
 }

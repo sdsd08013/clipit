@@ -5,6 +5,7 @@ import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
 import 'package:clipit/repositories/note_repository.dart';
 import 'package:clipit/views/contents_main.dart';
+import 'package:clipit/views/side_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:macos_ui/macos_ui.dart';
@@ -64,12 +65,15 @@ class _HomeState extends State<Home> {
   ClipList clips = ClipList(value: []);
   NoteList notes = NoteList(value: []);
   TrashList trashes = TrashList(value: []);
+  SelectableList currentItems = SelectableList(value: []);
+  List<SelectableList> searchResults = [];
   double offset = 0;
   double dragStartPos = 0;
   ScreenType type = ScreenType.CLIP;
   String lastText = "";
   SelectableList lists = SelectableList(value: []);
   bool showSearchbar = false;
+  bool showSearchResult = false;
   final searchFocusNode = FocusNode();
   final listFocusNode = FocusNode();
 
@@ -107,6 +111,7 @@ class _HomeState extends State<Home> {
     final retlievedClips = await clipRepository.getClips();
     setState(() {
       clips = retlievedClips ?? ClipList(value: []);
+      currentItems = retlievedClips ?? ClipList(value: []);
     });
   }
 
@@ -145,6 +150,13 @@ class _HomeState extends State<Home> {
   void handleSideBarTap(ScreenType newType) {
     setState(() {
       type = newType;
+      if (newType == ScreenType.CLIP) {
+        currentItems = clips;
+      } else if (newType == ScreenType.PINNED) {
+        currentItems = notes;
+      } else if (newType == ScreenType.TRASH) {
+        currentItems = trashes;
+      }
     });
   }
 
@@ -246,6 +258,22 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void handleSearchFormInput(text) {
+    final searchedClips =
+        clips.value.where((element) => element.text.contains(text)).toList();
+    final searchedNotes =
+        notes.value.where((element) => element.text.contains(text)).toList();
+    final results = [
+      ClipList(value: searchedClips),
+      NoteList(value: searchedNotes)
+    ];
+
+    setState(() {
+      searchResults = results;
+      showSearchResult = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final appWidth = MediaQuery.of(context).size.width;
@@ -281,47 +309,7 @@ class _HomeState extends State<Home> {
                     color: side1stBackground,
                     width: appWidth * ratio1 - 2 - offset,
                     child: Stack(children: [
-                      Column(children: [
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                            width: double.infinity,
-                            color: type == ScreenType.CLIP
-                                ? side1stBackgroundSelect
-                                : side1stBackground,
-                            child: IconText(
-                              icon: Icons.history,
-                              text: "history",
-                              textColor: textColor,
-                              iconColor: iconColor,
-                              onTap: () => handleSideBarTap(ScreenType.CLIP),
-                            )),
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                            width: double.infinity,
-                            color: type == ScreenType.PINNED
-                                ? side1stBackgroundSelect
-                                : side1stBackground,
-                            child: IconText(
-                              icon: Icons.push_pin_sharp,
-                              text: "pinned",
-                              textColor: textColor,
-                              iconColor: iconColor,
-                              onTap: () => handleSideBarTap(ScreenType.PINNED),
-                            )),
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                            width: double.infinity,
-                            color: type == ScreenType.TRASH
-                                ? side1stBackgroundSelect
-                                : side1stBackground,
-                            child: IconText(
-                              icon: Icons.delete,
-                              text: "trash",
-                              textColor: textColor,
-                              iconColor: iconColor,
-                              onTap: () => handleSideBarTap(ScreenType.TRASH),
-                            )),
-                      ]),
+                      SideMenu(type: type, handleSideBarTap: handleSideBarTap),
                       Align(
                           alignment: Alignment.bottomLeft,
                           child: Container(
@@ -363,72 +351,26 @@ class _HomeState extends State<Home> {
                 Container(
                     alignment: Alignment.topLeft,
                     width: appWidth * ratio2 + offset,
-                    child: (() {
-                      if (type == ScreenType.CLIP) {
-                        if (clips.value.isEmpty) {
-                          return const Text("clip is empty ;(");
-                        } else {
-                          return ContentsMainView(
-                              searchFocusNode: searchFocusNode,
-                              handleSearchFormFocusChange: (hasFocus) =>
-                                  handleSearchFormFocusChanged(hasFocus),
-                              handleArchiveItemTap: handleArchiveItemTap,
-                              handleListViewItemTap: handleListViewItemTap,
-                              handleCopyToClipboardTap: copyToClipboard,
-                              handleDeleteItemTap: handleListViewDeleteAction,
-                              handleEditItemTap: handleEditItemAction,
-                              isEditable: type == ScreenType.PINNED,
-                              isSearchable: showSearchbar,
-                              controller: ScrollController(),
-                              listWidth: (appWidth * ratio2 + offset) * ratio3,
-                              contentsWidth:
-                                  (appWidth * ratio2 + offset) * ratio4,
-                              items: clips);
-                        }
-                      } else if (type == ScreenType.PINNED) {
-                        if (notes.value.isEmpty) {
-                          return const Text("note is empty ;(");
-                        } else {
-                          return ContentsMainView(
-                              searchFocusNode: searchFocusNode,
-                              handleSearchFormFocusChange: (hasFocus) =>
-                                  handleSearchFormFocusChanged(hasFocus),
-                              handleArchiveItemTap: handleArchiveItemTap,
-                              handleListViewItemTap: handleListViewItemTap,
-                              handleCopyToClipboardTap: copyToClipboard,
-                              handleDeleteItemTap: handleListViewDeleteAction,
-                              handleEditItemTap: handleEditItemAction,
-                              isEditable: type == ScreenType.PINNED,
-                              isSearchable: showSearchbar,
-                              controller: ScrollController(),
-                              listWidth: (appWidth * ratio2 + offset) * ratio3,
-                              contentsWidth:
-                                  (appWidth * ratio2 + offset) * ratio4,
-                              items: notes);
-                        }
-                      } else if (type == ScreenType.TRASH) {
-                        if (trashes.value.isEmpty) {
-                          return const Text("trashes is empty ;(");
-                        } else {
-                          return ContentsMainView(
-                              searchFocusNode: searchFocusNode,
-                              handleSearchFormFocusChange: (hasFocus) =>
-                                  handleSearchFormFocusChanged(hasFocus),
-                              handleArchiveItemTap: handleArchiveItemTap,
-                              handleListViewItemTap: handleListViewItemTap,
-                              handleCopyToClipboardTap: copyToClipboard,
-                              handleDeleteItemTap: handleListViewDeleteAction,
-                              handleEditItemTap: handleEditItemAction,
-                              isEditable: type == ScreenType.PINNED,
-                              isSearchable: showSearchbar,
-                              controller: ScrollController(),
-                              listWidth: (appWidth * ratio2 + offset) * ratio3,
-                              contentsWidth:
-                                  (appWidth * ratio2 + offset) * ratio4,
-                              items: trashes);
-                        }
-                      }
-                    })())
+                    child: ContentsMainView(
+                        type: type,
+                        showSearchResult: showSearchResult,
+                        searchResults: searchResults,
+                        searchFocusNode: searchFocusNode,
+                        handleSearchFormFocusChange: (hasFocus) =>
+                            handleSearchFormFocusChanged(hasFocus),
+                        handleSearchFormInput: (text) =>
+                            handleSearchFormInput(text),
+                        handleArchiveItemTap: handleArchiveItemTap,
+                        handleListViewItemTap: handleListViewItemTap,
+                        handleCopyToClipboardTap: copyToClipboard,
+                        handleDeleteItemTap: handleListViewDeleteAction,
+                        handleEditItemTap: handleEditItemAction,
+                        isEditable: type == ScreenType.PINNED,
+                        isSearchable: showSearchbar,
+                        controller: ScrollController(),
+                        listWidth: (appWidth * ratio2 + offset) * ratio3,
+                        contentsWidth: (appWidth * ratio2 + offset) * ratio4,
+                        items: currentItems))
               ]))),
       Visibility(
           visible: false,

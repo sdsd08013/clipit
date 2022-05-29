@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 
 import '../color.dart';
 import '../models/selectable.dart';
+import '../models/side_type.dart';
 
 typedef Int2VoidFunc = void Function(int);
 typedef Bool2VoidFunc = void Function(bool);
+typedef String2VoidFunc = void Function(String);
+typedef ScreenType2VoidFunc = void Function(ScreenType);
 
 class ContentsListView extends StatelessWidget {
   final double width;

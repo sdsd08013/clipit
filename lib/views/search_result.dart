@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/selectable.dart';
 
 class SearchResultView extends StatelessWidget {
-  List<List<Selectable>> results;
+  List<SelectableList> results;
   SearchResultView({required this.results});
   @override
   Widget build(BuildContext context) {
@@ -15,7 +15,7 @@ class SearchResultView extends StatelessWidget {
                 Text("child->index:${childIndex}"),
             separatorBuilder: (context, childIndex) =>
                 Divider(color: Colors.white),
-            itemCount: results[parentIndex].length),
+            itemCount: results[parentIndex].value.length),
         itemCount: results.length);
   }
 }
