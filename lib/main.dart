@@ -219,7 +219,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void handleListViewDeleteAction() {
+  void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
     if (type == ScreenType.CLIP) {
       clipRepository.deleteClip(clips.currentItem.id);
@@ -235,7 +235,7 @@ class _HomeState extends State<Home> {
     print("edit item");
   }
 
-  void copyToClipboard() {
+  void handleCopyToClipboardTap() {
     if (type == ScreenType.CLIP) {
       Clipboard.setData(ClipboardData(text: clips.currentItem.text));
     } else if (type == ScreenType.PINNED) {
@@ -243,7 +243,8 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void startSearch() {
+  void handleSearchFormFocused() {
+    listFocusNode.unfocus();
     searchFocusNode.requestFocus();
     setState(() {
       showSearchbar = true;
@@ -292,95 +293,76 @@ class _HomeState extends State<Home> {
     const ratio4 = 0.7;
     return Stack(children: [
       Center(
-          child: FocusableActionDetector(
-              autofocus: true,
-              focusNode: listFocusNode,
-              shortcuts: {
-                _listViewUpKeySet: _ListViewUpIntent(),
-                _listViewDownKeySet: _ListViewDownIntent(),
-                _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
-                _listViewDeleteKeySet: _ListViewItemDeleteIntent(),
-                _searchKeySet: _SearchIntent()
-              },
-              actions: {
-                _ListViewUpIntent:
-                    CallbackAction(onInvoke: (e) => handleListUp()),
-                _ListViewDownIntent:
-                    CallbackAction(onInvoke: (e) => handleListDown()),
-                _ListViewItemCopyIntent:
-                    CallbackAction(onInvoke: (e) => copyToClipboard()),
-                _ListViewItemDeleteIntent: CallbackAction(
-                    onInvoke: (e) => handleListViewDeleteAction()),
-                _SearchIntent: CallbackAction(onInvoke: (e) => startSearch())
-              },
-              child: Row(children: [
-                Container(
-                    color: side1stBackground,
-                    width: appWidth * ratio1 - 2 - offset,
-                    child: Stack(children: [
-                      SideMenu(type: type, handleSideBarTap: handleSideBarTap),
-                      Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                              color: type == ScreenType.SETTING
-                                  ? side1stBackgroundSelect
-                                  : side1stBackground,
-                              child: IconText(
-                                icon: Icons.settings,
-                                text: "setting",
-                                textColor: textColor,
-                                iconColor: iconColor,
-                                onTap: () =>
-                                    handleSideBarTap(ScreenType.SETTING),
-                              ))),
-                    ])),
-                MouseRegion(
-                    cursor: SystemMouseCursors.resizeColumn,
-                    child: GestureDetector(
-                        onHorizontalDragStart: (detail) {
-                          dragStartPos = detail.globalPosition.dx;
-                        },
-                        onHorizontalDragUpdate: (detail) {
-                          final appWidth = MediaQuery.of(context).size.width;
-                          double newOffset =
-                              dragStartPos - detail.globalPosition.dx;
-                          if (appWidth * ratio1 < newOffset ||
-                              appWidth * ratio1 - newOffset > appWidth) return;
-                          setState(() => {
-                                offset =
-                                    (dragStartPos - detail.globalPosition.dx)
-                              });
-                        },
-                        child: Container(
-                          width: 1,
-                          color: dividerColor,
-                        ))),
-                Container(
-                    alignment: Alignment.topLeft,
-                    width: appWidth * ratio2 + offset,
-                    child: ContentsMainView(
-                        type: type,
-                        showSearchResult: showSearchResult,
-                        searchResults: searchResults,
-                        searchFocusNode: searchFocusNode,
-                        handleSearchFormFocusChange: (hasFocus) =>
-                            handleSearchFormFocusChanged(hasFocus),
-                        handleSearchFormInput: (text) =>
-                            handleSearchFormInput(text),
-                        handleArchiveItemTap: handleArchiveItemTap,
-                        handleListViewItemTap: handleListViewItemTap,
-                        handleCopyToClipboardTap: copyToClipboard,
-                        handleDeleteItemTap: handleListViewDeleteAction,
-                        handleEditItemTap: handleEditItemAction,
-                        isEditable: type == ScreenType.PINNED,
-                        isSearchable: showSearchbar,
-                        controller: ScrollController(),
-                        listWidth: (appWidth * ratio2 + offset) * ratio3,
-                        contentsWidth: (appWidth * ratio2 + offset) * ratio4,
-                        items: currentItems))
-              ]))),
+          // TODO: listviewのみにfocusする, コンテンツは対象外
+          child: Row(children: [
+        Container(
+            color: side1stBackground,
+            width: appWidth * ratio1 - 2 - offset,
+            child: Stack(children: [
+              SideMenu(type: type, handleSideBarTap: handleSideBarTap),
+              Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                      color: type == ScreenType.SETTING
+                          ? side1stBackgroundSelect
+                          : side1stBackground,
+                      child: IconText(
+                        icon: Icons.settings,
+                        text: "setting",
+                        textColor: textColor,
+                        iconColor: iconColor,
+                        onTap: () => handleSideBarTap(ScreenType.SETTING),
+                      ))),
+            ])),
+        MouseRegion(
+            cursor: SystemMouseCursors.resizeColumn,
+            child: GestureDetector(
+                onHorizontalDragStart: (detail) {
+                  dragStartPos = detail.globalPosition.dx;
+                },
+                onHorizontalDragUpdate: (detail) {
+                  final appWidth = MediaQuery.of(context).size.width;
+                  double newOffset = dragStartPos - detail.globalPosition.dx;
+                  if (appWidth * ratio1 < newOffset ||
+                      appWidth * ratio1 - newOffset > appWidth) return;
+                  setState(() =>
+                      {offset = (dragStartPos - detail.globalPosition.dx)});
+                },
+                child: Container(
+                  width: 1,
+                  color: dividerColor,
+                ))),
+        Container(
+            alignment: Alignment.topLeft,
+            width: appWidth * ratio2 + offset,
+            child: ContentsMainView(
+                type: type,
+                showSearchResult: showSearchResult,
+                searchResults: searchResults,
+                searchFocusNode: searchFocusNode,
+                listFocusNode: listFocusNode,
+                handleSearchFormFocusChange: (hasFocus) =>
+                    handleSearchFormFocusChanged(hasFocus),
+                handleSearchFormInput: (text) => handleSearchFormInput(text),
+                handleArchiveItemTap: handleArchiveItemTap,
+                handleListViewItemTap: handleListViewItemTap,
+                handleCopyToClipboardTap: handleCopyToClipboardTap,
+                handleDeleteItemTap: handleListViewDeleteTap,
+                handleEditItemTap: handleEditItemAction,
+                handleListUp: handleListUp,
+                handleListDown: handleListDown,
+                handleListViewDeleteTap: handleListViewDeleteTap,
+                handleTapCopyToClipboard: handleCopyToClipboardTap,
+                handleSearchFormFocused: handleSearchFormFocused,
+                isEditable: type == ScreenType.PINNED,
+                isSearchable: showSearchbar,
+                controller: ScrollController(),
+                listWidth: (appWidth * ratio2 + offset) * ratio3,
+                contentsWidth: (appWidth * ratio2 + offset) * ratio4,
+                items: currentItems))
+      ])),
       Visibility(
           visible: false,
           child: Container(

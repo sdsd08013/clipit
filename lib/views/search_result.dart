@@ -11,7 +11,8 @@ class SearchResultView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
         shrinkWrap: true,
-        itemBuilder: (context, parentIndex) => Text("index:${parentIndex}"),
+        itemBuilder: (context, parentIndex) =>
+            Text(results[parentIndex].listTitle),
         separatorBuilder: (context, parentIndex) => ListView.separated(
             shrinkWrap: true,
             itemBuilder: (context, childIndex) => Container(
@@ -22,7 +23,7 @@ class SearchResultView extends StatelessWidget {
                     : side2ndBackground,
                 child: RichText(
                   text: TextSpan(
-                    text: results[parentIndex].value[childIndex].subText(),
+                    text: results[parentIndex].value[childIndex].plainText,
                     style: const TextStyle(
                         color: textColor, fontFamily: "RictyDiminished"),
                   ),

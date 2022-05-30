@@ -16,6 +16,13 @@ class ContentsMainView extends StatelessWidget {
   final VoidCallback handleCopyToClipboardTap;
   final VoidCallback handleDeleteItemTap;
   final VoidCallback handleEditItemTap;
+
+  final VoidCallback handleListUp;
+  final VoidCallback handleListDown;
+  final VoidCallback handleTapCopyToClipboard;
+  final VoidCallback handleListViewDeleteTap;
+  final VoidCallback handleSearchFormFocused;
+
   final Bool2VoidFunc handleSearchFormFocusChange;
   final String2VoidFunc handleSearchFormInput;
   final bool isEditable;
@@ -27,6 +34,7 @@ class ContentsMainView extends StatelessWidget {
   final SelectableList items;
   final List<SelectableList> searchResults;
   final FocusNode searchFocusNode;
+  final FocusNode listFocusNode;
   final ScreenType type;
 
   ContentsMainView(
@@ -37,6 +45,11 @@ class ContentsMainView extends StatelessWidget {
       required this.handleEditItemTap,
       required this.handleSearchFormFocusChange,
       required this.handleSearchFormInput,
+      required this.handleListUp,
+      required this.handleListDown,
+      required this.handleTapCopyToClipboard,
+      required this.handleListViewDeleteTap,
+      required this.handleSearchFormFocused,
       required this.isEditable,
       required this.isSearchable,
       required this.showSearchResult,
@@ -46,6 +59,7 @@ class ContentsMainView extends StatelessWidget {
       required this.searchFocusNode,
       required this.type,
       required this.searchResults,
+      required this.listFocusNode,
       required this.items});
   @override
   Widget build(BuildContext context) {
@@ -71,7 +85,13 @@ class ContentsMainView extends StatelessWidget {
             return Row(children: <Widget>[
               ContentsListView(
                   controller: controller,
+                  listFocusNode: listFocusNode,
                   width: listWidth,
+                  handleListUp: handleListUp,
+                  handleListDown: handleListDown,
+                  handleListViewDeleteTap: handleListViewDeleteTap,
+                  handleTapCopyToClipboard: handleTapCopyToClipboard,
+                  handleSearchFormFocused: handleSearchFormFocused,
                   onItemTap: (index) => handleListViewItemTap(index),
                   items: items.value),
               Container(
