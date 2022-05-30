@@ -74,8 +74,8 @@ class _HomeState extends State<Home> {
   SelectableList lists = SelectableList(value: []);
   bool showSearchbar = false;
   bool showSearchResult = false;
-  final searchFocusNode = FocusNode();
-  final listFocusNode = FocusNode();
+  FocusNode? searchFocusNode = FocusNode();
+  FocusNode? listFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -148,6 +148,7 @@ class _HomeState extends State<Home> {
   }
 
   void handleSideBarTap(ScreenType newType) {
+    listFocusNode?.requestFocus();
     setState(() {
       type = newType;
       if (newType == ScreenType.CLIP) {
@@ -243,26 +244,31 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void handleSearchFormFocused() {
-    listFocusNode.unfocus();
-    searchFocusNode.requestFocus();
+  void handleSearchStart() {
     setState(() {
+      searchFocusNode = FocusNode();
       showSearchbar = true;
     });
+    listFocusNode?.unfocus();
+    searchFocusNode?.requestFocus();
   }
 
   void handleSearchFormFocusChanged(hasFocus) {
     if (hasFocus) {
     } else {
-      searchFocusNode.unfocus();
-      listFocusNode.requestFocus();
+      searchFocusNode?.unfocus();
+      listFocusNode?.requestFocus();
+      setState(() {
+        showSearchbar = false;
+        searchFocusNode = null;
+      });
     }
   }
 
   void handleSearchFormInput(String text) {
     if (text.isEmpty) {
-      listFocusNode.requestFocus();
-      searchFocusNode.unfocus();
+      listFocusNode?.requestFocus();
+      searchFocusNode?.unfocus();
       setState(() {
         searchResults = [];
         showSearchResult = false;
@@ -341,8 +347,8 @@ class _HomeState extends State<Home> {
                 type: type,
                 showSearchResult: showSearchResult,
                 searchResults: searchResults,
-                searchFocusNode: searchFocusNode,
-                listFocusNode: listFocusNode,
+                searchFocusNode: searchFocusNode ?? FocusNode(),
+                listFocusNode: listFocusNode ?? FocusNode(),
                 handleSearchFormFocusChange: (hasFocus) =>
                     handleSearchFormFocusChanged(hasFocus),
                 handleSearchFormInput: (text) => handleSearchFormInput(text),
@@ -355,7 +361,7 @@ class _HomeState extends State<Home> {
                 handleListDown: handleListDown,
                 handleListViewDeleteTap: handleListViewDeleteTap,
                 handleTapCopyToClipboard: handleCopyToClipboardTap,
-                handleSearchFormFocused: handleSearchFormFocused,
+                handleSearchFormFocused: handleSearchStart,
                 isEditable: type == ScreenType.PINNED,
                 isSearchable: showSearchbar,
                 controller: ScrollController(),
@@ -374,20 +380,3 @@ class _HomeState extends State<Home> {
     ]);
   }
 }
-
-class _ListViewDownIntent extends Intent {}
-
-class _ListViewUpIntent extends Intent {}
-
-class _ListViewItemCopyIntent extends Intent {}
-
-class _ListViewItemDeleteIntent extends Intent {}
-
-class _SearchIntent extends Intent {}
-
-final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
-final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
-final _listViewItemCopyKeySet =
-    LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
-final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
-final _searchKeySet = LogicalKeySet(LogicalKeyboardKey.slash);

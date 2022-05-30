@@ -59,6 +59,7 @@ class ModifiedMacosSearchField<T> extends StatefulWidget {
     this.onChanged,
     this.inputFormatters,
     this.enabled = true,
+    this.shouldExpand = false,
     this.onTap,
   });
 
@@ -205,6 +206,9 @@ class ModifiedMacosSearchField<T> extends StatefulWidget {
   /// button.
   final bool? enabled;
 
+  // flag for expand results view
+  final bool? shouldExpand;
+
   /// {@macro flutter.material.textfield.onTap}
   final GestureTapCallback? onTap;
 
@@ -240,11 +244,13 @@ class _ModifiedMacosSearchFieldState<T>
           isResultExpanded = _focus!.hasFocus;
         });
       }
-      if (isResultExpanded) {
+      if (isResultExpanded && widget.shouldExpand == true) {
         _overlayEntry = _createOverlay();
         Overlay.of(context)!.insert(_overlayEntry);
       } else {
-        _overlayEntry.remove();
+        if (widget.shouldExpand == true) {
+          _overlayEntry.remove();
+        }
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
