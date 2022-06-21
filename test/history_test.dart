@@ -1,9 +1,9 @@
-import 'package:clipit/models/clip.dart';
+import 'package:clipit/models/history.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('when isSelected true fromMap returns selected Clip', () {
-    final t = Clip.fromMap({
+  test('when isSelected true fromMap returns selected History', () {
+    final t = History.fromMap({
       'id': 1,
       'text': 'text',
       'count': 100,

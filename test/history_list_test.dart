@@ -1,10 +1,10 @@
-import 'package:clipit/models/clip.dart';
+import 'package:clipit/models/history.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('new text make shouldUpdate returns true', () {
-    final list = ClipList(value: [
-      Clip(
+    final list = HistoryList(value: [
+      History(
           id: 1,
           text: 'text1',
           count: 1,
@@ -16,8 +16,8 @@ void main() {
     expect(list.shouldUpdate('text2'), true);
   });
   test('when 59mins passed existing text make shouldUpdate returns false', () {
-    final list = ClipList(value: [
-      Clip(
+    final list = HistoryList(value: [
+      History(
           id: 1,
           text: 'text1',
           count: 1,
@@ -29,8 +29,8 @@ void main() {
     expect(list.shouldUpdate('text1'), false);
   });
   test('when 2hours passed existing text make shouldUpdate returns false', () {
-    final list = ClipList(value: [
-      Clip(
+    final list = HistoryList(value: [
+      History(
           id: 1,
           text: 'text1',
           count: 1,
@@ -42,8 +42,8 @@ void main() {
     expect(list.shouldUpdate('text1'), true);
   });
   test('new text make isExist returns false', () {
-    final list = ClipList(value: [
-      Clip(
+    final list = HistoryList(value: [
+      History(
           id: 1,
           text: 'text1',
           count: 1,
@@ -55,8 +55,8 @@ void main() {
     expect(list.isExist('text2'), false);
   });
   test('existing text make isExist returns true', () {
-    final list = ClipList(value: [
-      Clip(
+    final list = HistoryList(value: [
+      History(
           id: 1,
           text: 'text1',
           count: 1,

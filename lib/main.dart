@@ -1,6 +1,6 @@
-import 'package:clipit/models/clip.dart';
+import 'package:clipit/models/history.dart';
 import 'package:clipit/models/side_type.dart';
-import 'package:clipit/repositories/clip_repository.dart';
+import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
 import 'package:clipit/repositories/note_repository.dart';
@@ -8,7 +8,6 @@ import 'package:clipit/views/contents_main.dart';
 import 'package:clipit/views/side_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'dart:async';
 import 'dart:core';
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
               body: const TextStyle(
                   color: textColor, fontFamily: "RictyDiminished"),
               color: Colors.white)),
-      home: const Home(title: 'Clipit'),
+      home: const Home(title: 'clip it'),
     );
   }
 }
@@ -60,10 +59,10 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
-  final clipRepository = ClipRepository();
+  final clipRepository = HistoryRepository();
   final noteRepository = NoteRepository();
   final listViewController = ScrollController();
-  ClipList clips = ClipList(value: []);
+  HistoryList clips = HistoryList(value: []);
   NoteList notes = NoteList(value: []);
   TrashList trashes = TrashList(value: []);
   SelectableList currentItems = SelectableList(value: []);
@@ -82,20 +81,20 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
 
-    retlieveClips();
+    retlieveHistorys();
     retlieveNotes();
     //clipRepository.dropTable();
 
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
-        getClipboardHtml();
+        getHistoryboardHtml();
       });
     });
   }
 
-  getClipboardHtml() async {
+  getHistoryboardHtml() async {
     try {
-      final result = await methodChannel.invokeMethod('getClipboardContent');
+      final result = await methodChannel.invokeMethod('getHistoryboardContent');
       if (result != lastText) {
         if (result != null) {
           createOrUpdateItem(result);
@@ -108,11 +107,11 @@ class _HomeState extends State<Home> {
     }
   }
 
-  Future<void> retlieveClips() async {
-    final retlievedClips = await clipRepository.getClips();
+  Future<void> retlieveHistorys() async {
+    final retlievedHistorys = await clipRepository.getClips();
     setState(() {
-      clips = retlievedClips ?? ClipList(value: []);
-      currentItems = retlievedClips ?? ClipList(value: []);
+      clips = retlievedHistorys ?? HistoryList(value: []);
+      currentItems = retlievedHistorys ?? HistoryList(value: []);
     });
   }
 
@@ -128,15 +127,15 @@ class _HomeState extends State<Home> {
     if (clips.isExist(result)) {
       if (clips.shouldUpdate(result)) {
         setState(() {
-          clips.updateTargetClip(result);
+          clips.updateTargetHistory(result);
           clips;
         });
-        await clipRepository.updateClip(clips.currentItem);
+        await clipRepository.updateHistory(clips.currentItem);
       }
     } else {
-      final id = await clipRepository.saveClip(result);
+      final id = await clipRepository.saveHistory(result);
       setState(() {
-        clips.insertToFirst(Clip(
+        clips.insertToFirst(History(
             id: id,
             text: result,
             isSelected: true,
@@ -164,8 +163,8 @@ class _HomeState extends State<Home> {
 
   void handleArchiveItemTap() async {
     final target = clips.currentItem;
-    clipRepository.deleteClip(target.id);
-    clips.deleteTargetClip(target);
+    clipRepository.deleteHistory(target.id);
+    clips.deleteTargetHistory(target);
     final noteId = await noteRepository.saveNote(target.text);
     notes.insertToFirst(Note(
         id: noteId,
@@ -245,10 +244,10 @@ class _HomeState extends State<Home> {
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
     if (type == ScreenType.CLIP) {
-      clipRepository.deleteClip(clips.currentItem.id);
+      clipRepository.deleteHistory(clips.currentItem.id);
 
       setState(() {
-        clips.deleteCurrentClip();
+        clips.deleteCurrentHistory();
         clips = clips;
       });
     } else if (type == ScreenType.PINNED) {}
@@ -298,12 +297,12 @@ class _HomeState extends State<Home> {
         showSearchResult = false;
       });
     } else {
-      final searchedClips =
+      final searchedHistories =
           clips.value.where((element) => element.text.contains(text)).toList();
       final searchedNotes =
           notes.value.where((element) => element.text.contains(text)).toList();
       final results = [
-        ClipList(value: searchedClips),
+        HistoryList(value: searchedHistories),
         NoteList(value: searchedNotes)
       ];
 

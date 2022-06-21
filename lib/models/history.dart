@@ -3,26 +3,26 @@ import 'package:collection/collection.dart';
 import 'package:intl/intl.dart';
 import 'package:html/parser.dart';
 
-class ClipList extends SelectableList {
+class HistoryList extends SelectableList {
   @override
   String listTitle = "history";
-  ClipList({required super.value});
+  HistoryList({required super.value});
 
-  ClipList insertToFirst(Clip clip) {
+  HistoryList insertToFirst(History history) {
     if (value.isEmpty) {
-      value = [clip];
+      value = [history];
     } else {
       value[currentIndex].isSelected = false;
-      value.insert(0, clip);
+      value.insert(0, history);
       value[0].isSelected = true;
       currentIndex = 0;
     }
     return this;
   }
 
-  void updateTargetClip(String result) {
-    final Clip target =
-        value.where((element) => element.text == result).firstOrNull as Clip;
+  void updateTargetHistory(String result) {
+    final History target =
+        value.where((element) => element.text == result).firstOrNull as History;
     if (target != null) {
       target.count++;
       target.updatedAt = DateTime.now();
@@ -32,20 +32,20 @@ class ClipList extends SelectableList {
     }
   }
 
-  void updateCurrentClip() {
-    final target = value[currentIndex] as Clip;
+  void updateCurrentHistory() {
+    final target = value[currentIndex] as History;
     target.count++;
     target.updatedAt = DateTime.now();
     value[currentIndex] = target;
   }
 
-  void deleteTargetClip(Clip target) {
+  void deleteTargetHistory(History target) {
     value.remove(target);
     decrementIndex();
   }
 
-  void deleteCurrentClip() {
-    // clipboardと同様のclipを削除しようとすると削除できなくなる
+  void deleteCurrentHistory() {
+    // historyboardと同様のclipを削除しようとすると削除できなくなる
     final target = value[currentIndex];
     value.remove(target);
     if (currentIndex == 0) {
@@ -57,11 +57,11 @@ class ClipList extends SelectableList {
   }
 }
 
-class Clip extends Selectable {
+class History extends Selectable {
   int count;
   final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
-  Clip(
+  History(
       {required id,
       required text,
       required this.count,
@@ -104,11 +104,12 @@ class Clip extends Selectable {
     };
   }
 
-  factory Clip.fromMap(Map<String, dynamic> json, bool isSelected) => Clip(
-      id: json['id'],
-      text: json['text'],
-      count: json['count'],
-      createdAt: DateTime.parse(json['created_at']).toLocal(),
-      updatedAt: DateTime.parse(json['updated_at']).toLocal(),
-      isSelected: isSelected);
+  factory History.fromMap(Map<String, dynamic> json, bool isSelected) =>
+      History(
+          id: json['id'],
+          text: json['text'],
+          count: json['count'],
+          createdAt: DateTime.parse(json['created_at']).toLocal(),
+          updatedAt: DateTime.parse(json['updated_at']).toLocal(),
+          isSelected: isSelected);
 }

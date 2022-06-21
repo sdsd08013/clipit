@@ -1,43 +1,43 @@
 import 'package:sqflite/sqflite.dart';
-import '../models/clip.dart';
+import '../models/history.dart';
 import 'database.dart';
 
-class ClipRepository {
+class HistoryRepository {
   Future<void> dropTable() async {
     await deleteDatabase(await getDatabasesPath());
   }
 
-  Future<ClipList?> search(text) async {
+  Future<HistoryList?> search(text) async {
     final db = await database;
     final maps =
         await db.query("clips", where: "name LIKE ?", whereArgs: ["%${text}%"]);
   }
 
-  Future<ClipList?> getClips() async {
+  Future<HistoryList?> getClips() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'clips',
       orderBy: "id DESC",
     );
     if (maps.isNotEmpty) {
-      return ClipList(
+      return HistoryList(
           value: List.generate(maps.length, (index) {
         if (index == 0) {
-          return Clip.fromMap(maps[index], true);
+          return History.fromMap(maps[index], true);
         } else {
-          return Clip.fromMap(maps[index], false);
+          return History.fromMap(maps[index], false);
         }
       }));
     }
     return null;
   }
 
-  Future<void> deleteClip(int id) async {
+  Future<void> deleteHistory(int id) async {
     final db = await database;
     db.delete('clips', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<int> saveClip(String clipText) async {
+  Future<int> saveHistory(String clipText) async {
     final db = await database;
     return db.insert(
         'clips',
@@ -50,7 +50,7 @@ class ClipRepository {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<void> saveClips(List<Clip> clips) async {
+  Future<void> saveHistorys(List<History> clips) async {
     final db = await database;
     final batch = db.batch();
     for (var clip in clips) {
@@ -60,8 +60,8 @@ class ClipRepository {
     batch.commit();
   }
 
-  Future<void> updateClip(Clip clip) async {
+  Future<void> updateHistory(History history) async {
     final db = await database;
-    db.update('clips', clip.toMap(), where: 'id=?', whereArgs: [clip.id]);
+    db.update('clips', history.toMap(), where: 'id=?', whereArgs: [history.id]);
   }
 }
