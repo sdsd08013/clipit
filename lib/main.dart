@@ -196,15 +196,19 @@ class _HomeState extends State<Home> {
 
   void handleListDown() {
     var visibleItemCount =
-        (listViewController.position.viewportDimension / 75.5).floor();
+        (listViewController.position.viewportDimension / 75.5).ceil();
 
     var offset =
         listViewController.position.viewportDimension - visibleItemCount * 75.5;
 
-    listViewController.animateTo(
-        (clips.currentIndex - visibleItemCount + 2) * 75.5 - offset,
-        duration: const Duration(milliseconds: 10),
-        curve: Curves.easeOut);
+    if ((listViewController.offset +
+            listViewController.position.viewportDimension) <
+        (clips.currentIndex + 2) * 75.5) {
+      listViewController.animateTo(
+          (clips.currentIndex - visibleItemCount + 2) * 75.5 - offset,
+          duration: const Duration(milliseconds: 10),
+          curve: Curves.easeOut);
+    }
     if (type == ScreenType.CLIP) {
       setState(() {
         clips.incrementIndex();
