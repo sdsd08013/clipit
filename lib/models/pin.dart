@@ -5,8 +5,8 @@ import 'package:html2md/html2md.dart' as html2md;
 
 final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
-class Note extends Selectable {
-  Note(
+class Pin extends Selectable {
+  Pin(
       {required id,
       required text,
       required isSelected,
@@ -19,7 +19,7 @@ class Note extends Selectable {
             updatedAt: updatedAt,
             isSelected: isSelected);
 
-  factory Note.fromMap(Map<String, dynamic> json, bool isSelected) => Note(
+  factory Pin.fromMap(Map<String, dynamic> json, bool isSelected) => Pin(
       id: json['id'],
       text: json['text'],
       isSelected: false,
@@ -27,17 +27,17 @@ class Note extends Selectable {
       updatedAt: DateTime.parse(json['updated_at']).toLocal());
 }
 
-class NoteList extends SelectableList {
+class PinList extends SelectableList {
   @override
   String listTitle = "pinned";
 
-  NoteList({required super.value});
+  PinList({required super.value});
 
-  NoteList insertToFirst(Note note) {
+  PinList insertToFirst(Pin pin) {
     if (value.isEmpty) {
-      value = [note];
+      value = [pin];
     } else {
-      value.insert(0, note);
+      value.insert(0, pin);
       currentIndex = 0;
     }
     return this;

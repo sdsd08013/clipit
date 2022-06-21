@@ -1,10 +1,10 @@
 import 'package:sqflite/sqflite.dart';
 
-import '../models/note.dart';
+import '../models/pin.dart';
 import 'database.dart';
 
-class NoteRepository {
-  Future<int> saveNote(String text) async {
+class PinRepository {
+  Future<int> savePin(String text) async {
     final db = await database;
     return db.insert(
         'notes',
@@ -16,19 +16,19 @@ class NoteRepository {
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<NoteList?> getNotes() async {
+  Future<PinList?> getNotes() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'notes',
       orderBy: "id DESC",
     );
     if (maps.isNotEmpty) {
-      return NoteList(
+      return PinList(
           value: List.generate(maps.length, (index) {
         if (index == 0) {
-          return Note.fromMap(maps[index], true);
+          return Pin.fromMap(maps[index], true);
         } else {
-          return Note.fromMap(maps[index], false);
+          return Pin.fromMap(maps[index], false);
         }
       }));
     }

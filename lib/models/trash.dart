@@ -4,7 +4,7 @@ import 'package:html/parser.dart';
 import 'package:intl/intl.dart';
 import 'package:html2md/html2md.dart' as html2md;
 
-import 'note.dart';
+import 'pin.dart';
 
 class Trash extends Selectable {
   Trash(
@@ -34,11 +34,11 @@ class TrashList extends SelectableList {
 
   TrashList({required super.value});
 
-  TrashList insertToFirst(Note note) {
+  TrashList insertToFirst(Trash trash) {
     if (value.isEmpty) {
-      value = [note];
+      value = [trash];
     } else {
-      value.insert(0, note);
+      value.insert(0, trash);
       currentIndex = 0;
     }
     return this;

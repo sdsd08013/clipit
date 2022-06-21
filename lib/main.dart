@@ -3,7 +3,7 @@ import 'package:clipit/models/side_type.dart';
 import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
-import 'package:clipit/repositories/note_repository.dart';
+import 'package:clipit/repositories/pin_repository.dart';
 import 'package:clipit/views/contents_main.dart';
 import 'package:clipit/views/side_menu.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'dart:async';
 import 'dart:core';
-import 'models/note.dart';
+import 'models/pin.dart';
 import 'models/selectable.dart';
 import 'models/trash.dart';
 
@@ -60,10 +60,10 @@ class _HomeState extends State<Home> {
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
   final clipRepository = HistoryRepository();
-  final noteRepository = NoteRepository();
+  final noteRepository = PinRepository();
   final listViewController = ScrollController();
   HistoryList clips = HistoryList(value: []);
-  NoteList notes = NoteList(value: []);
+  PinList notes = PinList(value: []);
   TrashList trashes = TrashList(value: []);
   SelectableList currentItems = SelectableList(value: []);
   List<SelectableList> searchResults = [];
@@ -82,7 +82,7 @@ class _HomeState extends State<Home> {
     super.initState();
 
     retlieveHistorys();
-    retlieveNotes();
+    retlievePins();
     //clipRepository.dropTable();
 
     Future.delayed(Duration.zero, () {
@@ -115,10 +115,10 @@ class _HomeState extends State<Home> {
     });
   }
 
-  Future<void> retlieveNotes() async {
-    final retlievedNotes = await noteRepository.getNotes();
+  Future<void> retlievePins() async {
+    final retlievedPins = await noteRepository.getNotes();
     setState(() {
-      notes = retlievedNotes ?? NoteList(value: []);
+      notes = retlievedPins ?? PinList(value: []);
     });
   }
 
@@ -165,8 +165,8 @@ class _HomeState extends State<Home> {
     final target = clips.currentItem;
     clipRepository.deleteHistory(target.id);
     clips.deleteTargetHistory(target);
-    final noteId = await noteRepository.saveNote(target.text);
-    notes.insertToFirst(Note(
+    final noteId = await noteRepository.savePin(target.text);
+    notes.insertToFirst(Pin(
         id: noteId,
         text: target.text,
         isSelected: false,
@@ -299,11 +299,11 @@ class _HomeState extends State<Home> {
     } else {
       final searchedHistories =
           clips.value.where((element) => element.text.contains(text)).toList();
-      final searchedNotes =
+      final searchedPins =
           notes.value.where((element) => element.text.contains(text)).toList();
       final results = [
         HistoryList(value: searchedHistories),
-        NoteList(value: searchedNotes)
+        PinList(value: searchedPins)
       ];
 
       setState(() {
