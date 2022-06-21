@@ -8,6 +8,7 @@ import 'package:clipit/views/contents_main.dart';
 import 'package:clipit/views/side_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'dart:async';
 import 'dart:core';
@@ -176,6 +177,7 @@ class _HomeState extends State<Home> {
       clips;
       notes;
     });
+    listFocusNode?.requestFocus();
   }
 
   void handleListViewItemTap(int index) {
@@ -193,6 +195,16 @@ class _HomeState extends State<Home> {
   }
 
   void handleListDown() {
+    var visibleItemCount =
+        (listViewController.position.viewportDimension / 75.5).floor();
+
+    var offset =
+        listViewController.position.viewportDimension - visibleItemCount * 75.5;
+
+    listViewController.animateTo(
+        (clips.currentIndex - visibleItemCount + 2) * 75.5 - offset,
+        duration: const Duration(milliseconds: 10),
+        curve: Curves.easeOut);
     if (type == ScreenType.CLIP) {
       setState(() {
         clips.incrementIndex();
@@ -207,6 +219,12 @@ class _HomeState extends State<Home> {
   }
 
   void handleListUp() {
+    var current = (clips.currentIndex - 1) * 75.5;
+    if (current < listViewController.offset) {
+      listViewController.animateTo((clips.currentIndex - 1) * 75.5,
+          duration: const Duration(milliseconds: 10), curve: Curves.easeOut);
+    }
+
     if (type == ScreenType.CLIP) {
       setState(() {
         clips.decrementIndex();
@@ -230,6 +248,8 @@ class _HomeState extends State<Home> {
         clips = clips;
       });
     } else if (type == ScreenType.PINNED) {}
+
+    listFocusNode?.requestFocus();
   }
 
   void handleEditItemAction() {
@@ -364,7 +384,7 @@ class _HomeState extends State<Home> {
                 handleSearchFormFocused: handleSearchStart,
                 isEditable: type == ScreenType.PINNED,
                 isSearchable: showSearchbar,
-                controller: ScrollController(),
+                controller: listViewController,
                 listWidth: (appWidth * ratio2 + offset) * ratio3,
                 contentsWidth: (appWidth * ratio2 + offset) * ratio4,
                 items: currentItems))
