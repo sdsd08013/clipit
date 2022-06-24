@@ -94,7 +94,7 @@ class _HomeState extends State<Home> {
 
   getHistoryboardHtml() async {
     try {
-      final result = await methodChannel.invokeMethod('getHistoryboardContent');
+      final result = await methodChannel.invokeMethod('getClipboardContent');
       if (result != lastText) {
         if (result != null) {
           createOrUpdateItem(result);

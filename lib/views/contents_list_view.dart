@@ -95,9 +95,12 @@ class _ListViewItemDeleteIntent extends Intent {}
 
 class _SearchIntent extends Intent {}
 
+class _ListViewUpToTopIntent extends Intent {}
+
 final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
 final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
 final _listViewItemCopyKeySet =
     LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
 final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
 final _searchKeySet = LogicalKeySet(LogicalKeyboardKey.slash);
+final _listViewUpToTopKeySet = LogicalKeySet(LogicalKeyboardKey.keyG);
