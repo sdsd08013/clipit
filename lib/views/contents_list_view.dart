@@ -22,6 +22,8 @@ class ContentsListView extends StatelessWidget {
   final VoidCallback handleTapCopyToClipboard;
   final VoidCallback handleListViewDeleteTap;
   final VoidCallback handleSearchFormFocused;
+  final VoidCallback handleListViewUpToTop;
+  final VoidCallback handleListViewDownToBottom;
   ContentsListView(
       {required this.width,
       required this.controller,
@@ -32,6 +34,8 @@ class ContentsListView extends StatelessWidget {
       required this.handleTapCopyToClipboard,
       required this.handleListViewDeleteTap,
       required this.handleSearchFormFocused,
+      required this.handleListViewUpToTop,
+      required this.handleListViewDownToBottom,
       required this.onItemTap});
   @override
   Widget build(BuildContext context) {
@@ -43,7 +47,9 @@ class ContentsListView extends StatelessWidget {
           _listViewDownKeySet: _ListViewDownIntent(),
           _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
           _listViewDeleteKeySet: _ListViewItemDeleteIntent(),
-          _searchKeySet: _SearchIntent()
+          _searchKeySet: _SearchIntent(),
+          _listViewUpToTopKeySet: _ListViewUpToTopIntent(),
+          _listViewDownToBottomKeySet: _ListViewDownToBottomIntent(),
         },
         actions: {
           _ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
@@ -54,7 +60,11 @@ class ContentsListView extends StatelessWidget {
           _ListViewItemDeleteIntent:
               CallbackAction(onInvoke: (e) => handleListViewDeleteTap()),
           _SearchIntent:
-              CallbackAction(onInvoke: (e) => handleSearchFormFocused())
+              CallbackAction(onInvoke: (e) => handleSearchFormFocused()),
+          _ListViewUpToTopIntent:
+              CallbackAction(onInvoke: (e) => handleListViewUpToTop()),
+          _ListViewDownToBottomIntent:
+              CallbackAction(onInvoke: (e) => handleListViewDownToBottom())
         },
         child: Container(
             color: side2ndBackground,
@@ -97,6 +107,8 @@ class _SearchIntent extends Intent {}
 
 class _ListViewUpToTopIntent extends Intent {}
 
+class _ListViewDownToBottomIntent extends Intent {}
+
 final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
 final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
 final _listViewItemCopyKeySet =
@@ -104,3 +116,5 @@ final _listViewItemCopyKeySet =
 final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
 final _searchKeySet = LogicalKeySet(LogicalKeyboardKey.slash);
 final _listViewUpToTopKeySet = LogicalKeySet(LogicalKeyboardKey.keyG);
+final _listViewDownToBottomKeySet =
+    LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyG);

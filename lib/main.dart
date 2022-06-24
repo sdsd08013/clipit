@@ -241,6 +241,14 @@ class _HomeState extends State<Home> {
     }
   }
 
+  void handleUpToTop() {
+    print("handleUpToTop");
+  }
+
+  void handleDownToBottom() {
+    print("handleDownToBottom");
+  }
+
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
     if (type == ScreenType.CLIP) {
@@ -382,6 +390,8 @@ class _HomeState extends State<Home> {
                 handleEditItemTap: handleEditItemAction,
                 handleListUp: handleListUp,
                 handleListDown: handleListDown,
+                handleListUpToTop: handleUpToTop,
+                handleListDownToBottom: handleDownToBottom,
                 handleListViewDeleteTap: handleListViewDeleteTap,
                 handleTapCopyToClipboard: handleCopyToClipboardTap,
                 handleSearchFormFocused: handleSearchStart,

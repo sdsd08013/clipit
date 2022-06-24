@@ -22,6 +22,8 @@ class ContentsMainView extends StatelessWidget {
   final VoidCallback handleTapCopyToClipboard;
   final VoidCallback handleListViewDeleteTap;
   final VoidCallback handleSearchFormFocused;
+  final VoidCallback handleListUpToTop;
+  final VoidCallback handleListDownToBottom;
 
   final Bool2VoidFunc handleSearchFormFocusChange;
   final String2VoidFunc handleSearchFormInput;
@@ -50,6 +52,8 @@ class ContentsMainView extends StatelessWidget {
       required this.handleTapCopyToClipboard,
       required this.handleListViewDeleteTap,
       required this.handleSearchFormFocused,
+      required this.handleListUpToTop,
+      required this.handleListDownToBottom,
       required this.isEditable,
       required this.isSearchable,
       required this.showSearchResult,
@@ -89,6 +93,8 @@ class ContentsMainView extends StatelessWidget {
                   width: listWidth,
                   handleListUp: handleListUp,
                   handleListDown: handleListDown,
+                  handleListViewUpToTop: handleListUpToTop,
+                  handleListViewDownToBottom: handleListDownToBottom,
                   handleListViewDeleteTap: handleListViewDeleteTap,
                   handleTapCopyToClipboard: handleTapCopyToClipboard,
                   handleSearchFormFocused: handleSearchFormFocused,
