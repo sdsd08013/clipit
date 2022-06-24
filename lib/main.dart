@@ -77,6 +77,8 @@ class _HomeState extends State<Home> {
   FocusNode? searchFocusNode = FocusNode();
   FocusNode? listFocusNode = FocusNode();
 
+  bool isUpToTopTriggered = false;
+
   @override
   void initState() {
     super.initState();
@@ -242,7 +244,12 @@ class _HomeState extends State<Home> {
   }
 
   void handleUpToTop() {
-    print("handleUpToTop");
+    if (isUpToTopTriggered) {
+      print("handleUpToTop");
+      isUpToTopTriggered = false;
+    } else {
+      isUpToTopTriggered = true;
+    }
   }
 
   void handleDownToBottom() {
