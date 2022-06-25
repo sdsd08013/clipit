@@ -13,7 +13,7 @@ class ContentsHeader extends StatelessWidget {
   final String2VoidFunc handleSearchFormInput;
   final bool isEditable;
   final bool isSearchable;
-  final FocusNode searchFocusNode;
+  final FocusNode searchFormFocusNode;
 
   const ContentsHeader(
       {Key? key,
@@ -24,7 +24,7 @@ class ContentsHeader extends StatelessWidget {
       required this.handleMoveToTrashTap,
       required this.handleSearchFormFocusChange,
       required this.handleSearchFormInput,
-      required this.searchFocusNode,
+      required this.searchFormFocusNode,
       required this.handleEditItemTap})
       : super(key: key);
 
@@ -73,7 +73,7 @@ class ContentsHeader extends StatelessWidget {
                           },
                           child: ModifiedMacosSearchField(
                               maxLines: 1,
-                              focusNode: searchFocusNode,
+                              focusNode: searchFormFocusNode,
                               onChanged: (string) =>
                                   {handleSearchFormInput(string)})))))
         ]));

@@ -8,7 +8,8 @@ import '../models/side_type.dart';
 class SideMenu extends StatelessWidget {
   final ScreenType type;
   final ScreenType2VoidFunc handleSideBarTap;
-  const SideMenu({required this.type, required this.handleSideBarTap});
+  const SideMenu({Key? key, required this.type, required this.handleSideBarTap})
+      : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Column(children: [

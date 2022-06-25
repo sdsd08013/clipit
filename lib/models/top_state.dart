@@ -75,6 +75,7 @@ class TopState {
   bool shouldUpdateHistory(String text) => histories.shouldUpdate(text);
 
   void setSearchResult(String text) {
+    if (text.length < 2) return;
     final searchedHistories = histories.value
         .where((element) => element.text.contains(text))
         .toList();

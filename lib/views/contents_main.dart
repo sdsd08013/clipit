@@ -12,6 +12,7 @@ import 'package:markdown/markdown.dart' as md;
 
 class ContentsMainView extends StatelessWidget {
   final Int2VoidFunc handleListViewItemTap;
+  final Selectable2VoidFunc handleSearchedItemTap;
   final VoidCallback handleArchiveItemTap;
   final VoidCallback handleCopyToClipboardTap;
   final VoidCallback handleDeleteItemTap;
@@ -35,12 +36,14 @@ class ContentsMainView extends StatelessWidget {
   final double contentsWidth;
   final SelectableList items;
   final List<SelectableList> searchResults;
-  final FocusNode searchFocusNode;
+  final FocusNode searchFormFocusNode;
+  final FocusNode searchResultFocusNode;
   final FocusNode listFocusNode;
   final ScreenType type;
 
   ContentsMainView(
       {required this.handleArchiveItemTap,
+      required this.handleSearchedItemTap,
       required this.handleListViewItemTap,
       required this.handleCopyToClipboardTap,
       required this.handleDeleteItemTap,
@@ -60,7 +63,8 @@ class ContentsMainView extends StatelessWidget {
       required this.controller,
       required this.listWidth,
       required this.contentsWidth,
-      required this.searchFocusNode,
+      required this.searchFormFocusNode,
+      required this.searchResultFocusNode,
       required this.type,
       required this.searchResults,
       required this.listFocusNode,
@@ -71,7 +75,7 @@ class ContentsMainView extends StatelessWidget {
       ContentsHeader(
           isEditable: isEditable,
           isSearchable: isSearchable,
-          searchFocusNode: searchFocusNode,
+          searchFormFocusNode: searchFormFocusNode,
           handleSearchFormFocusChange: (hasFocus) =>
               handleSearchFormFocusChange(hasFocus),
           handleSearchFormInput: (text) => handleSearchFormInput(text),
@@ -81,7 +85,11 @@ class ContentsMainView extends StatelessWidget {
           handleEditItemTap: () => handleEditItemTap()),
       Expanded(child: (() {
         if (showSearchResult) {
-          return SearchResultView(results: searchResults);
+          return SearchResultView(
+              key: GlobalKey(),
+              searchResultFocusNode: searchResultFocusNode,
+              results: searchResults,
+              onItemTap: handleSearchedItemTap);
         } else {
           if (items.value.isEmpty) {
             return const Text("item is empty ;(");
