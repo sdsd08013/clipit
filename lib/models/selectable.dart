@@ -89,4 +89,12 @@ class SelectableList {
     target.isSelected = true;
     currentIndex = targetIndex;
   }
+
+  void selectFirstItem() {
+    switchItem(0);
+  }
+
+  void selectLastItem() {
+    switchItem(value.length - 1);
+  }
 }

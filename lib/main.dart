@@ -1,5 +1,6 @@
 import 'package:clipit/models/history.dart';
 import 'package:clipit/models/side_type.dart';
+import 'package:clipit/models/top_state.dart';
 import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/icon_text.dart';
@@ -62,22 +63,19 @@ class _HomeState extends State<Home> {
   final clipRepository = HistoryRepository();
   final noteRepository = PinRepository();
   final listViewController = ScrollController();
-  HistoryList clips = HistoryList(value: []);
-  PinList notes = PinList(value: []);
-  TrashList trashes = TrashList(value: []);
   SelectableList currentItems = SelectableList(value: []);
-  List<SelectableList> searchResults = [];
   double offset = 0;
   double dragStartPos = 0;
   ScreenType type = ScreenType.CLIP;
   String lastText = "";
-  SelectableList lists = SelectableList(value: []);
   bool showSearchbar = false;
-  bool showSearchResult = false;
   FocusNode? searchFocusNode = FocusNode();
   FocusNode? listFocusNode = FocusNode();
-
   bool isUpToTopTriggered = false;
+  TopState topState = TopState(
+      histories: HistoryList(value: []),
+      pins: PinList(value: []),
+      trashes: TrashList(value: []));
 
   @override
   void initState() {
@@ -112,87 +110,77 @@ class _HomeState extends State<Home> {
   Future<void> retlieveHistorys() async {
     final retlievedHistorys = await clipRepository.getClips();
     setState(() {
-      clips = retlievedHistorys ?? HistoryList(value: []);
-      currentItems = retlievedHistorys ?? HistoryList(value: []);
+      topState.histories = retlievedHistorys ?? HistoryList(value: []);
+      // clips = retlievedHistorys ?? HistoryList(value: []);
+      // currentItems = retlievedHistorys ?? HistoryList(value: []);
     });
   }
 
   Future<void> retlievePins() async {
     final retlievedPins = await noteRepository.getNotes();
     setState(() {
-      notes = retlievedPins ?? PinList(value: []);
+      topState.pins = retlievedPins ?? PinList(value: []);
+      //notes = retlievedPins ?? PinList(value: []);
     });
   }
 
   void createOrUpdateItem(String result) async {
-    if (notes.isExist(result)) return;
-    if (clips.isExist(result)) {
-      if (clips.shouldUpdate(result)) {
+    if (topState.isPinExist(result)) return;
+    if (topState.isHistoryExist(result)) {
+      /*
+      if (topState.shouldUpdateHistory(result)) {
+        topState.histories.updateTargetHistory(result);
         setState(() {
-          clips.updateTargetHistory(result);
-          clips;
+          topState;
         });
-        await clipRepository.updateHistory(clips.currentItem);
+        await clipRepository.updateHistory(topState.histories.currentItem);
       }
+      */
     } else {
       final id = await clipRepository.saveHistory(result);
       setState(() {
-        clips.insertToFirst(History(
+        topState.histories.insertToFirst(History(
             id: id,
             text: result,
             isSelected: true,
             count: 1,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now()));
-        clips;
+        topState;
       });
     }
   }
 
   void handleSideBarTap(ScreenType newType) {
     listFocusNode?.requestFocus();
+    topState.type = newType;
     setState(() {
-      type = newType;
-      if (newType == ScreenType.CLIP) {
-        currentItems = clips;
-      } else if (newType == ScreenType.PINNED) {
-        currentItems = notes;
-      } else if (newType == ScreenType.TRASH) {
-        currentItems = trashes;
-      }
+      topState;
     });
   }
 
   void handleArchiveItemTap() async {
-    final target = clips.currentItem;
+    final target = topState.histories.currentItem;
     clipRepository.deleteHistory(target.id);
-    clips.deleteTargetHistory(target);
+    topState.histories.deleteTargetHistory(target);
     final noteId = await noteRepository.savePin(target.text);
-    notes.insertToFirst(Pin(
+    topState.pins.insertToFirst(Pin(
         id: noteId,
         text: target.text,
         isSelected: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now()));
     setState(() {
-      clips;
-      notes;
+      topState;
     });
     listFocusNode?.requestFocus();
   }
 
   void handleListViewItemTap(int index) {
-    if (type == ScreenType.CLIP) {
-      clips.switchItem(index);
-      setState(() {
-        clips;
-      });
-    } else if (type == ScreenType.PINNED) {
-      notes.switchItem(index);
-      setState(() {
-        notes;
-      });
-    }
+    topState.switchCurrentItems(index);
+    setState(() {
+      topState;
+    });
   }
 
   void handleListDown() {
@@ -204,69 +192,54 @@ class _HomeState extends State<Home> {
 
     if ((listViewController.offset +
             listViewController.position.viewportDimension) <
-        (clips.currentIndex + 2) * 75.5) {
-      listViewController.animateTo(
-          (clips.currentIndex - visibleItemCount + 2) * 75.5 - offset,
-          duration: const Duration(milliseconds: 10),
-          curve: Curves.easeOut);
+        (topState.currentIndex + 2) * 75.5) {
+      listViewController.jumpTo(
+          (topState.currentIndex - visibleItemCount + 2) * 75.5 - offset);
     }
-    if (type == ScreenType.CLIP) {
-      setState(() {
-        clips.incrementIndex();
-        clips;
-      });
-    } else if (type == ScreenType.PINNED) {
-      setState(() {
-        notes.incrementIndex();
-        notes;
-      });
-    }
+
+    topState.incrementCurrentItems();
+    setState(() {
+      topState;
+    });
   }
 
   void handleListUp() {
-    var current = (clips.currentIndex - 1) * 75.5;
+    var current = (topState.currentIndex - 1) * 75.5;
     if (current < listViewController.offset) {
-      listViewController.animateTo((clips.currentIndex - 1) * 75.5,
-          duration: const Duration(milliseconds: 10), curve: Curves.easeOut);
+      listViewController.jumpTo((topState.currentIndex - 1) * 75.5);
     }
 
-    if (type == ScreenType.CLIP) {
-      setState(() {
-        clips.decrementIndex();
-        clips;
-      });
-    } else if (type == ScreenType.PINNED) {
-      setState(() {
-        notes.decrementIndex();
-        notes;
-      });
-    }
+    topState.decrementCurrentItems();
+    setState(() {
+      topState;
+    });
   }
 
   void handleUpToTop() {
     if (isUpToTopTriggered) {
-      print("handleUpToTop");
+      listViewController.jumpTo(0);
       isUpToTopTriggered = false;
+      topState.currentItems.selectFirstItem();
     } else {
       isUpToTopTriggered = true;
     }
   }
 
   void handleDownToBottom() {
-    print("handleDownToBottom");
+    listViewController.jumpTo(topState.currentItems.value.length * 75.5);
+    topState.currentItems.selectLastItem();
   }
 
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
-    if (type == ScreenType.CLIP) {
-      clipRepository.deleteHistory(clips.currentItem.id);
-
-      setState(() {
-        clips.deleteCurrentHistory();
-        clips = clips;
-      });
+    if (topState.type == ScreenType.CLIP) {
+      clipRepository.deleteHistory(topState.histories.currentItem.id);
+      topState.histories.deleteCurrentHistory();
     } else if (type == ScreenType.PINNED) {}
 
+    setState(() {
+      topState;
+    });
     listFocusNode?.requestFocus();
   }
 
@@ -275,11 +248,7 @@ class _HomeState extends State<Home> {
   }
 
   void handleCopyToClipboardTap() {
-    if (type == ScreenType.CLIP) {
-      Clipboard.setData(ClipboardData(text: clips.currentItem.text));
-    } else if (type == ScreenType.PINNED) {
-      Clipboard.setData(ClipboardData(text: notes.currentItem.text));
-    }
+    Clipboard.setData(ClipboardData(text: topState.currentItem.text));
   }
 
   void handleSearchStart() {
@@ -307,23 +276,15 @@ class _HomeState extends State<Home> {
     if (text.isEmpty) {
       listFocusNode?.requestFocus();
       searchFocusNode?.unfocus();
+
+      topState.clearSearchResult();
       setState(() {
-        searchResults = [];
-        showSearchResult = false;
+        topState;
       });
     } else {
-      final searchedHistories =
-          clips.value.where((element) => element.text.contains(text)).toList();
-      final searchedPins =
-          notes.value.where((element) => element.text.contains(text)).toList();
-      final results = [
-        HistoryList(value: searchedHistories),
-        PinList(value: searchedPins)
-      ];
-
+      topState.setSearchResult(text);
       setState(() {
-        searchResults = results;
-        showSearchResult = true;
+        topState;
       });
     }
   }
@@ -343,7 +304,7 @@ class _HomeState extends State<Home> {
             color: side1stBackground,
             width: appWidth * ratio1 - 2 - offset,
             child: Stack(children: [
-              SideMenu(type: type, handleSideBarTap: handleSideBarTap),
+              SideMenu(type: topState.type, handleSideBarTap: handleSideBarTap),
               Align(
                   alignment: Alignment.bottomLeft,
                   child: Container(
@@ -383,8 +344,7 @@ class _HomeState extends State<Home> {
             width: appWidth * ratio2 + offset,
             child: ContentsMainView(
                 type: type,
-                showSearchResult: showSearchResult,
-                searchResults: searchResults,
+                showSearchResult: topState.showSearchResult,
                 searchFocusNode: searchFocusNode ?? FocusNode(),
                 listFocusNode: listFocusNode ?? FocusNode(),
                 handleSearchFormFocusChange: (hasFocus) =>
@@ -402,12 +362,13 @@ class _HomeState extends State<Home> {
                 handleListViewDeleteTap: handleListViewDeleteTap,
                 handleTapCopyToClipboard: handleCopyToClipboardTap,
                 handleSearchFormFocused: handleSearchStart,
-                isEditable: type == ScreenType.PINNED,
+                isEditable: topState.type == ScreenType.PINNED,
                 isSearchable: showSearchbar,
                 controller: listViewController,
                 listWidth: (appWidth * ratio2 + offset) * ratio3,
                 contentsWidth: (appWidth * ratio2 + offset) * ratio4,
-                items: currentItems))
+                searchResults: topState.searchResults,
+                items: topState.currentItems))
       ])),
       Visibility(
           visible: false,
