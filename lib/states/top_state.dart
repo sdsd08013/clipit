@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
-import 'package:clipit/models/history.dart';
-import 'package:clipit/models/pin.dart';
 import 'package:clipit/models/selectable.dart';
 import 'package:clipit/models/side_type.dart';
-import 'package:clipit/models/trash.dart';
+
+import '../models/history.dart';
+import '../models/pin.dart';
 
 @immutable
 class TopState {
@@ -12,26 +12,30 @@ class TopState {
   final SelectableList trashes;
   final List<SelectableList> searchResults;
   final ScreenType type;
+  final bool showSearchBar;
 
   const TopState(
       {required this.histories,
       required this.pins,
       required this.trashes,
       required this.searchResults,
-      required this.type});
+      required this.type,
+      required this.showSearchBar});
 
   TopState copyWith(
       {SelectableList? histories,
       SelectableList? pins,
       SelectableList? trashes,
       List<SelectableList>? searchResults,
-      ScreenType? type}) {
+      ScreenType? type,
+      bool? showSearchBar}) {
     return TopState(
         histories: histories ?? this.histories,
         pins: pins ?? this.pins,
         trashes: trashes ?? this.trashes,
         searchResults: searchResults ?? this.searchResults,
-        type: type ?? this.type);
+        type: type ?? this.type,
+        showSearchBar: showSearchBar ?? this.showSearchBar);
   }
 
   SelectableList get currentItems {
@@ -106,31 +110,23 @@ class TopState {
         .toList();
   }
 
-  List<SelectableList> getSearchResult(String text) {
-    // final searchedHistories = histories.value
-    //     .where((element) => element.plainText.contains(text))
-    //     .toList();
-    // final searchedPins = pins.value
-    //     .where((element) => element.plainText.contains(text))
-    //     .toList();
-    // final searchedHistories = searchHistories(text);
-    // searchedHistories
-    //     .then((result) => searchResults.add(HistoryList(value: result)));
-    // final searchedPins = searchPins(text);
-    // searchedPins.then((result) => searchResults.add(PinList(value: result)));
+  Future<List<SelectableList>> getSearchResult(String text) async {
+    final searchedHistories = histories.value
+        .where((element) => element.plainText.contains(text))
+        .toList();
+    final searchedPins = pins.value
+        .where((element) => element.plainText.contains(text))
+        .toList();
+
+    if (searchedHistories.isNotEmpty) {
+      searchResults.add(HistoryList(
+          currentIndex: 0, listTitle: "history", value: searchedHistories));
+    }
+    if (searchedPins.isNotEmpty) {
+      searchResults
+          .add(PinList(currentIndex: 0, listTitle: "pin", value: searchedPins));
+    }
 
     return searchResults;
-
-    // if (searchedHistories.isNotEmpty) {
-    //   searchResults.add(HistoryList(value: searchedHistories));
-    // }
-    // if (searchedPins.isNotEmpty) {
-    //   searchResults.add(PinList(value: searchedPins));
-    // }
-    //searchResults.first.selectFirstItem();
   }
-
-  // void clearSearchResult() {
-  //   searchResults = [];
-  // }
 }

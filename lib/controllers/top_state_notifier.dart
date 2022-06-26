@@ -14,7 +14,8 @@ class TopStateNotifier extends StateNotifier<TopState> {
             pins: PinList(currentIndex: 0, listTitle: "pin", value: []),
             trashes: TrashList(currentIndex: 0, listTitle: "trash", value: []),
             searchResults: [],
-            type: ScreenType.CLIP));
+            type: ScreenType.CLIP,
+            showSearchBar: false));
 
   void increment() {
     state = state.incrementCurrentItems();
@@ -32,11 +33,55 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state = state.switchCurrentItems(state.currentItems.value.length - 1);
   }
 
+  void selectTargetItem(int targetIndex) {
+    state = state.switchCurrentItems(targetIndex);
+  }
+
   void addHistories(HistoryList histories) {
     state = state.copyWith(histories: histories);
   }
 
   void addPins(PinList pins) {
     state = state.copyWith(pins: pins);
+  }
+
+  void insertHistoryToHead(History history) {
+    state = state.copyWith(
+        histories: (state.histories as HistoryList).insertToFirst(history));
+  }
+
+  void changeType(ScreenType type) {
+    state = state.copyWith(type: type);
+  }
+
+  void deleteHistory(History history) {
+    state = state.copyWith(
+        histories:
+            (state.histories as HistoryList).deleteTargetHistory(history));
+  }
+
+  void deleteCurrentHistory() {
+    state = state.copyWith(
+        histories: (state.histories as HistoryList).deleteCurrentHistory());
+  }
+
+  void insertPinToHead(Pin pin) {
+    state = state.copyWith(pins: (state.pins as PinList).insertToFirst(pin));
+  }
+
+  void archiveHistory(History history) {}
+
+  void clearSearchResult() {
+    state = state.copyWith(searchResults: []);
+  }
+
+  void searchSelectables(String text) {
+    state.getSearchResult(text).then((value) {
+      state = state.copyWith(searchResults: value);
+    });
+  }
+
+  void updateSearchBarVisibility(bool isVisible) {
+    state = state.copyWith(showSearchBar: isVisible);
   }
 }

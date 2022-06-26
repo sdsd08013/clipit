@@ -41,9 +41,11 @@ class HistoryList extends SelectableList {
     value[currentIndex] = target;
   }
 
-  void deleteTargetHistory(History target) {
+  HistoryList deleteTargetHistory(History target) {
     value.remove(target);
-    decrementIndex();
+    final t = copyWith(value: value).value;
+
+    return copyWith(currentIndex: currentIndex - 1, value: t) as HistoryList;
   }
 
   HistoryList deleteCurrentHistory() {

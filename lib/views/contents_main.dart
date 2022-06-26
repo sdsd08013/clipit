@@ -32,15 +32,11 @@ class ContentsMainView extends ConsumerWidget {
 
   final Bool2VoidFunc handleSearchFormFocusChange;
   final String2VoidFunc handleSearchFormInput;
-  final bool isEditable;
   final bool isSearchable;
-  final bool showSearchResult;
   final ScrollController controller;
-  final List<SelectableList> searchResults;
   final FocusNode searchFormFocusNode;
   final FocusNode searchResultFocusNode;
   final FocusNode listFocusNode;
-  final ScreenType type;
 
   ContentsMainView(
       {required this.handleArchiveItemTap,
@@ -58,14 +54,10 @@ class ContentsMainView extends ConsumerWidget {
       required this.handleSearchFormFocused,
       required this.handleListUpToTop,
       required this.handleListDownToBottom,
-      required this.isEditable,
       required this.isSearchable,
-      required this.showSearchResult,
       required this.controller,
       required this.searchFormFocusNode,
       required this.searchResultFocusNode,
-      required this.type,
-      required this.searchResults,
       required this.listFocusNode});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,7 +72,7 @@ class ContentsMainView extends ConsumerWidget {
         width: appWidth * ratio2 + offset,
         child: Column(children: [
           ContentsHeader(
-              isEditable: isEditable,
+              isEditable: topState.type == ScreenType.PINNED,
               isSearchable: isSearchable,
               searchFormFocusNode: searchFormFocusNode,
               handleSearchFormFocusChange: (hasFocus) =>
@@ -91,13 +83,12 @@ class ContentsMainView extends ConsumerWidget {
               handleMoveToTrashTap: () => handleDeleteItemTap(),
               handleEditItemTap: () => handleEditItemTap()),
           Expanded(child: (() {
-            if (showSearchResult) {
+            if (topState.showSearchResult) {
               return SearchResultView(
                   key: GlobalKey(),
                   handleListUp: handleListUp,
                   handleListDown: handleListDown,
                   searchResultFocusNode: searchResultFocusNode,
-                  results: searchResults,
                   onItemTap: handleSearchedItemTap);
             } else {
               if (topState.currentItems.value.isEmpty) {

@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../color.dart';
 import '../models/selectable.dart';
+import '../providers/top_state_provider.dart';
 import 'contents_list_view.dart';
 import 'intent.dart';
 import 'key_set.dart';
 
-class SearchResultView extends StatelessWidget {
-  List<SelectableList> results;
+class SearchResultView extends ConsumerWidget {
   final FocusNode searchResultFocusNode;
   final Selectable2VoidFunc onItemTap;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
-  SearchResultView(
+  const SearchResultView(
       {Key? key,
-      required this.results,
       required this.handleListUp,
       required this.handleListDown,
       required this.onItemTap,
       required this.searchResultFocusNode})
       : super(key: key);
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    List<SelectableList> results = ref.watch(topStateProvider).searchResults;
     return FocusableActionDetector(
         focusNode: searchResultFocusNode,
         shortcuts: {
