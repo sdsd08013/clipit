@@ -87,6 +87,8 @@ class ContentsMainView extends StatelessWidget {
         if (showSearchResult) {
           return SearchResultView(
               key: GlobalKey(),
+              handleListUp: handleListUp,
+              handleListDown: handleListDown,
               searchResultFocusNode: searchResultFocusNode,
               results: searchResults,
               onItemTap: handleSearchedItemTap);

@@ -76,15 +76,24 @@ class TopState {
 
   void setSearchResult(String text) {
     if (text.length < 2) return;
+
     final searchedHistories = histories.value
-        .where((element) => element.text.contains(text))
+        .where((element) => element.plainText.contains(text))
         .toList();
-    final searchedPins =
-        pins.value.where((element) => element.text.contains(text)).toList();
+    final searchedPins = pins.value
+        .where((element) => element.plainText.contains(text))
+        .toList();
+    // if (searchedHistories.isNotEmpty) {
+    //   searchResults.add(HistoryList(value: searchedHistories));
+    // }
+    // if (searchedPins.isNotEmpty) {
+    //   searchResults.add(PinList(value: searchedPins));
+    // }
     searchResults = [
       HistoryList(value: searchedHistories),
       PinList(value: searchedPins)
     ];
+    searchResults.first.selectFirstItem();
   }
 
   void clearSearchResult() {

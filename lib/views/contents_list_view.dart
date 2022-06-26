@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import '../color.dart';
 import '../models/selectable.dart';
 import '../models/side_type.dart';
+import 'intent.dart';
+import 'key_set.dart';
 
 typedef Int2VoidFunc = void Function(int);
 typedef Selectable2VoidFunc = void Function(Selectable);
@@ -47,27 +49,26 @@ class ContentsListView extends StatelessWidget {
         autofocus: true,
         focusNode: listFocusNode,
         shortcuts: {
-          _listViewUpKeySet: _ListViewUpIntent(),
-          _listViewDownKeySet: _ListViewDownIntent(),
-          _listViewItemCopyKeySet: _ListViewItemCopyIntent(),
-          _listViewDeleteKeySet: _ListViewItemDeleteIntent(),
-          _searchKeySet: _SearchIntent(),
-          _listViewUpToTopKeySet: _ListViewUpToTopIntent(),
-          _listViewDownToBottomKeySet: _ListViewDownToBottomIntent(),
+          listViewUpKeySet: ListViewUpIntent(),
+          listViewDownKeySet: ListViewDownIntent(),
+          listViewItemCopyKeySet: ListViewItemCopyIntent(),
+          listViewDeleteKeySet: ListViewItemDeleteIntent(),
+          searchKeySet: SearchIntent(),
+          listViewUpToTopKeySet: ListViewUpToTopIntent(),
+          listViewDownToBottomKeySet: ListViewDownToBottomIntent(),
         },
         actions: {
-          _ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
-          _ListViewDownIntent:
-              CallbackAction(onInvoke: (e) => handleListDown()),
-          _ListViewItemCopyIntent:
+          ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
+          ListViewDownIntent: CallbackAction(onInvoke: (e) => handleListDown()),
+          ListViewItemCopyIntent:
               CallbackAction(onInvoke: (e) => handleTapCopyToClipboard()),
-          _ListViewItemDeleteIntent:
+          ListViewItemDeleteIntent:
               CallbackAction(onInvoke: (e) => handleListViewDeleteTap()),
-          _SearchIntent:
+          SearchIntent:
               CallbackAction(onInvoke: (e) => handleSearchFormFocused()),
-          _ListViewUpToTopIntent:
+          ListViewUpToTopIntent:
               CallbackAction(onInvoke: (e) => handleListViewUpToTop()),
-          _ListViewDownToBottomIntent:
+          ListViewDownToBottomIntent:
               CallbackAction(onInvoke: (e) => handleListViewDownToBottom())
         },
         child: Container(
@@ -99,27 +100,3 @@ class ContentsListView extends StatelessWidget {
             )));
   }
 }
-
-class _ListViewDownIntent extends Intent {}
-
-class _ListViewUpIntent extends Intent {}
-
-class _ListViewItemCopyIntent extends Intent {}
-
-class _ListViewItemDeleteIntent extends Intent {}
-
-class _SearchIntent extends Intent {}
-
-class _ListViewUpToTopIntent extends Intent {}
-
-class _ListViewDownToBottomIntent extends Intent {}
-
-final _listViewDownKeySet = LogicalKeySet(LogicalKeyboardKey.keyJ);
-final _listViewUpKeySet = LogicalKeySet(LogicalKeyboardKey.keyK);
-final _listViewItemCopyKeySet =
-    LogicalKeySet(LogicalKeyboardKey.keyC, LogicalKeyboardKey.meta);
-final _listViewDeleteKeySet = LogicalKeySet(LogicalKeyboardKey.keyD);
-final _searchKeySet = LogicalKeySet(LogicalKeyboardKey.slash);
-final _listViewUpToTopKeySet = LogicalKeySet(LogicalKeyboardKey.keyG);
-final _listViewDownToBottomKeySet =
-    LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyG);

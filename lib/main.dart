@@ -63,7 +63,6 @@ class _HomeState extends State<Home> {
   final clipRepository = HistoryRepository();
   final noteRepository = PinRepository();
   ScrollController listViewController = ScrollController();
-  SelectableList currentItems = SelectableList(value: []);
   double offset = 0;
   double dragStartPos = 0;
   ScreenType type = ScreenType.CLIP;
@@ -112,8 +111,6 @@ class _HomeState extends State<Home> {
     final retlievedHistorys = await clipRepository.getClips();
     setState(() {
       topState.histories = retlievedHistorys ?? HistoryList(value: []);
-      // clips = retlievedHistorys ?? HistoryList(value: []);
-      // currentItems = retlievedHistorys ?? HistoryList(value: []);
     });
   }
 
@@ -121,7 +118,6 @@ class _HomeState extends State<Home> {
     final retlievedPins = await noteRepository.getNotes();
     setState(() {
       topState.pins = retlievedPins ?? PinList(value: []);
-      //notes = retlievedPins ?? PinList(value: []);
     });
   }
 

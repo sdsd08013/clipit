@@ -11,28 +11,21 @@ class Selectable {
   final DateTime createdAt;
   DateTime updatedAt;
   bool isSelected;
+  String mdText = "";
+  String trimText = "";
+  String plainText = "";
   Selectable(
       {required this.id,
       required this.text,
       required this.createdAt,
       required this.updatedAt,
-      required this.isSelected});
+      required this.isSelected}) {
+    mdText = html2md.convert(text, styleOptions: {'codeBlockStyle': 'fenced'});
+    trimText = plainText.replaceAll(' ', '').replaceAll('\n', '');
 
-  String get mdText {
-    return html2md.convert(text, styleOptions: {'codeBlockStyle': 'fenced'});
-  }
-
-  String get trimText {
-    return plainText.replaceAll(' ', '').replaceAll('\n', '');
-  }
-
-  String get plainText {
-    var doc = parse(text);
-    if (doc.documentElement != null) {
-      String parsedstring = doc.documentElement!.text;
-      return parsedstring;
+    if (parse(text).documentElement != null) {
+      plainText = parse(text).documentElement!.text;
     }
-    return "";
   }
 
   String subText() {
