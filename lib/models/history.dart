@@ -6,18 +6,20 @@ import 'package:html/parser.dart';
 class HistoryList extends SelectableList {
   @override
   String listTitle = "history";
-  HistoryList({required super.value});
+  HistoryList(
+      {required super.value,
+      required super.currentIndex,
+      required super.listTitle});
 
   HistoryList insertToFirst(History history) {
     if (value.isEmpty) {
-      value = [history];
+      return copyWith(value: [history]) as HistoryList;
     } else {
       value[currentIndex].isSelected = false;
       value.insert(0, history);
       value[0].isSelected = true;
-      currentIndex = 0;
+      return copyWith(currentIndex: 0, value: value) as HistoryList;
     }
-    return this;
   }
 
   void updateTargetHistory(String result) {
@@ -44,15 +46,16 @@ class HistoryList extends SelectableList {
     decrementIndex();
   }
 
-  void deleteCurrentHistory() {
+  HistoryList deleteCurrentHistory() {
     // historyboardと同様のclipを削除しようとすると削除できなくなる
-    final target = value[currentIndex];
-    value.remove(target);
+    value.removeAt(currentIndex);
     if (currentIndex == 0) {
       value[currentIndex].isSelected = true;
+      return copyWith(value: value) as HistoryList;
     } else {
       value[currentIndex - 1].isSelected = true;
-      currentIndex--;
+      return copyWith(currentIndex: currentIndex - 1, value: value)
+          as HistoryList;
     }
   }
 }

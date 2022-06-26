@@ -1,9 +1,10 @@
 import 'package:clipit/models/history.dart';
 import 'package:clipit/models/side_type.dart';
-import 'package:clipit/models/top_state.dart';
+import 'package:clipit/providers/top_state_provider.dart';
 import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/repositories/pin_repository.dart';
+import 'package:clipit/states/top_state.dart';
 import 'package:clipit/views/contents_main.dart';
 import 'package:clipit/views/main_side_bar.dart';
 import 'package:clipit/views/resizable_divider.dart';
@@ -49,16 +50,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Home extends StatefulWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  State<Home> createState() => _HomeState();
+  _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends ConsumerState<Home> {
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
   final clipRepository = HistoryRepository();
@@ -74,14 +75,17 @@ class _HomeState extends State<Home> {
   FocusNode? listFocusNode = FocusNode();
   bool isUpToTopTriggered = false;
   TopState topState = TopState(
-      histories: HistoryList(value: []),
-      pins: PinList(value: []),
-      trashes: TrashList(value: []));
+      histories: HistoryList(currentIndex: 0, listTitle: "history", value: []),
+      pins: PinList(currentIndex: 0, listTitle: "pin", value: []),
+      trashes: TrashList(currentIndex: 0, listTitle: "trash", value: []),
+      searchResults: [],
+      type: ScreenType.CLIP);
 
   @override
   void initState() {
     super.initState();
 
+    ref.read(topStateProvider);
     retlieveHistorys();
     retlievePins();
     //clipRepository.dropTable();
@@ -110,16 +114,14 @@ class _HomeState extends State<Home> {
 
   Future<void> retlieveHistorys() async {
     final retlievedHistorys = await clipRepository.getClips();
-    setState(() {
-      topState.histories = retlievedHistorys ?? HistoryList(value: []);
-    });
+    ref.read(topStateProvider.notifier).addHistories(retlievedHistorys ??
+        HistoryList(currentIndex: 0, listTitle: "history", value: []));
   }
 
   Future<void> retlievePins() async {
     final retlievedPins = await noteRepository.getNotes();
-    setState(() {
-      topState.pins = retlievedPins ?? PinList(value: []);
-    });
+    ref.read(topStateProvider.notifier).addPins(
+        retlievedPins ?? PinList(currentIndex: 0, listTitle: "pi", value: []));
   }
 
   void createOrUpdateItem(String result) async {
@@ -137,7 +139,7 @@ class _HomeState extends State<Home> {
     } else {
       final id = await clipRepository.saveHistory(result);
       setState(() {
-        topState.histories.insertToFirst(History(
+        (topState.histories as HistoryList).insertToFirst(History(
             id: id,
             text: result,
             isSelected: true,
@@ -151,18 +153,17 @@ class _HomeState extends State<Home> {
 
   void handleSideBarTap(ScreenType newType) {
     listFocusNode?.requestFocus();
-    topState.type = newType;
     setState(() {
-      topState;
+      topState = topState.copyWith(type: newType);
     });
   }
 
   void handleArchiveItemTap() async {
     final target = topState.histories.currentItem;
     clipRepository.deleteHistory(target.id);
-    topState.histories.deleteTargetHistory(target);
+    (topState.histories as HistoryList).deleteTargetHistory(target);
     final noteId = await noteRepository.savePin(target.text);
-    topState.pins.insertToFirst(Pin(
+    (topState.pins as PinList).insertToFirst(Pin(
         id: noteId,
         text: target.text,
         isSelected: false,
@@ -182,13 +183,13 @@ class _HomeState extends State<Home> {
   }
 
   void handleSearchedtemTap(Selectable item) {
-    topState.searchResults = [];
     setState(() {
-      topState;
+      topState = topState.copyWith(searchResults: []);
     });
   }
 
   void handleListDown() {
+    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
     var visibleItemCount =
         (listViewController.position.viewportDimension / 75.5).ceil();
 
@@ -197,49 +198,46 @@ class _HomeState extends State<Home> {
 
     if ((listViewController.offset +
             listViewController.position.viewportDimension) <
-        (topState.currentIndex + 2) * 75.5) {
-      listViewController.jumpTo(
-          (topState.currentIndex - visibleItemCount + 2) * 75.5 - offset);
+        (currentIndex + 2) * 75.5) {
+      listViewController
+          .jumpTo((currentIndex - visibleItemCount + 2) * 75.5 - offset);
     }
 
-    topState.incrementCurrentItems();
-    setState(() {
-      topState;
-    });
+    ref.read(topStateProvider.notifier).increment();
   }
 
   void handleListUp() {
-    var current = (topState.currentIndex - 1) * 75.5;
+    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
+    var current = (currentIndex - 1) * 75.5;
     if (current < listViewController.offset) {
-      listViewController.jumpTo((topState.currentIndex - 1) * 75.5);
+      listViewController.jumpTo((currentIndex - 1) * 75.5);
     }
 
-    topState.decrementCurrentItems();
-    setState(() {
-      topState;
-    });
+    ref.read(topStateProvider.notifier).decrement();
   }
 
   void handleUpToTop() {
     if (isUpToTopTriggered) {
       listViewController.jumpTo(0);
       isUpToTopTriggered = false;
-      topState.currentItems.selectFirstItem();
+      ref.read(topStateProvider.notifier).selectFirstItem();
     } else {
       isUpToTopTriggered = true;
     }
   }
 
   void handleDownToBottom() {
-    listViewController.jumpTo(topState.currentItems.value.length * 75.5);
-    topState.currentItems.selectLastItem();
+    final length =
+        ref.read(topStateProvider.notifier).state.currentItems.value.length;
+    listViewController.jumpTo(length * 75.5);
+    ref.read(topStateProvider.notifier).selectLastItem();
   }
 
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
     if (topState.type == ScreenType.CLIP) {
       clipRepository.deleteHistory(topState.histories.currentItem.id);
-      topState.histories.deleteCurrentHistory();
+      (topState.histories as HistoryList).deleteCurrentHistory();
     } else if (type == ScreenType.PINNED) {}
 
     setState(() {
@@ -290,9 +288,8 @@ class _HomeState extends State<Home> {
       listFocusNode?.requestFocus();
       searchFormFocusNode?.unfocus();
 
-      topState.clearSearchResult();
       setState(() {
-        topState;
+        topState = topState.copyWith(searchResults: []);
       });
     } else {
       final result = await topState.getSearchResult(text);
@@ -343,8 +340,7 @@ class _HomeState extends State<Home> {
           isEditable: topState.type == ScreenType.PINNED,
           isSearchable: showSearchbar,
           controller: listViewController,
-          searchResults: topState.searchResults,
-          items: topState.currentItems)
+          searchResults: topState.searchResults)
     ]));
   }
 }

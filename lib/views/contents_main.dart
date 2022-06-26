@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../color.dart';
 import '../models/side_type.dart';
 import '../providers/offset_provider.dart';
+import '../providers/top_state_provider.dart';
+import '../states/top_state.dart';
 import 'contents_header.dart';
 import 'contents_list_view.dart';
 import 'package:markdown/markdown.dart' as md;
@@ -34,7 +36,6 @@ class ContentsMainView extends ConsumerWidget {
   final bool isSearchable;
   final bool showSearchResult;
   final ScrollController controller;
-  final SelectableList items;
   final List<SelectableList> searchResults;
   final FocusNode searchFormFocusNode;
   final FocusNode searchResultFocusNode;
@@ -65,14 +66,14 @@ class ContentsMainView extends ConsumerWidget {
       required this.searchResultFocusNode,
       required this.type,
       required this.searchResults,
-      required this.listFocusNode,
-      required this.items});
+      required this.listFocusNode});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appWidth = MediaQuery.of(context).size.width;
     const ratio2 = 0.85;
     const ratio4 = 0.7;
     double offset = ref.watch(offsetProvider);
+    TopState topState = ref.watch(topStateProvider);
 
     return Container(
         alignment: Alignment.topLeft,
@@ -99,7 +100,7 @@ class ContentsMainView extends ConsumerWidget {
                   results: searchResults,
                   onItemTap: handleSearchedItemTap);
             } else {
-              if (items.value.isEmpty) {
+              if (topState.currentItems.value.isEmpty) {
                 return const Text("item is empty ;(");
               } else {
                 return Row(children: <Widget>[
@@ -114,7 +115,7 @@ class ContentsMainView extends ConsumerWidget {
                       handleTapCopyToClipboard: handleTapCopyToClipboard,
                       handleSearchFormFocused: handleSearchFormFocused,
                       onItemTap: (index) => handleListViewItemTap(index),
-                      items: items.value),
+                      items: topState.currentItems.value),
                   Container(
                       decoration: const BoxDecoration(
                         color: markdownBackground,
@@ -159,7 +160,7 @@ class ContentsMainView extends ConsumerWidget {
                                   color: codeText,
                                   backgroundColor: codeBackground,
                                   fontFamily: "RictyDiminished")),
-                          data: items.currentItem.mdText,
+                          data: topState.currentItems.currentItem.mdText,
                           extensionSet: md.ExtensionSet(
                             md.ExtensionSet.gitHubFlavored.blockSyntaxes,
                             [

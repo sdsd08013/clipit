@@ -24,13 +24,15 @@ class PinRepository {
     );
     if (maps.isNotEmpty) {
       return PinList(
+          currentIndex: 0,
+          listTitle: "pin",
           value: List.generate(maps.length, (index) {
-        if (index == 0) {
-          return Pin.fromMap(maps[index], true);
-        } else {
-          return Pin.fromMap(maps[index], false);
-        }
-      }));
+            if (index == 0) {
+              return Pin.fromMap(maps[index], true);
+            } else {
+              return Pin.fromMap(maps[index], false);
+            }
+          }));
     }
     return null;
   }

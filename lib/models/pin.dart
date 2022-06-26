@@ -30,16 +30,17 @@ class Pin extends Selectable {
 class PinList extends SelectableList {
   @override
   String listTitle = "pinned";
-
-  PinList({required super.value});
+  PinList(
+      {required super.value,
+      required super.currentIndex,
+      required super.listTitle});
 
   PinList insertToFirst(Pin pin) {
     if (value.isEmpty) {
-      value = [pin];
+      return copyWith(value: [pin]) as PinList;
     } else {
       value.insert(0, pin);
-      currentIndex = 0;
+      return copyWith(currentIndex: 0, value: value) as PinList;
     }
-    return this;
   }
 }

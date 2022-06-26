@@ -38,27 +38,44 @@ class Selectable {
 }
 
 class SelectableList {
-  int currentIndex = 0;
-  String listTitle = "";
-  List<Selectable> value;
-  SelectableList({required this.value});
+  final int currentIndex;
+  final String listTitle;
+  final List<Selectable> value;
+  SelectableList(
+      {required this.currentIndex,
+      required this.listTitle,
+      required this.value});
+
+  SelectableList copyWith(
+      {int? currentIndex, String? listTitle, List<Selectable>? value}) {
+    return SelectableList(
+        currentIndex: currentIndex ?? this.currentIndex,
+        listTitle: listTitle ?? this.listTitle,
+        value: value ?? this.value);
+  }
 
   dynamic get currentItem {
     return value[currentIndex];
   }
 
-  void decrementIndex() {
-    if (currentIndex == 0) return;
-    value[currentIndex].isSelected = false;
-    value[currentIndex - 1].isSelected = true;
-    currentIndex--;
+  SelectableList decrementIndex() {
+    if (currentIndex == 0) {
+      return copyWith();
+    } else {
+      value[currentIndex].isSelected = false;
+      value[currentIndex - 1].isSelected = true;
+      return copyWith(currentIndex: currentIndex - 1, value: value);
+    }
   }
 
-  void incrementIndex() {
-    if (currentIndex == value.length - 1) return;
-    value[currentIndex].isSelected = false;
-    value[currentIndex + 1].isSelected = true;
-    currentIndex++;
+  SelectableList incrementIndex() {
+    if (currentIndex == value.length - 1) {
+      return copyWith();
+    } else {
+      value[currentIndex].isSelected = false;
+      value[currentIndex + 1].isSelected = true;
+      return copyWith(currentIndex: currentIndex + 1, value: value);
+    }
   }
 
   bool isExist(String result) {
@@ -76,11 +93,10 @@ class SelectableList {
     }
   }
 
-  void switchItem(int targetIndex) {
-    final target = value[targetIndex];
-    currentItem.isSelected = false;
-    target.isSelected = true;
-    currentIndex = targetIndex;
+  SelectableList switchItem(int targetIndex) {
+    value[currentIndex].isSelected = false;
+    value[targetIndex].isSelected = true;
+    return copyWith(currentIndex: targetIndex, value: value);
   }
 
   void selectFirstItem() {

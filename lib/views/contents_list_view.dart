@@ -1,3 +1,4 @@
+import 'package:clipit/providers/top_state_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,6 +6,7 @@ import '../color.dart';
 import '../models/selectable.dart';
 import '../models/side_type.dart';
 import '../providers/offset_provider.dart';
+import '../states/top_state.dart';
 import 'intent.dart';
 import 'key_set.dart';
 
@@ -49,6 +51,7 @@ class ContentsListView extends ConsumerWidget {
     const ratio3 = 0.3;
     const ratio4 = 0.7;
     double offset = ref.watch(offsetProvider);
+    TopState topState = ref.watch(topStateProvider);
     return FocusableActionDetector(
         autofocus: true,
         focusNode: listFocusNode,
@@ -62,13 +65,8 @@ class ContentsListView extends ConsumerWidget {
           listViewDownToBottomKeySet: ListViewDownToBottomIntent(),
         },
         actions: {
-          ListViewUpIntent: CallbackAction(onInvoke: (e) {
-            handleListUp();
-          }),
-          ListViewDownIntent: CallbackAction(onInvoke: (e) {
-            handleListUp();
-            handleListDown();
-          }),
+          ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
+          ListViewDownIntent: CallbackAction(onInvoke: (e) => handleListDown()),
           ListViewItemCopyIntent:
               CallbackAction(onInvoke: (e) => handleTapCopyToClipboard()),
           ListViewItemDeleteIntent:
