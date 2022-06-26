@@ -3,12 +3,13 @@ import 'package:clipit/models/side_type.dart';
 import 'package:clipit/models/top_state.dart';
 import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
-import 'package:clipit/icon_text.dart';
 import 'package:clipit/repositories/pin_repository.dart';
 import 'package:clipit/views/contents_main.dart';
-import 'package:clipit/views/side_menu.dart';
+import 'package:clipit/views/main_side_bar.dart';
+import 'package:clipit/views/resizable_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'dart:async';
 import 'dart:core';
@@ -17,7 +18,7 @@ import 'models/selectable.dart';
 import 'models/trash.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -284,7 +285,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  void handleSearchFormInput(String text) {
+  void handleSearchFormInput(String text) async {
     if (text.isEmpty) {
       listFocusNode?.requestFocus();
       searchFormFocusNode?.unfocus();
@@ -294,10 +295,10 @@ class _HomeState extends State<Home> {
         topState;
       });
     } else {
-      topState.setSearchResult(text);
-      setState(() {
-        topState;
-      });
+      final result = await topState.getSearchResult(text);
+      // setState(() {
+      //   topState;
+      // });
     }
   }
 
@@ -308,83 +309,42 @@ class _HomeState extends State<Home> {
     const ratio2 = 0.85;
     const ratio3 = 0.3;
     const ratio4 = 0.7;
+
     return Center(
         // TODO: listviewのみにfocusする, コンテンツは対象外
         child: Row(children: [
-      Container(
-          color: side1stBackground,
-          width: appWidth * ratio1 - 2 - offset,
-          child: Stack(children: [
-            SideMenu(
-                key: GlobalKey(),
-                type: topState.type,
-                handleSideBarTap: handleSideBarTap),
-            Align(
-                alignment: Alignment.bottomLeft,
-                child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    color: type == ScreenType.SETTING
-                        ? side1stBackgroundSelect
-                        : side1stBackground,
-                    child: IconText(
-                      icon: Icons.settings,
-                      text: "setting",
-                      textColor: textColor,
-                      iconColor: iconColor,
-                      onTap: () => handleSideBarTap(ScreenType.SETTING),
-                    ))),
-          ])),
-      MouseRegion(
-          cursor: SystemMouseCursors.resizeColumn,
-          child: GestureDetector(
-              onHorizontalDragStart: (detail) {
-                dragStartPos = detail.globalPosition.dx;
-              },
-              onHorizontalDragUpdate: (detail) {
-                final appWidth = MediaQuery.of(context).size.width;
-                double newOffset = dragStartPos - detail.globalPosition.dx;
-                if (appWidth * ratio1 < newOffset ||
-                    appWidth * ratio1 - newOffset > appWidth) return;
-                setState(
-                    () => {offset = (dragStartPos - detail.globalPosition.dx)});
-              },
-              child: Container(
-                width: 1,
-                color: dividerColor,
-              ))),
-      Container(
-          alignment: Alignment.topLeft,
-          width: appWidth * ratio2 + offset,
-          child: ContentsMainView(
-              type: topState.type,
-              showSearchResult: topState.showSearchResult,
-              searchFormFocusNode: searchFormFocusNode ?? FocusNode(),
-              searchResultFocusNode: searchResultFocusNode ?? FocusNode(),
-              listFocusNode: listFocusNode ?? FocusNode(),
-              handleSearchFormFocusChange: (hasFocus) =>
-                  handleSearchFormFocusChanged(hasFocus),
-              handleSearchFormInput: (text) => handleSearchFormInput(text),
-              handleArchiveItemTap: handleArchiveItemTap,
-              handleListViewItemTap: handleListViewItemTap,
-              handleSearchedItemTap: handleSearchedtemTap,
-              handleCopyToClipboardTap: handleCopyToClipboardTap,
-              handleDeleteItemTap: handleListViewDeleteTap,
-              handleEditItemTap: handleEditItemAction,
-              handleListUp: handleListUp,
-              handleListDown: handleListDown,
-              handleListUpToTop: handleUpToTop,
-              handleListDownToBottom: handleDownToBottom,
-              handleListViewDeleteTap: handleListViewDeleteTap,
-              handleTapCopyToClipboard: handleCopyToClipboardTap,
-              handleSearchFormFocused: handleSearchStart,
-              isEditable: topState.type == ScreenType.PINNED,
-              isSearchable: showSearchbar,
-              controller: listViewController,
-              listWidth: (appWidth * ratio2 + offset) * ratio3,
-              contentsWidth: (appWidth * ratio2 + offset) * ratio4,
-              searchResults: topState.searchResults,
-              items: topState.currentItems))
+      MainSideBarView(
+        type: topState.type,
+        handleSideBarTap: handleSideBarTap,
+      ),
+      ResizableDivider(),
+      ContentsMainView(
+          type: topState.type,
+          showSearchResult: topState.showSearchResult,
+          searchFormFocusNode: searchFormFocusNode ?? FocusNode(),
+          searchResultFocusNode: searchResultFocusNode ?? FocusNode(),
+          listFocusNode: listFocusNode ?? FocusNode(),
+          handleSearchFormFocusChange: (hasFocus) =>
+              handleSearchFormFocusChanged(hasFocus),
+          handleSearchFormInput: (text) => handleSearchFormInput(text),
+          handleArchiveItemTap: handleArchiveItemTap,
+          handleListViewItemTap: handleListViewItemTap,
+          handleSearchedItemTap: handleSearchedtemTap,
+          handleCopyToClipboardTap: handleCopyToClipboardTap,
+          handleDeleteItemTap: handleListViewDeleteTap,
+          handleEditItemTap: handleEditItemAction,
+          handleListUp: handleListUp,
+          handleListDown: handleListDown,
+          handleListUpToTop: handleUpToTop,
+          handleListDownToBottom: handleDownToBottom,
+          handleListViewDeleteTap: handleListViewDeleteTap,
+          handleTapCopyToClipboard: handleCopyToClipboardTap,
+          handleSearchFormFocused: handleSearchStart,
+          isEditable: topState.type == ScreenType.PINNED,
+          isSearchable: showSearchbar,
+          controller: listViewController,
+          searchResults: topState.searchResults,
+          items: topState.currentItems)
     ]));
   }
 }

@@ -3,14 +3,16 @@ import 'package:clipit/views/search_result.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../color.dart';
 import '../models/side_type.dart';
+import '../providers/offset_provider.dart';
 import 'contents_header.dart';
 import 'contents_list_view.dart';
 import 'package:markdown/markdown.dart' as md;
 
-class ContentsMainView extends StatelessWidget {
+class ContentsMainView extends ConsumerWidget {
   final Int2VoidFunc handleListViewItemTap;
   final Selectable2VoidFunc handleSearchedItemTap;
   final VoidCallback handleArchiveItemTap;
@@ -32,8 +34,6 @@ class ContentsMainView extends StatelessWidget {
   final bool isSearchable;
   final bool showSearchResult;
   final ScrollController controller;
-  final double listWidth;
-  final double contentsWidth;
   final SelectableList items;
   final List<SelectableList> searchResults;
   final FocusNode searchFormFocusNode;
@@ -61,8 +61,6 @@ class ContentsMainView extends StatelessWidget {
       required this.isSearchable,
       required this.showSearchResult,
       required this.controller,
-      required this.listWidth,
-      required this.contentsWidth,
       required this.searchFormFocusNode,
       required this.searchResultFocusNode,
       required this.type,
@@ -70,96 +68,109 @@ class ContentsMainView extends StatelessWidget {
       required this.listFocusNode,
       required this.items});
   @override
-  Widget build(BuildContext context) {
-    return Column(children: [
-      ContentsHeader(
-          isEditable: isEditable,
-          isSearchable: isSearchable,
-          searchFormFocusNode: searchFormFocusNode,
-          handleSearchFormFocusChange: (hasFocus) =>
-              handleSearchFormFocusChange(hasFocus),
-          handleSearchFormInput: (text) => handleSearchFormInput(text),
-          handleMoveToPinTap: () => handleArchiveItemTap(),
-          handleCopyToClipboardTap: () => handleCopyToClipboardTap(),
-          handleMoveToTrashTap: () => handleDeleteItemTap(),
-          handleEditItemTap: () => handleEditItemTap()),
-      Expanded(child: (() {
-        if (showSearchResult) {
-          return SearchResultView(
-              key: GlobalKey(),
-              handleListUp: handleListUp,
-              handleListDown: handleListDown,
-              searchResultFocusNode: searchResultFocusNode,
-              results: searchResults,
-              onItemTap: handleSearchedItemTap);
-        } else {
-          if (items.value.isEmpty) {
-            return const Text("item is empty ;(");
-          } else {
-            return Row(children: <Widget>[
-              ContentsListView(
-                  controller: controller,
-                  listFocusNode: listFocusNode,
-                  width: listWidth,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appWidth = MediaQuery.of(context).size.width;
+    const ratio2 = 0.85;
+    const ratio4 = 0.7;
+    double offset = ref.watch(offsetProvider);
+
+    return Container(
+        alignment: Alignment.topLeft,
+        width: appWidth * ratio2 + offset,
+        child: Column(children: [
+          ContentsHeader(
+              isEditable: isEditable,
+              isSearchable: isSearchable,
+              searchFormFocusNode: searchFormFocusNode,
+              handleSearchFormFocusChange: (hasFocus) =>
+                  handleSearchFormFocusChange(hasFocus),
+              handleSearchFormInput: (text) => handleSearchFormInput(text),
+              handleMoveToPinTap: () => handleArchiveItemTap(),
+              handleCopyToClipboardTap: () => handleCopyToClipboardTap(),
+              handleMoveToTrashTap: () => handleDeleteItemTap(),
+              handleEditItemTap: () => handleEditItemTap()),
+          Expanded(child: (() {
+            if (showSearchResult) {
+              return SearchResultView(
+                  key: GlobalKey(),
                   handleListUp: handleListUp,
                   handleListDown: handleListDown,
-                  handleListViewUpToTop: handleListUpToTop,
-                  handleListViewDownToBottom: handleListDownToBottom,
-                  handleListViewDeleteTap: handleListViewDeleteTap,
-                  handleTapCopyToClipboard: handleTapCopyToClipboard,
-                  handleSearchFormFocused: handleSearchFormFocused,
-                  onItemTap: (index) => handleListViewItemTap(index),
-                  items: items.value),
-              Container(
-                  decoration: const BoxDecoration(
-                    color: markdownBackground,
-                  ),
-                  alignment: Alignment.topLeft,
-                  width: contentsWidth,
-                  child: Markdown(
-                      controller: ScrollController(),
-                      shrinkWrap: true,
-                      selectable: true,
-                      builders: {
-                        'pre': CustomBlockBuilder(),
-                      },
-                      styleSheet: MarkdownStyleSheet(
-                          h1: const TextStyle(
-                              color: textColor, fontFamily: "RictyDiminished"),
-                          h2: const TextStyle(
-                              color: textColor, fontFamily: "RictyDiminished"),
-                          h3: const TextStyle(
-                              color: textColor, fontFamily: "RictyDiminished"),
-                          h4: const TextStyle(
-                              color: textColor, fontFamily: "RictyDiminished"),
-                          h5: const TextStyle(
-                              color: textColor, fontFamily: "RictyDiminished"),
-                          h6: const TextStyle(
-                              color: textColor, fontFamily: "RictyDiminished"),
-                          p: const TextStyle(
-                              color: textColor,
-                              fontFamily: "RictyDiminished",
-                              height: 1.2),
-                          pPadding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                          h1Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                          h2Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                          img: const TextStyle(fontSize: 10),
-                          code: const TextStyle(
-                              color: codeText,
-                              backgroundColor: codeBackground,
-                              fontFamily: "RictyDiminished")),
-                      data: items.currentItem.mdText,
-                      extensionSet: md.ExtensionSet(
-                        md.ExtensionSet.gitHubFlavored.blockSyntaxes,
-                        [
-                          md.EmojiSyntax(),
-                          ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes
-                        ],
-                      )))
-            ]);
-          }
-        }
-      })())
-    ]);
+                  searchResultFocusNode: searchResultFocusNode,
+                  results: searchResults,
+                  onItemTap: handleSearchedItemTap);
+            } else {
+              if (items.value.isEmpty) {
+                return const Text("item is empty ;(");
+              } else {
+                return Row(children: <Widget>[
+                  ContentsListView(
+                      controller: controller,
+                      listFocusNode: listFocusNode,
+                      handleListUp: handleListUp,
+                      handleListDown: handleListDown,
+                      handleListViewUpToTop: handleListUpToTop,
+                      handleListViewDownToBottom: handleListDownToBottom,
+                      handleListViewDeleteTap: handleListViewDeleteTap,
+                      handleTapCopyToClipboard: handleTapCopyToClipboard,
+                      handleSearchFormFocused: handleSearchFormFocused,
+                      onItemTap: (index) => handleListViewItemTap(index),
+                      items: items.value),
+                  Container(
+                      decoration: const BoxDecoration(
+                        color: markdownBackground,
+                      ),
+                      alignment: Alignment.topLeft,
+                      width: (appWidth * ratio2 + offset) * ratio4,
+                      child: Markdown(
+                          controller: ScrollController(),
+                          shrinkWrap: true,
+                          selectable: true,
+                          builders: {
+                            'pre': CustomBlockBuilder(),
+                          },
+                          styleSheet: MarkdownStyleSheet(
+                              h1: const TextStyle(
+                                  color: textColor,
+                                  fontFamily: "RictyDiminished"),
+                              h2: const TextStyle(
+                                  color: textColor,
+                                  fontFamily: "RictyDiminished"),
+                              h3: const TextStyle(
+                                  color: textColor,
+                                  fontFamily: "RictyDiminished"),
+                              h4: const TextStyle(
+                                  color: textColor,
+                                  fontFamily: "RictyDiminished"),
+                              h5: const TextStyle(
+                                  color: textColor,
+                                  fontFamily: "RictyDiminished"),
+                              h6: const TextStyle(
+                                  color: textColor,
+                                  fontFamily: "RictyDiminished"),
+                              p: const TextStyle(
+                                  color: textColor,
+                                  fontFamily: "RictyDiminished",
+                                  height: 1.2),
+                              pPadding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                              h1Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                              h2Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+                              img: const TextStyle(fontSize: 10),
+                              code: const TextStyle(
+                                  color: codeText,
+                                  backgroundColor: codeBackground,
+                                  fontFamily: "RictyDiminished")),
+                          data: items.currentItem.mdText,
+                          extensionSet: md.ExtensionSet(
+                            md.ExtensionSet.gitHubFlavored.blockSyntaxes,
+                            [
+                              md.EmojiSyntax(),
+                              ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes
+                            ],
+                          )))
+                ]);
+              }
+            }
+          })())
+        ]));
   }
 }

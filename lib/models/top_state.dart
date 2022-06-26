@@ -47,6 +47,7 @@ class TopState {
   }
 
   void incrementCurrentItems() {
+    print("##########");
     if (type == ScreenType.CLIP) {
       histories.incrementIndex();
     } else if (type == ScreenType.PINNED) {
@@ -74,26 +75,40 @@ class TopState {
   bool isHistoryExist(String text) => histories.isExist(text);
   bool shouldUpdateHistory(String text) => histories.shouldUpdate(text);
 
-  void setSearchResult(String text) {
-    if (text.length < 2) return;
+  Future<List<Selectable>> searchHistories(String text) async {
+    return histories.value
+        .where((element) => element.plainText.contains(text))
+        .toList();
+  }
 
-    final searchedHistories = histories.value
+  Future<List<Selectable>> searchPins(String text) async {
+    return pins.value
         .where((element) => element.plainText.contains(text))
         .toList();
-    final searchedPins = pins.value
-        .where((element) => element.plainText.contains(text))
-        .toList();
+  }
+
+  Future<List<Selectable>> getSearchResult(String text) async {
+    // final searchedHistories = histories.value
+    //     .where((element) => element.plainText.contains(text))
+    //     .toList();
+    // final searchedPins = pins.value
+    //     .where((element) => element.plainText.contains(text))
+    //     .toList();
+    final searchedHistories = searchHistories(text);
+    searchedHistories
+        .then((result) => searchResults.add(HistoryList(value: result)));
+    final searchedPins = searchPins(text);
+    searchedPins.then((result) => searchResults.add(PinList(value: result)));
+
+    return searchedPins;
+
     // if (searchedHistories.isNotEmpty) {
     //   searchResults.add(HistoryList(value: searchedHistories));
     // }
     // if (searchedPins.isNotEmpty) {
     //   searchResults.add(PinList(value: searchedPins));
     // }
-    searchResults = [
-      HistoryList(value: searchedHistories),
-      PinList(value: searchedPins)
-    ];
-    searchResults.first.selectFirstItem();
+    //searchResults.first.selectFirstItem();
   }
 
   void clearSearchResult() {
