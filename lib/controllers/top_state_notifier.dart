@@ -46,8 +46,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void insertHistoryToHead(History history) {
-    state = state.copyWith(
-        histories: (state.histories as HistoryList).insertToFirst(history));
+    state = state.copyWith(histories: state.histories.insertToFirst(history));
   }
 
   void changeType(ScreenType type) {
@@ -55,18 +54,16 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void deleteHistory(History history) {
-    state = state.copyWith(
-        histories:
-            (state.histories as HistoryList).deleteTargetHistory(history));
+    state =
+        state.copyWith(histories: state.histories.deleteTargetHistory(history));
   }
 
   void deleteCurrentHistory() {
-    state = state.copyWith(
-        histories: (state.histories as HistoryList).deleteCurrentHistory());
+    state = state.copyWith(histories: state.histories.deleteCurrentHistory());
   }
 
   void insertPinToHead(Pin pin) {
-    state = state.copyWith(pins: (state.pins as PinList).insertToFirst(pin));
+    state = state.copyWith(pins: state.pins.insertToFirst(pin));
   }
 
   void archiveHistory(History history) {}
@@ -77,7 +74,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
 
   void searchSelectables(String text) {
     state.getSearchResult(text).then((value) {
-      state = state.copyWith(searchResults: value);
+      state = value;
     });
   }
 

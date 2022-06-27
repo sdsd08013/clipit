@@ -1,7 +1,5 @@
 import 'package:clipit/models/selectable.dart';
-import 'package:html/parser.dart';
 import 'package:intl/intl.dart';
-import 'package:html2md/html2md.dart' as html2md;
 
 final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
@@ -19,6 +17,20 @@ class Pin extends Selectable {
             updatedAt: updatedAt,
             isSelected: isSelected);
 
+  @override
+  String get trimText {
+    return plainText.replaceAll(' ', '').replaceAll('\n', '');
+  }
+
+  @override
+  String subText() {
+    if (trimText.length > 30) {
+      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
+    } else {
+      return "$trimText\n${formatter.format(createdAt)}";
+    }
+  }
+
   factory Pin.fromMap(Map<String, dynamic> json, bool isSelected) => Pin(
       id: json['id'],
       text: json['text'],
@@ -34,13 +46,4 @@ class PinList extends SelectableList {
       {required super.value,
       required super.currentIndex,
       required super.listTitle});
-
-  PinList insertToFirst(Pin pin) {
-    if (value.isEmpty) {
-      return copyWith(value: [pin]) as PinList;
-    } else {
-      value.insert(0, pin);
-      return copyWith(currentIndex: 0, value: value) as PinList;
-    }
-  }
 }

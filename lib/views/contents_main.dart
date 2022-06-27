@@ -32,7 +32,6 @@ class ContentsMainView extends ConsumerWidget {
 
   final Bool2VoidFunc handleSearchFormFocusChange;
   final String2VoidFunc handleSearchFormInput;
-  final bool isSearchable;
   final ScrollController controller;
   final FocusNode searchFormFocusNode;
   final FocusNode searchResultFocusNode;
@@ -54,7 +53,6 @@ class ContentsMainView extends ConsumerWidget {
       required this.handleSearchFormFocused,
       required this.handleListUpToTop,
       required this.handleListDownToBottom,
-      required this.isSearchable,
       required this.controller,
       required this.searchFormFocusNode,
       required this.searchResultFocusNode,
@@ -73,7 +71,6 @@ class ContentsMainView extends ConsumerWidget {
         child: Column(children: [
           ContentsHeader(
               isEditable: topState.type == ScreenType.PINNED,
-              isSearchable: isSearchable,
               searchFormFocusNode: searchFormFocusNode,
               handleSearchFormFocusChange: (hasFocus) =>
                   handleSearchFormFocusChange(hasFocus),

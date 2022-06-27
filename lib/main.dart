@@ -1,6 +1,8 @@
+import 'package:clipit/controllers/search_form_visible_notifier.dart';
 import 'package:clipit/controllers/top_state_notifier.dart';
 import 'package:clipit/models/history.dart';
 import 'package:clipit/models/side_type.dart';
+import 'package:clipit/providers/search_form_visible_provider.dart';
 import 'package:clipit/providers/top_state_provider.dart';
 import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
@@ -76,12 +78,14 @@ class _HomeState extends ConsumerState<Home> {
   FocusNode? listFocusNode = FocusNode();
   bool isUpToTopTriggered = false;
   late TopStateNotifier topStateNotifier;
+  late SearchFormVisibleNotifier searchFormVisibleNotifier;
 
   @override
   void initState() {
     super.initState();
 
     topStateNotifier = ref.read(topStateProvider.notifier);
+    searchFormVisibleNotifier = ref.read(searchFormVisibleProvider.notifier);
     retlieveHistorys();
     retlievePins();
     //clipRepository.dropTable();
@@ -149,7 +153,7 @@ class _HomeState extends ConsumerState<Home> {
     ref.read(topStateProvider.notifier).changeType(newType);
   }
 
-  void handleArchiveItemTap() async {
+  void handlePinItemTap() async {
     final target = topStateNotifier.state.histories.currentItem;
     clipRepository.deleteHistory(target.id);
     topStateNotifier.deleteHistory(target);
@@ -239,8 +243,8 @@ class _HomeState extends ConsumerState<Home> {
   void handleSearchStart() {
     setState(() {
       searchFormFocusNode = FocusNode();
-      showSearchbar = true;
     });
+    searchFormVisibleNotifier.update(true);
     listFocusNode?.unfocus();
     searchFormFocusNode?.requestFocus();
   }
@@ -252,10 +256,12 @@ class _HomeState extends ConsumerState<Home> {
         searchFormFocusNode?.unfocus();
         searchResultFocusNode?.requestFocus();
         topStateNotifier.updateSearchBarVisibility(false);
+        searchFormVisibleNotifier.update(true);
       } else {
         searchFormFocusNode?.unfocus();
         listFocusNode?.requestFocus();
         topStateNotifier.updateSearchBarVisibility(false);
+        searchFormVisibleNotifier.update(false);
         searchFormFocusNode = null;
       }
     }
@@ -267,8 +273,10 @@ class _HomeState extends ConsumerState<Home> {
       searchFormFocusNode?.unfocus();
 
       topStateNotifier.clearSearchResult();
+      searchFormVisibleNotifier.update(false);
     } else {
       topStateNotifier.searchSelectables(text);
+      searchFormVisibleNotifier.update(true);
     }
   }
 
@@ -288,7 +296,7 @@ class _HomeState extends ConsumerState<Home> {
           handleSearchFormFocusChange: (hasFocus) =>
               handleSearchFormFocusChanged(hasFocus),
           handleSearchFormInput: (text) => handleSearchFormInput(text),
-          handleArchiveItemTap: handleArchiveItemTap,
+          handleArchiveItemTap: handlePinItemTap,
           handleListViewItemTap: handleListViewItemTap,
           handleSearchedItemTap: handleSearchedtemTap,
           handleCopyToClipboardTap: handleCopyToClipboardTap,
@@ -301,7 +309,6 @@ class _HomeState extends ConsumerState<Home> {
           handleListViewDeleteTap: handleListViewDeleteTap,
           handleTapCopyToClipboard: handleCopyToClipboardTap,
           handleSearchFormFocused: handleSearchStart,
-          isSearchable: showSearchbar,
           controller: listViewController)
     ]));
   }

@@ -11,17 +11,6 @@ class HistoryList extends SelectableList {
       required super.currentIndex,
       required super.listTitle});
 
-  HistoryList insertToFirst(History history) {
-    if (value.isEmpty) {
-      return copyWith(value: [history]) as HistoryList;
-    } else {
-      value[currentIndex].isSelected = false;
-      value.insert(0, history);
-      value[0].isSelected = true;
-      return copyWith(currentIndex: 0, value: value) as HistoryList;
-    }
-  }
-
   void updateTargetHistory(String result) {
     final History target =
         value.where((element) => element.text == result).firstOrNull as History;
@@ -39,26 +28,6 @@ class HistoryList extends SelectableList {
     target.count++;
     target.updatedAt = DateTime.now();
     value[currentIndex] = target;
-  }
-
-  HistoryList deleteTargetHistory(History target) {
-    value.remove(target);
-    final t = copyWith(value: value).value;
-
-    return copyWith(currentIndex: currentIndex - 1, value: t) as HistoryList;
-  }
-
-  HistoryList deleteCurrentHistory() {
-    // historyboardと同様のclipを削除しようとすると削除できなくなる
-    value.removeAt(currentIndex);
-    if (currentIndex == 0) {
-      value[currentIndex].isSelected = true;
-      return copyWith(value: value) as HistoryList;
-    } else {
-      value[currentIndex - 1].isSelected = true;
-      return copyWith(currentIndex: currentIndex - 1, value: value)
-          as HistoryList;
-    }
   }
 }
 
@@ -80,19 +49,12 @@ class History extends Selectable {
             updatedAt: updatedAt,
             isSelected: isSelected);
 
+  @override
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');
   }
 
-  String get plainText {
-    var doc = parse(text);
-    if (doc.documentElement != null) {
-      String parsedstring = doc.documentElement!.text;
-      return parsedstring;
-    }
-    return "";
-  }
-
+  @override
   String subText() {
     if (trimText.length > 30) {
       return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}\n$count";

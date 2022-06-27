@@ -110,7 +110,8 @@ class TopState {
         .toList();
   }
 
-  Future<List<SelectableList>> getSearchResult(String text) async {
+  Future<TopState> getSearchResult(String text) async {
+    final List<SelectableList> results = [];
     final searchedHistories = histories.value
         .where((element) => element.plainText.contains(text))
         .toList();
@@ -119,14 +120,14 @@ class TopState {
         .toList();
 
     if (searchedHistories.isNotEmpty) {
-      searchResults.add(HistoryList(
+      results.add(HistoryList(
           currentIndex: 0, listTitle: "history", value: searchedHistories));
     }
     if (searchedPins.isNotEmpty) {
-      searchResults
+      results
           .add(PinList(currentIndex: 0, listTitle: "pin", value: searchedPins));
     }
 
-    return searchResults;
+    return copyWith(searchResults: results);
   }
 }

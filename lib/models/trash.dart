@@ -33,13 +33,4 @@ class TrashList extends SelectableList {
       {required super.value,
       required super.currentIndex,
       required super.listTitle});
-
-  TrashList insertToFirst(Trash trash) {
-    if (value.isEmpty) {
-      return copyWith(value: [trash]) as TrashList;
-    } else {
-      value.insert(0, trash);
-      return copyWith(value: value, currentIndex: 0) as TrashList;
-    }
-  }
 }

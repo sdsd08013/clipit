@@ -99,6 +99,36 @@ class SelectableList {
     return copyWith(currentIndex: targetIndex, value: value);
   }
 
+  SelectableList deleteCurrentHistory() {
+    // todo: override
+    value.remove(currentItem);
+    if (currentIndex == 0) {
+      value[currentIndex].isSelected = true;
+      return copyWith(value: value);
+    } else {
+      value[currentIndex - 1].isSelected = true;
+      return copyWith(currentIndex: currentIndex - 1, value: value);
+    }
+  }
+
+  SelectableList insertToFirst(Selectable item) {
+    if (value.isEmpty) {
+      return copyWith(value: [item]);
+    } else {
+      value[currentIndex].isSelected = false;
+      value.insert(0, item);
+      value[0].isSelected = true;
+      return copyWith(currentIndex: 0, value: value);
+    }
+  }
+
+  SelectableList deleteTargetHistory(Selectable target) {
+    value.remove(target);
+    final t = copyWith(value: value).value;
+
+    return copyWith(currentIndex: currentIndex - 1, value: t);
+  }
+
   void selectFirstItem() {
     switchItem(0);
   }
