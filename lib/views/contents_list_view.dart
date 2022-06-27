@@ -1,10 +1,12 @@
-import 'package:flutter/cupertino.dart';
+import 'package:clipit/providers/top_state_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../color.dart';
 import '../models/selectable.dart';
 import '../models/side_type.dart';
+import '../providers/offset_provider.dart';
+import '../states/top_state.dart';
 import 'intent.dart';
 import 'key_set.dart';
 
@@ -14,8 +16,7 @@ typedef Bool2VoidFunc = void Function(bool);
 typedef String2VoidFunc = void Function(String);
 typedef ScreenType2VoidFunc = void Function(ScreenType);
 
-class ContentsListView extends StatelessWidget {
-  final double width;
+class ContentsListView extends ConsumerWidget {
   final ScrollController controller;
   final Int2VoidFunc onItemTap;
   final List<Selectable> items;
@@ -29,8 +30,7 @@ class ContentsListView extends StatelessWidget {
   final VoidCallback handleListViewDownToBottom;
 
   ContentsListView(
-      {required this.width,
-      required this.controller,
+      {required this.controller,
       required this.items,
       required this.listFocusNode,
       required this.handleListUp,
@@ -44,7 +44,14 @@ class ContentsListView extends StatelessWidget {
 
   final UniqueKey key1 = UniqueKey();
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appWidth = MediaQuery.of(context).size.width;
+    const ratio1 = 0.15;
+    const ratio2 = 0.85;
+    const ratio3 = 0.3;
+    const ratio4 = 0.7;
+    double offset = ref.watch(offsetProvider);
+    TopState topState = ref.watch(topStateProvider);
     return FocusableActionDetector(
         autofocus: true,
         focusNode: listFocusNode,
@@ -73,7 +80,7 @@ class ContentsListView extends StatelessWidget {
         },
         child: Container(
             color: side2ndBackground,
-            width: width,
+            width: (appWidth * ratio2 + offset) * ratio3,
             child: ListView.separated(
               controller: controller,
               itemBuilder: (context, index) => GestureDetector(

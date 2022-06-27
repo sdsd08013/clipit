@@ -21,13 +21,15 @@ class HistoryRepository {
     );
     if (maps.isNotEmpty) {
       return HistoryList(
+          currentIndex: 0,
+          listTitle: "history",
           value: List.generate(maps.length, (index) {
-        if (index == 0) {
-          return History.fromMap(maps[index], true);
-        } else {
-          return History.fromMap(maps[index], false);
-        }
-      }));
+            if (index == 0) {
+              return History.fromMap(maps[index], true);
+            } else {
+              return History.fromMap(maps[index], false);
+            }
+          }));
     }
     return null;
   }

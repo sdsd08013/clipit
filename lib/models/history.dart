@@ -6,19 +6,10 @@ import 'package:html/parser.dart';
 class HistoryList extends SelectableList {
   @override
   String listTitle = "history";
-  HistoryList({required super.value});
-
-  HistoryList insertToFirst(History history) {
-    if (value.isEmpty) {
-      value = [history];
-    } else {
-      value[currentIndex].isSelected = false;
-      value.insert(0, history);
-      value[0].isSelected = true;
-      currentIndex = 0;
-    }
-    return this;
-  }
+  HistoryList(
+      {required super.value,
+      required super.currentIndex,
+      required super.listTitle});
 
   void updateTargetHistory(String result) {
     final History target =
@@ -37,23 +28,6 @@ class HistoryList extends SelectableList {
     target.count++;
     target.updatedAt = DateTime.now();
     value[currentIndex] = target;
-  }
-
-  void deleteTargetHistory(History target) {
-    value.remove(target);
-    decrementIndex();
-  }
-
-  void deleteCurrentHistory() {
-    // historyboardと同様のclipを削除しようとすると削除できなくなる
-    final target = value[currentIndex];
-    value.remove(target);
-    if (currentIndex == 0) {
-      value[currentIndex].isSelected = true;
-    } else {
-      value[currentIndex - 1].isSelected = true;
-      currentIndex--;
-    }
   }
 }
 
@@ -75,19 +49,12 @@ class History extends Selectable {
             updatedAt: updatedAt,
             isSelected: isSelected);
 
+  @override
   String get trimText {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');
   }
 
-  String get plainText {
-    var doc = parse(text);
-    if (doc.documentElement != null) {
-      String parsedstring = doc.documentElement!.text;
-      return parsedstring;
-    }
-    return "";
-  }
-
+  @override
   String subText() {
     if (trimText.length > 30) {
       return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}\n$count";

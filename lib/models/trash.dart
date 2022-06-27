@@ -29,18 +29,8 @@ class Trash extends Selectable {
 }
 
 class TrashList extends SelectableList {
-  @override
-  String listTitle = "trashes";
-
-  TrashList({required super.value});
-
-  TrashList insertToFirst(Trash trash) {
-    if (value.isEmpty) {
-      value = [trash];
-    } else {
-      value.insert(0, trash);
-      currentIndex = 0;
-    }
-    return this;
-  }
+  TrashList(
+      {required super.value,
+      required super.currentIndex,
+      required super.listTitle});
 }

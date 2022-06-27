@@ -45,6 +45,9 @@ dependencies:
   collection: ^1.16.0
   intl: ^0.17.0
   flutter_highlight: ^0.7.0
+  state_notifier: ^0.7.2+1
+  freezed: ^2.0.3+1
+  flutter_riverpod: ^1.0.4
 
 dev_dependencies:
   flutter_test:

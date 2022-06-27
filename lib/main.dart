@@ -1,14 +1,19 @@
+import 'package:clipit/controllers/search_form_visible_notifier.dart';
+import 'package:clipit/controllers/top_state_notifier.dart';
 import 'package:clipit/models/history.dart';
 import 'package:clipit/models/side_type.dart';
-import 'package:clipit/models/top_state.dart';
+import 'package:clipit/providers/search_form_visible_provider.dart';
+import 'package:clipit/providers/top_state_provider.dart';
 import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
-import 'package:clipit/icon_text.dart';
 import 'package:clipit/repositories/pin_repository.dart';
+import 'package:clipit/states/top_state.dart';
 import 'package:clipit/views/contents_main.dart';
-import 'package:clipit/views/side_menu.dart';
+import 'package:clipit/views/main_side_bar.dart';
+import 'package:clipit/views/resizable_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'dart:async';
 import 'dart:core';
@@ -17,7 +22,7 @@ import 'models/selectable.dart';
 import 'models/trash.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -48,16 +53,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Home extends StatefulWidget {
+class Home extends ConsumerStatefulWidget {
   const Home({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
   @override
-  State<Home> createState() => _HomeState();
+  _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends ConsumerState<Home> {
   static const channelName = 'clipboard/html';
   final methodChannel = const MethodChannel(channelName);
   final clipRepository = HistoryRepository();
@@ -72,15 +77,15 @@ class _HomeState extends State<Home> {
   FocusNode? searchResultFocusNode = FocusNode();
   FocusNode? listFocusNode = FocusNode();
   bool isUpToTopTriggered = false;
-  TopState topState = TopState(
-      histories: HistoryList(value: []),
-      pins: PinList(value: []),
-      trashes: TrashList(value: []));
+  late TopStateNotifier topStateNotifier;
+  late SearchFormVisibleNotifier searchFormVisibleNotifier;
 
   @override
   void initState() {
     super.initState();
 
+    topStateNotifier = ref.read(topStateProvider.notifier);
+    searchFormVisibleNotifier = ref.read(searchFormVisibleProvider.notifier);
     retlieveHistorys();
     retlievePins();
     //clipRepository.dropTable();
@@ -109,21 +114,19 @@ class _HomeState extends State<Home> {
 
   Future<void> retlieveHistorys() async {
     final retlievedHistorys = await clipRepository.getClips();
-    setState(() {
-      topState.histories = retlievedHistorys ?? HistoryList(value: []);
-    });
+    topStateNotifier.addHistories(retlievedHistorys ??
+        HistoryList(currentIndex: 0, listTitle: "history", value: []));
   }
 
   Future<void> retlievePins() async {
     final retlievedPins = await noteRepository.getNotes();
-    setState(() {
-      topState.pins = retlievedPins ?? PinList(value: []);
-    });
+    topStateNotifier.addPins(
+        retlievedPins ?? PinList(currentIndex: 0, listTitle: "pi", value: []));
   }
 
   void createOrUpdateItem(String result) async {
-    if (topState.isPinExist(result)) return;
-    if (topState.isHistoryExist(result)) {
+    if (topStateNotifier.state.isPinExist(result)) return;
+    if (topStateNotifier.state.isHistoryExist(result)) {
       /*
       if (topState.shouldUpdateHistory(result)) {
         topState.histories.updateTargetHistory(result);
@@ -135,59 +138,45 @@ class _HomeState extends State<Home> {
       */
     } else {
       final id = await clipRepository.saveHistory(result);
-      setState(() {
-        topState.histories.insertToFirst(History(
-            id: id,
-            text: result,
-            isSelected: true,
-            count: 1,
-            createdAt: DateTime.now(),
-            updatedAt: DateTime.now()));
-        topState;
-      });
+      ref.read(topStateProvider.notifier).insertHistoryToHead(History(
+          id: id,
+          text: result,
+          isSelected: true,
+          count: 1,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now()));
     }
   }
 
   void handleSideBarTap(ScreenType newType) {
     listFocusNode?.requestFocus();
-    topState.type = newType;
-    setState(() {
-      topState;
-    });
+    ref.read(topStateProvider.notifier).changeType(newType);
   }
 
-  void handleArchiveItemTap() async {
-    final target = topState.histories.currentItem;
+  void handlePinItemTap() async {
+    final target = topStateNotifier.state.histories.currentItem;
     clipRepository.deleteHistory(target.id);
-    topState.histories.deleteTargetHistory(target);
+    topStateNotifier.deleteHistory(target);
     final noteId = await noteRepository.savePin(target.text);
-    topState.pins.insertToFirst(Pin(
+    topStateNotifier.insertPinToHead(Pin(
         id: noteId,
         text: target.text,
         isSelected: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now()));
-    setState(() {
-      topState;
-    });
     listFocusNode?.requestFocus();
   }
 
   void handleListViewItemTap(int index) {
-    topState.switchCurrentItems(index);
-    setState(() {
-      topState;
-    });
+    topStateNotifier.selectTargetItem(index);
   }
 
   void handleSearchedtemTap(Selectable item) {
-    topState.searchResults = [];
-    setState(() {
-      topState;
-    });
+    topStateNotifier.clearSearchResult();
   }
 
   void handleListDown() {
+    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
     var visibleItemCount =
         (listViewController.position.viewportDimension / 75.5).ceil();
 
@@ -196,54 +185,49 @@ class _HomeState extends State<Home> {
 
     if ((listViewController.offset +
             listViewController.position.viewportDimension) <
-        (topState.currentIndex + 2) * 75.5) {
-      listViewController.jumpTo(
-          (topState.currentIndex - visibleItemCount + 2) * 75.5 - offset);
+        (currentIndex + 2) * 75.5) {
+      listViewController
+          .jumpTo((currentIndex - visibleItemCount + 2) * 75.5 - offset);
     }
 
-    topState.incrementCurrentItems();
-    setState(() {
-      topState;
-    });
+    ref.read(topStateProvider.notifier).increment();
   }
 
   void handleListUp() {
-    var current = (topState.currentIndex - 1) * 75.5;
+    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
+    var current = (currentIndex - 1) * 75.5;
     if (current < listViewController.offset) {
-      listViewController.jumpTo((topState.currentIndex - 1) * 75.5);
+      listViewController.jumpTo((currentIndex - 1) * 75.5);
     }
 
-    topState.decrementCurrentItems();
-    setState(() {
-      topState;
-    });
+    ref.read(topStateProvider.notifier).decrement();
   }
 
   void handleUpToTop() {
     if (isUpToTopTriggered) {
       listViewController.jumpTo(0);
       isUpToTopTriggered = false;
-      topState.currentItems.selectFirstItem();
+      ref.read(topStateProvider.notifier).selectFirstItem();
     } else {
       isUpToTopTriggered = true;
     }
   }
 
   void handleDownToBottom() {
-    listViewController.jumpTo(topState.currentItems.value.length * 75.5);
-    topState.currentItems.selectLastItem();
+    final length =
+        ref.read(topStateProvider.notifier).state.currentItems.value.length;
+    listViewController.jumpTo(length * 75.5);
+    ref.read(topStateProvider.notifier).selectLastItem();
   }
 
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
-    if (topState.type == ScreenType.CLIP) {
-      clipRepository.deleteHistory(topState.histories.currentItem.id);
-      topState.histories.deleteCurrentHistory();
+    if (topStateNotifier.state.type == ScreenType.CLIP) {
+      clipRepository
+          .deleteHistory(topStateNotifier.state.histories.currentItem.id);
+      topStateNotifier.deleteCurrentHistory();
     } else if (type == ScreenType.PINNED) {}
 
-    setState(() {
-      topState;
-    });
     listFocusNode?.requestFocus();
   }
 
@@ -252,14 +236,15 @@ class _HomeState extends State<Home> {
   }
 
   void handleCopyToClipboardTap() {
-    Clipboard.setData(ClipboardData(text: topState.currentItem.text));
+    Clipboard.setData(
+        ClipboardData(text: topStateNotifier.state.currentItem.text));
   }
 
   void handleSearchStart() {
     setState(() {
       searchFormFocusNode = FocusNode();
-      showSearchbar = true;
     });
+    searchFormVisibleNotifier.update(true);
     listFocusNode?.unfocus();
     searchFormFocusNode?.requestFocus();
   }
@@ -267,124 +252,64 @@ class _HomeState extends State<Home> {
   void handleSearchFormFocusChanged(hasFocus) {
     if (hasFocus) {
     } else {
-      if (topState.showSearchResult) {
+      if (topStateNotifier.state.showSearchResult) {
         searchFormFocusNode?.unfocus();
         searchResultFocusNode?.requestFocus();
-        setState(() {
-          showSearchbar = false;
-        });
+        topStateNotifier.updateSearchBarVisibility(false);
+        searchFormVisibleNotifier.update(true);
       } else {
         searchFormFocusNode?.unfocus();
         listFocusNode?.requestFocus();
-        setState(() {
-          showSearchbar = false;
-          searchFormFocusNode = null;
-        });
+        topStateNotifier.updateSearchBarVisibility(false);
+        searchFormVisibleNotifier.update(false);
+        searchFormFocusNode = null;
       }
     }
   }
 
-  void handleSearchFormInput(String text) {
+  void handleSearchFormInput(String text) async {
     if (text.isEmpty) {
       listFocusNode?.requestFocus();
       searchFormFocusNode?.unfocus();
 
-      topState.clearSearchResult();
-      setState(() {
-        topState;
-      });
+      topStateNotifier.clearSearchResult();
+      searchFormVisibleNotifier.update(false);
     } else {
-      topState.setSearchResult(text);
-      setState(() {
-        topState;
-      });
+      topStateNotifier.searchSelectables(text);
+      searchFormVisibleNotifier.update(true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final appWidth = MediaQuery.of(context).size.width;
-    const ratio1 = 0.15;
-    const ratio2 = 0.85;
-    const ratio3 = 0.3;
-    const ratio4 = 0.7;
     return Center(
         // TODO: listviewのみにfocusする, コンテンツは対象外
         child: Row(children: [
-      Container(
-          color: side1stBackground,
-          width: appWidth * ratio1 - 2 - offset,
-          child: Stack(children: [
-            SideMenu(
-                key: GlobalKey(),
-                type: topState.type,
-                handleSideBarTap: handleSideBarTap),
-            Align(
-                alignment: Alignment.bottomLeft,
-                child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    color: type == ScreenType.SETTING
-                        ? side1stBackgroundSelect
-                        : side1stBackground,
-                    child: IconText(
-                      icon: Icons.settings,
-                      text: "setting",
-                      textColor: textColor,
-                      iconColor: iconColor,
-                      onTap: () => handleSideBarTap(ScreenType.SETTING),
-                    ))),
-          ])),
-      MouseRegion(
-          cursor: SystemMouseCursors.resizeColumn,
-          child: GestureDetector(
-              onHorizontalDragStart: (detail) {
-                dragStartPos = detail.globalPosition.dx;
-              },
-              onHorizontalDragUpdate: (detail) {
-                final appWidth = MediaQuery.of(context).size.width;
-                double newOffset = dragStartPos - detail.globalPosition.dx;
-                if (appWidth * ratio1 < newOffset ||
-                    appWidth * ratio1 - newOffset > appWidth) return;
-                setState(
-                    () => {offset = (dragStartPos - detail.globalPosition.dx)});
-              },
-              child: Container(
-                width: 1,
-                color: dividerColor,
-              ))),
-      Container(
-          alignment: Alignment.topLeft,
-          width: appWidth * ratio2 + offset,
-          child: ContentsMainView(
-              type: topState.type,
-              showSearchResult: topState.showSearchResult,
-              searchFormFocusNode: searchFormFocusNode ?? FocusNode(),
-              searchResultFocusNode: searchResultFocusNode ?? FocusNode(),
-              listFocusNode: listFocusNode ?? FocusNode(),
-              handleSearchFormFocusChange: (hasFocus) =>
-                  handleSearchFormFocusChanged(hasFocus),
-              handleSearchFormInput: (text) => handleSearchFormInput(text),
-              handleArchiveItemTap: handleArchiveItemTap,
-              handleListViewItemTap: handleListViewItemTap,
-              handleSearchedItemTap: handleSearchedtemTap,
-              handleCopyToClipboardTap: handleCopyToClipboardTap,
-              handleDeleteItemTap: handleListViewDeleteTap,
-              handleEditItemTap: handleEditItemAction,
-              handleListUp: handleListUp,
-              handleListDown: handleListDown,
-              handleListUpToTop: handleUpToTop,
-              handleListDownToBottom: handleDownToBottom,
-              handleListViewDeleteTap: handleListViewDeleteTap,
-              handleTapCopyToClipboard: handleCopyToClipboardTap,
-              handleSearchFormFocused: handleSearchStart,
-              isEditable: topState.type == ScreenType.PINNED,
-              isSearchable: showSearchbar,
-              controller: listViewController,
-              listWidth: (appWidth * ratio2 + offset) * ratio3,
-              contentsWidth: (appWidth * ratio2 + offset) * ratio4,
-              searchResults: topState.searchResults,
-              items: topState.currentItems))
+      MainSideBarView(
+        handleSideBarTap: handleSideBarTap,
+      ),
+      ResizableDivider(),
+      ContentsMainView(
+          searchFormFocusNode: searchFormFocusNode ?? FocusNode(),
+          searchResultFocusNode: searchResultFocusNode ?? FocusNode(),
+          listFocusNode: listFocusNode ?? FocusNode(),
+          handleSearchFormFocusChange: (hasFocus) =>
+              handleSearchFormFocusChanged(hasFocus),
+          handleSearchFormInput: (text) => handleSearchFormInput(text),
+          handleArchiveItemTap: handlePinItemTap,
+          handleListViewItemTap: handleListViewItemTap,
+          handleSearchedItemTap: handleSearchedtemTap,
+          handleCopyToClipboardTap: handleCopyToClipboardTap,
+          handleDeleteItemTap: handleListViewDeleteTap,
+          handleEditItemTap: handleEditItemAction,
+          handleListUp: handleListUp,
+          handleListDown: handleListDown,
+          handleListUpToTop: handleUpToTop,
+          handleListDownToBottom: handleDownToBottom,
+          handleListViewDeleteTap: handleListViewDeleteTap,
+          handleTapCopyToClipboard: handleCopyToClipboardTap,
+          handleSearchFormFocused: handleSearchStart,
+          controller: listViewController)
     ]));
   }
 }
