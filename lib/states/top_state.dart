@@ -4,6 +4,7 @@ import 'package:clipit/models/side_type.dart';
 
 import '../models/history.dart';
 import '../models/pin.dart';
+import '../models/tree_node.dart';
 
 @immutable
 class TopState {
@@ -13,14 +14,18 @@ class TopState {
   final List<SelectableList> searchResults;
   final ScreenType type;
   final bool showSearchBar;
+  final bool showSearchResult;
+  TreeNode currentNode;
 
-  const TopState(
+  TopState(
       {required this.histories,
       required this.pins,
       required this.trashes,
       required this.searchResults,
       required this.type,
-      required this.showSearchBar});
+      required this.showSearchBar,
+      required this.showSearchResult,
+      required this.currentNode});
 
   TopState copyWith(
       {SelectableList? histories,
@@ -28,14 +33,18 @@ class TopState {
       SelectableList? trashes,
       List<SelectableList>? searchResults,
       ScreenType? type,
-      bool? showSearchBar}) {
+      bool? showSearchBar,
+      bool? showSearchResult,
+      TreeNode? currentNode}) {
     return TopState(
         histories: histories ?? this.histories,
         pins: pins ?? this.pins,
         trashes: trashes ?? this.trashes,
         searchResults: searchResults ?? this.searchResults,
         type: type ?? this.type,
-        showSearchBar: showSearchBar ?? this.showSearchBar);
+        showSearchBar: showSearchBar ?? this.showSearchBar,
+        showSearchResult: showSearchResult ?? this.showSearchResult,
+        currentNode: currentNode ?? this.currentNode);
   }
 
   SelectableList get currentItems {
@@ -55,8 +64,6 @@ class TopState {
   int get currentIndex {
     return currentItems.currentIndex;
   }
-
-  bool get showSearchResult => searchResults.isNotEmpty;
 
   TopState decrementCurrentItems() {
     if (type == ScreenType.CLIP) {
@@ -127,6 +134,8 @@ class TopState {
       results
           .add(PinList(currentIndex: 0, listTitle: "pin", value: searchedPins));
     }
+
+    results.first.value.first.isSelected = true;
 
     return copyWith(searchResults: results);
   }

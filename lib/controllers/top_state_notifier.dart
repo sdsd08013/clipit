@@ -1,7 +1,10 @@
+import 'package:clipit/models/directable.dart';
+import 'package:clipit/models/tree_node.dart';
 import 'package:state_notifier/state_notifier.dart';
 
 import '../models/history.dart';
 import '../models/pin.dart';
+import '../models/selectable.dart';
 import '../models/side_type.dart';
 import '../models/trash.dart';
 import '../states/top_state.dart';
@@ -15,7 +18,15 @@ class TopStateNotifier extends StateNotifier<TopState> {
             trashes: TrashList(currentIndex: 0, listTitle: "trash", value: []),
             searchResults: [],
             type: ScreenType.CLIP,
-            showSearchBar: false));
+            showSearchBar: false,
+            showSearchResult: false,
+            currentNode: TreeNode(name: "root", isSelected: true)));
+
+/*
+              TreeNode(item: TreeBranch(name: "history")),
+              TreeNode(ite: TreeBranch(name: "pin")),
+              TreeNode(item: TreeBranch(name: "trash"))
+              */
 
   void increment() {
     state = state.incrementCurrentItems();
@@ -37,8 +48,21 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state = state.switchCurrentItems(targetIndex);
   }
 
+  void initHistories(HistoryList histories) {
+    final historyTree = TreeNode(name: "history_dir", isSelected: false);
+    state.currentNode.addChild(historyTree);
+    final ns = historyTree.addSelectables(histories);
+    state = state.copyWith(histories: histories, currentNode: ns);
+  }
+
   void addHistories(HistoryList histories) {
     state = state.copyWith(histories: histories);
+  }
+
+  void initPins(PinList pins) {
+    // final pinTree = TreeNode(name: "pin_dir", isSelected: false);
+    // pinTree.addSelectables(pins);
+    // state = state.copyWith(pins: pins, currentNode: pinTree.children?.first);
   }
 
   void addPins(PinList pins) {
@@ -69,13 +93,30 @@ class TopStateNotifier extends StateNotifier<TopState> {
   void archiveHistory(History history) {}
 
   void clearSearchResult() {
-    state = state.copyWith(searchResults: []);
+    state = state.copyWith(
+        searchResults: [], showSearchResult: false, showSearchBar: false);
   }
 
   void searchSelectables(String text) {
     state.getSearchResult(text).then((value) {
-      state = value;
+      state = value.copyWith(showSearchResult: true);
     });
+  }
+
+  void selectSearchedItem(Selectable item) {
+    int index = 0;
+    if (item is History) {
+      index = state.histories.getTargetIndex(item);
+    } else if (item is Pin) {
+      index = state.pins.getTargetIndex(item);
+    } else if (item is Trash) {
+      index = state.trashes.getTargetIndex(item);
+    } else {
+      index = state.histories.getTargetIndex(item);
+    }
+    state = state
+        .switchCurrentItems(index)
+        .copyWith(searchResults: [], showSearchResult: false);
   }
 
   void updateSearchBarVisibility(bool isVisible) {

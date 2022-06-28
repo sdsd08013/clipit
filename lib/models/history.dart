@@ -79,4 +79,7 @@ class History extends Selectable {
           createdAt: DateTime.parse(json['created_at']).toLocal(),
           updatedAt: DateTime.parse(json['updated_at']).toLocal(),
           isSelected: isSelected);
+
+  @override
+  String get name => text;
 }

@@ -1,11 +1,6 @@
-import 'package:clipit/models/history.dart';
-import 'package:clipit/models/pin.dart';
+import 'package:clipit/models/selectable.dart';
 
 class SearchResult {
-  HistoryList histories;
-  PinList pins;
-
-  SearchResult({required this.histories, required this.pins});
-
-  bool get isNotEmpty => histories.value.isNotEmpty && pins.value.isNotEmpty;
+  Selectable item;
+  SearchResult({required this.item});
 }

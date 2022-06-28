@@ -31,6 +31,9 @@ class Pin extends Selectable {
     }
   }
 
+  @override
+  String get name => text;
+
   factory Pin.fromMap(Map<String, dynamic> json, bool isSelected) => Pin(
       id: json['id'],
       text: json['text'],

@@ -1,18 +1,15 @@
-import 'package:clipit/models/selectable.dart';
+import 'package:clipit/views/markdown.dart';
 import 'package:clipit/views/search_result.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../color.dart';
 import '../models/side_type.dart';
 import '../providers/offset_provider.dart';
 import '../providers/top_state_provider.dart';
 import '../states/top_state.dart';
 import 'contents_header.dart';
 import 'contents_list_view.dart';
-import 'package:markdown/markdown.dart' as md;
 
 class ContentsMainView extends ConsumerWidget {
   final Int2VoidFunc handleListViewItemTap;
@@ -24,6 +21,8 @@ class ContentsMainView extends ConsumerWidget {
 
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
+  final VoidCallback handleSearchResultUp;
+  final VoidCallback handleSearchResultDown;
   final VoidCallback handleTapCopyToClipboard;
   final VoidCallback handleListViewDeleteTap;
   final VoidCallback handleSearchFormFocused;
@@ -48,6 +47,8 @@ class ContentsMainView extends ConsumerWidget {
       required this.handleSearchFormInput,
       required this.handleListUp,
       required this.handleListDown,
+      required this.handleSearchResultUp,
+      required this.handleSearchResultDown,
       required this.handleTapCopyToClipboard,
       required this.handleListViewDeleteTap,
       required this.handleSearchFormFocused,
@@ -79,87 +80,38 @@ class ContentsMainView extends ConsumerWidget {
               handleCopyToClipboardTap: () => handleCopyToClipboardTap(),
               handleMoveToTrashTap: () => handleDeleteItemTap(),
               handleEditItemTap: () => handleEditItemTap()),
-          Expanded(child: (() {
-            if (topState.showSearchResult) {
-              return SearchResultView(
-                  key: GlobalKey(),
-                  handleListUp: handleListUp,
-                  handleListDown: handleListDown,
-                  searchResultFocusNode: searchResultFocusNode,
-                  onItemTap: handleSearchedItemTap);
-            } else {
-              if (topState.currentItems.value.isEmpty) {
-                return const Text("item is empty ;(");
-              } else {
-                return Row(children: <Widget>[
-                  ContentsListView(
-                      controller: controller,
-                      listFocusNode: listFocusNode,
-                      handleListUp: handleListUp,
-                      handleListDown: handleListDown,
-                      handleListViewUpToTop: handleListUpToTop,
-                      handleListViewDownToBottom: handleListDownToBottom,
-                      handleListViewDeleteTap: handleListViewDeleteTap,
-                      handleTapCopyToClipboard: handleTapCopyToClipboard,
-                      handleSearchFormFocused: handleSearchFormFocused,
-                      onItemTap: (index) => handleListViewItemTap(index),
-                      items: topState.currentItems.value),
-                  Container(
-                      decoration: const BoxDecoration(
-                        color: markdownBackground,
-                      ),
-                      alignment: Alignment.topLeft,
-                      width: (appWidth * ratio2 + offset) * ratio4,
-                      child: Markdown(
-                          controller: ScrollController(),
-                          shrinkWrap: true,
-                          selectable: true,
-                          builders: {
-                            'pre': CustomBlockBuilder(),
-                          },
-                          styleSheet: MarkdownStyleSheet(
-                              h1: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h2: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h3: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h4: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h5: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              h6: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished"),
-                              p: const TextStyle(
-                                  color: textColor,
-                                  fontFamily: "RictyDiminished",
-                                  height: 1.2),
-                              pPadding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                              h1Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                              h2Padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-                              img: const TextStyle(fontSize: 10),
-                              code: const TextStyle(
-                                  color: codeText,
-                                  backgroundColor: codeBackground,
-                                  fontFamily: "RictyDiminished")),
-                          data: topState.currentItems.currentItem.mdText,
-                          extensionSet: md.ExtensionSet(
-                            md.ExtensionSet.gitHubFlavored.blockSyntaxes,
-                            [
-                              md.EmojiSyntax(),
-                              ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes
-                            ],
-                          )))
-                ]);
-              }
-            }
-          })())
+          Expanded(
+              child: Stack(
+            children: [
+              topState.currentItems.value.isEmpty
+                  ? const Text("item is empty ;(")
+                  : Row(children: <Widget>[
+                      ContentsListView(
+                          controller: controller,
+                          listFocusNode: listFocusNode,
+                          handleListUp: handleListUp,
+                          handleListDown: handleListDown,
+                          handleListViewUpToTop: handleListUpToTop,
+                          handleListViewDownToBottom: handleListDownToBottom,
+                          handleListViewDeleteTap: handleListViewDeleteTap,
+                          handleTapCopyToClipboard: handleTapCopyToClipboard,
+                          handleSearchFormFocused: handleSearchFormFocused,
+                          onItemTap: (index) => handleListViewItemTap(index)),
+                      MarkdownView()
+                    ]),
+              Visibility(
+                  visible: topState.showSearchResult,
+                  child: Container(
+                      height: double.infinity,
+                      color: Colors.red,
+                      child: SearchResultView(
+                          handleListUp: handleSearchResultUp,
+                          handleListDown: handleSearchResultDown,
+                          handleSearchFormFocused: handleSearchFormFocused,
+                          searchResultFocusNode: searchResultFocusNode,
+                          onItemTap: handleSearchedItemTap)))
+            ],
+          ))
         ]));
   }
 }

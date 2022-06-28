@@ -1,3 +1,5 @@
+import 'package:clipit/controllers/top_state_notifier.dart';
+import 'package:clipit/models/tree_node.dart';
 import 'package:clipit/providers/top_state_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,7 +8,6 @@ import '../color.dart';
 import '../models/selectable.dart';
 import '../models/side_type.dart';
 import '../providers/offset_provider.dart';
-import '../states/top_state.dart';
 import 'intent.dart';
 import 'key_set.dart';
 
@@ -19,7 +20,6 @@ typedef ScreenType2VoidFunc = void Function(ScreenType);
 class ContentsListView extends ConsumerWidget {
   final ScrollController controller;
   final Int2VoidFunc onItemTap;
-  final List<Selectable> items;
   final FocusNode listFocusNode;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
@@ -31,7 +31,6 @@ class ContentsListView extends ConsumerWidget {
 
   ContentsListView(
       {required this.controller,
-      required this.items,
       required this.listFocusNode,
       required this.handleListUp,
       required this.handleListDown,
@@ -51,7 +50,8 @@ class ContentsListView extends ConsumerWidget {
     const ratio3 = 0.3;
     const ratio4 = 0.7;
     double offset = ref.watch(offsetProvider);
-    TopState topState = ref.watch(topStateProvider);
+    List<TreeNode> children =
+        ref.watch(topStateProvider).currentNode.children ?? [];
     return FocusableActionDetector(
         autofocus: true,
         focusNode: listFocusNode,
@@ -91,19 +91,19 @@ class ContentsListView extends ConsumerWidget {
                   child: Container(
                       height: 75,
                       padding: const EdgeInsets.all(8),
-                      color: items[index].isSelected
+                      color: children[index].isSelected
                           ? side2ndBackgroundSelect
                           : side2ndBackground,
                       child: RichText(
                         text: TextSpan(
-                          text: items[index].subText(),
+                          text: children[index].name,
                           style: const TextStyle(
                               color: textColor, fontFamily: "RictyDiminished"),
                         ),
                       ))),
               separatorBuilder: (context, index) =>
                   const Divider(color: dividerColor, height: 0.5),
-              itemCount: items.length,
+              itemCount: children.length,
             )));
   }
 }

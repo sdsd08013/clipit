@@ -13,13 +13,16 @@ class SearchResultView extends ConsumerWidget {
   final Selectable2VoidFunc onItemTap;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
+  final VoidCallback handleSearchFormFocused;
   const SearchResultView(
       {Key? key,
       required this.handleListUp,
       required this.handleListDown,
+      required this.handleSearchFormFocused,
       required this.onItemTap,
       required this.searchResultFocusNode})
       : super(key: key);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     List<SelectableList> results = ref.watch(topStateProvider).searchResults;
@@ -28,10 +31,13 @@ class SearchResultView extends ConsumerWidget {
         shortcuts: {
           listViewUpKeySet: ListViewUpIntent(),
           listViewDownKeySet: ListViewDownIntent(),
+          searchKeySet: SearchIntent(),
         },
         actions: {
           ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
           ListViewDownIntent: CallbackAction(onInvoke: (e) => handleListDown()),
+          SearchIntent:
+              CallbackAction(onInvoke: (e) => print("fooooooooooooooooocus")),
         },
         child: ListView.builder(
             shrinkWrap: true,
