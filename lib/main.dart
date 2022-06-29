@@ -174,8 +174,7 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handleListDown() {
-    final currentIndex =
-        ref.read(topStateProvider.notifier).state.currentNode.index;
+    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
     var visibleItemCount =
         (listViewController.position.viewportDimension / 75.5).ceil();
 
@@ -189,18 +188,34 @@ class _HomeState extends ConsumerState<Home> {
           .jumpTo((currentIndex - visibleItemCount + 2) * 75.5 - offset);
     }
 
-    ref.read(topStateProvider.notifier).moveToNext();
+    ref.read(topStateProvider.notifier).increment();
   }
 
   void handleListUp() {
-    final currentIndex =
-        ref.read(topStateProvider.notifier).state.currentNode.index;
+    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
     var current = (currentIndex - 1) * 75.5;
     if (current < listViewController.offset) {
       listViewController.jumpTo((currentIndex - 1) * 75.5);
     }
 
-    ref.read(topStateProvider.notifier).moveToPrev();
+    ref.read(topStateProvider.notifier).decrement();
+  }
+
+  void handleUpToTop() {
+    if (isUpToTopTriggered) {
+      listViewController.jumpTo(0);
+      isUpToTopTriggered = false;
+      ref.read(topStateProvider.notifier).selectFirstItem();
+    } else {
+      isUpToTopTriggered = true;
+    }
+  }
+
+  void handleDownToBottom() {
+    final length =
+        ref.read(topStateProvider.notifier).state.currentItems.value.length;
+    listViewController.jumpTo(length * 75.5);
+    ref.read(topStateProvider.notifier).selectLastItem();
   }
 
   handleSearchResultDown() {
@@ -209,25 +224,6 @@ class _HomeState extends ConsumerState<Home> {
 
   handleSearchResultUp() {
     print("handleSearchResultUp");
-  }
-
-  void handleUpToTop() {
-    if (isUpToTopTriggered) {
-      listViewController.jumpTo(0);
-      isUpToTopTriggered = false;
-      //ref.read(topStateProvider.notifier).selectFirstItem();
-      ref.read(topStateProvider.notifier).moveToFirstSibiling();
-    } else {
-      isUpToTopTriggered = true;
-    }
-  }
-
-  void handleDownToBottom() {
-    final length =
-        ref.read(topStateProvider.notifier).state.currentNode.sibilings.length;
-    listViewController.jumpTo(length * 75.5);
-    ref.read(topStateProvider.notifier).moveToLastSibiling();
-    //ref.read(topStateProvider.notifier).selectLastItem();
   }
 
   void handleListViewDeleteTap() {

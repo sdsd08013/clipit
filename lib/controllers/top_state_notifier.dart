@@ -22,12 +22,6 @@ class TopStateNotifier extends StateNotifier<TopState> {
             showSearchResult: false,
             currentNode: TreeNode(name: "root", isSelected: true)));
 
-/*
-              TreeNode(item: TreeBranch(name: "history")),
-              TreeNode(ite: TreeBranch(name: "pin")),
-              TreeNode(item: TreeBranch(name: "trash"))
-              */
-
   void increment() {
     state = state.incrementCurrentItems();
   }
@@ -40,6 +34,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state = state.switchCurrentItems(0);
   }
 
+/*
   void moveToFirstSibiling() {
     TreeNode? current = state.currentNode;
     TreeNode? prev = current.prev;
@@ -68,6 +63,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
     current?.isSelected = true;
     state = state.copyWith(currentNode: current);
   }
+  */
 
   void selectTargetItem(int targetIndex) {
     state = state.switchCurrentItems(targetIndex);
