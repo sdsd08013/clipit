@@ -1,5 +1,6 @@
 import 'package:clipit/models/history.dart';
 import 'package:test/test.dart';
+/*
 
 void main() {
   test('new text make shouldUpdate returns true', () {
@@ -68,3 +69,5 @@ void main() {
     expect(list.isExist('text1'), true);
   });
 }
+
+*/

@@ -40,8 +40,33 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state = state.switchCurrentItems(0);
   }
 
+  void moveToFirstSibiling() {
+    TreeNode? current = state.currentNode;
+    TreeNode? prev = current.prev;
+    current.isSelected = false;
+    while (prev != null) {
+      current = prev;
+      prev = current.prev;
+    }
+    current?.isSelected = true;
+    state = state.copyWith(currentNode: current);
+  }
+
   void selectLastItem() {
     state = state.switchCurrentItems(state.currentItems.value.length - 1);
+  }
+
+  void moveToLastSibiling() {
+    TreeNode? current = state.currentNode;
+    current.isSelected = false;
+    TreeNode? next = current.next;
+    //prevが無くなったときのnodeが先頭node
+    while (next != null) {
+      current = next;
+      next = current.next;
+    }
+    current?.isSelected = true;
+    state = state.copyWith(currentNode: current);
   }
 
   void selectTargetItem(int targetIndex) {
@@ -51,8 +76,27 @@ class TopStateNotifier extends StateNotifier<TopState> {
   void initHistories(HistoryList histories) {
     final historyTree = TreeNode(name: "history_dir", isSelected: false);
     state.currentNode.addChild(historyTree);
-    final ns = historyTree.addSelectables(histories);
-    state = state.copyWith(histories: histories, currentNode: ns);
+    final p = historyTree.addSelectables(histories);
+    final c = p.children?.first;
+    state = state.copyWith(histories: histories, currentNode: c);
+  }
+
+  void moveToNext() {
+    final next = state.currentNode.next;
+    state.currentNode.isSelected = false;
+    if (next != null) {
+      next.isSelected = true;
+      state = state.copyWith(currentNode: next);
+    }
+  }
+
+  void moveToPrev() {
+    state.currentNode.isSelected = false;
+    final prev = state.currentNode.prev;
+    if (prev != null) {
+      prev.isSelected = true;
+      state = state.copyWith(currentNode: prev);
+    }
   }
 
   void addHistories(HistoryList histories) {

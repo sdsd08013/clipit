@@ -174,7 +174,8 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handleListDown() {
-    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
+    final currentIndex =
+        ref.read(topStateProvider.notifier).state.currentNode.index;
     var visibleItemCount =
         (listViewController.position.viewportDimension / 75.5).ceil();
 
@@ -188,17 +189,18 @@ class _HomeState extends ConsumerState<Home> {
           .jumpTo((currentIndex - visibleItemCount + 2) * 75.5 - offset);
     }
 
-    ref.read(topStateProvider.notifier).increment();
+    ref.read(topStateProvider.notifier).moveToNext();
   }
 
   void handleListUp() {
-    final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
+    final currentIndex =
+        ref.read(topStateProvider.notifier).state.currentNode.index;
     var current = (currentIndex - 1) * 75.5;
     if (current < listViewController.offset) {
       listViewController.jumpTo((currentIndex - 1) * 75.5);
     }
 
-    ref.read(topStateProvider.notifier).decrement();
+    ref.read(topStateProvider.notifier).moveToPrev();
   }
 
   handleSearchResultDown() {
@@ -213,7 +215,8 @@ class _HomeState extends ConsumerState<Home> {
     if (isUpToTopTriggered) {
       listViewController.jumpTo(0);
       isUpToTopTriggered = false;
-      ref.read(topStateProvider.notifier).selectFirstItem();
+      //ref.read(topStateProvider.notifier).selectFirstItem();
+      ref.read(topStateProvider.notifier).moveToFirstSibiling();
     } else {
       isUpToTopTriggered = true;
     }
@@ -221,9 +224,10 @@ class _HomeState extends ConsumerState<Home> {
 
   void handleDownToBottom() {
     final length =
-        ref.read(topStateProvider.notifier).state.currentItems.value.length;
+        ref.read(topStateProvider.notifier).state.currentNode.sibilings.length;
     listViewController.jumpTo(length * 75.5);
-    ref.read(topStateProvider.notifier).selectLastItem();
+    ref.read(topStateProvider.notifier).moveToLastSibiling();
+    //ref.read(topStateProvider.notifier).selectLastItem();
   }
 
   void handleListViewDeleteTap() {

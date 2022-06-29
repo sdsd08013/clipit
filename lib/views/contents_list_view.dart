@@ -50,8 +50,7 @@ class ContentsListView extends ConsumerWidget {
     const ratio3 = 0.3;
     const ratio4 = 0.7;
     double offset = ref.watch(offsetProvider);
-    List<TreeNode> children =
-        ref.watch(topStateProvider).currentNode.children ?? [];
+    List<TreeNode> children = ref.watch(topStateProvider).currentNode.sibilings;
     return FocusableActionDetector(
         autofocus: true,
         focusNode: listFocusNode,
@@ -66,7 +65,9 @@ class ContentsListView extends ConsumerWidget {
         },
         actions: {
           ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
-          ListViewDownIntent: CallbackAction(onInvoke: (e) => handleListDown()),
+          ListViewDownIntent: CallbackAction(onInvoke: (e) {
+            handleListDown();
+          }),
           ListViewItemCopyIntent:
               CallbackAction(onInvoke: (e) => handleTapCopyToClipboard()),
           ListViewItemDeleteIntent:
