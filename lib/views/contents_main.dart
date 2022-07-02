@@ -13,7 +13,7 @@ import 'contents_list_view.dart';
 
 class ContentsMainView extends ConsumerWidget {
   final Int2VoidFunc handleListViewItemTap;
-  final Selectable2VoidFunc handleSearchedItemTap;
+  final Selectable2VoidFunc handleSearchResultSelect;
   final VoidCallback handleArchiveItemTap;
   final VoidCallback handleCopyToClipboardTap;
   final VoidCallback handleDeleteItemTap;
@@ -38,7 +38,7 @@ class ContentsMainView extends ConsumerWidget {
 
   ContentsMainView(
       {required this.handleArchiveItemTap,
-      required this.handleSearchedItemTap,
+      required this.handleSearchResultSelect,
       required this.handleListViewItemTap,
       required this.handleCopyToClipboardTap,
       required this.handleDeleteItemTap,
@@ -109,7 +109,7 @@ class ContentsMainView extends ConsumerWidget {
                           handleListDown: handleSearchResultDown,
                           handleSearchFormFocused: handleSearchFormFocused,
                           searchResultFocusNode: searchResultFocusNode,
-                          onItemTap: handleSearchedItemTap)))
+                          handleSearchResultSelect: handleSearchResultSelect)))
             ],
           ))
         ]));

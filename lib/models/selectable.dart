@@ -12,10 +12,14 @@ class Selectable implements Directable {
   String text;
   final DateTime createdAt;
   DateTime updatedAt;
+  @override
   bool isSelected;
+  @override
+  bool isDir = false;
   String mdText = "";
   String trimText = "";
   String plainText = "";
+  String subText = "";
   Selectable(
       {required this.id,
       required this.text,
@@ -28,18 +32,17 @@ class Selectable implements Directable {
     if (parse(text).documentElement != null) {
       plainText = parse(text).documentElement!.text;
     }
+
+    if (trimText.length > 30) {
+      subText =
+          "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
+    } else {
+      subText = "$trimText\n${formatter.format(createdAt)}";
+    }
   }
 
   @override
   String get name => text;
-
-  String subText() {
-    if (trimText.length > 30) {
-      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
-    } else {
-      return "$trimText\n${formatter.format(createdAt)}";
-    }
-  }
 }
 
 class SelectableList {

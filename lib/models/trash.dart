@@ -1,10 +1,4 @@
 import 'package:clipit/models/selectable.dart';
-import 'package:collection/collection.dart';
-import 'package:html/parser.dart';
-import 'package:intl/intl.dart';
-import 'package:html2md/html2md.dart' as html2md;
-
-import 'pin.dart';
 
 class Trash extends Selectable {
   Trash(

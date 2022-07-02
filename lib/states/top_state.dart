@@ -1,10 +1,10 @@
+import 'package:clipit/models/tree_node.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:clipit/models/selectable.dart';
 import 'package:clipit/models/side_type.dart';
 
 import '../models/history.dart';
 import '../models/pin.dart';
-import '../models/tree_node.dart';
 
 @immutable
 class TopState {
@@ -12,12 +12,12 @@ class TopState {
   final SelectableList pins;
   final SelectableList trashes;
   final List<SelectableList> searchResults;
+  final TreeNode root;
   final ScreenType type;
   final bool showSearchBar;
   final bool showSearchResult;
-  TreeNode currentNode;
 
-  TopState(
+  const TopState(
       {required this.histories,
       required this.pins,
       required this.trashes,
@@ -25,7 +25,7 @@ class TopState {
       required this.type,
       required this.showSearchBar,
       required this.showSearchResult,
-      required this.currentNode});
+      required this.root});
 
   TopState copyWith(
       {SelectableList? histories,
@@ -35,7 +35,7 @@ class TopState {
       ScreenType? type,
       bool? showSearchBar,
       bool? showSearchResult,
-      TreeNode? currentNode}) {
+      TreeNode? root}) {
     return TopState(
         histories: histories ?? this.histories,
         pins: pins ?? this.pins,
@@ -44,7 +44,7 @@ class TopState {
         type: type ?? this.type,
         showSearchBar: showSearchBar ?? this.showSearchBar,
         showSearchResult: showSearchResult ?? this.showSearchResult,
-        currentNode: currentNode ?? this.currentNode);
+        root: root ?? this.root);
   }
 
   SelectableList get currentItems {
@@ -118,7 +118,6 @@ class TopState {
   }
 
   Future<TopState> getSearchResult(String text) async {
-    final List<SelectableList> results = [];
     final searchedHistories = histories.value
         .where((element) => element.plainText.contains(text))
         .toList();
@@ -126,17 +125,54 @@ class TopState {
         .where((element) => element.plainText.contains(text))
         .toList();
 
+    final nr =
+        TreeNode(name: "root", isDir: true, isSelected: false, children: [
+      TreeNode(name: "history", isDir: true, isSelected: false, children: []),
+      TreeNode(name: "pin", isDir: true, isSelected: false, children: [])
+    ]);
+
+    final historyNode = nr.children![0];
+    final pinNode = nr.children![1];
+
     if (searchedHistories.isNotEmpty) {
-      results.add(HistoryList(
-          currentIndex: 0, listTitle: "history", value: searchedHistories));
+      historyNode.addSelectables(list: searchedHistories, isSelectFirst: true);
     }
+
     if (searchedPins.isNotEmpty) {
-      results
-          .add(PinList(currentIndex: 0, listTitle: "pin", value: searchedPins));
+      pinNode.addSelectables(list: searchedPins);
     }
 
-    results.first.value.first.isSelected = true;
+    return copyWith(root: nr);
+  }
 
-    return copyWith(searchResults: results);
+  TreeNode rootNode() {
+    TreeNode current = root;
+    while (current.parent != null) {
+      current = current.parent!;
+    }
+    return current;
+  }
+
+  TreeNode firstChild() {
+    TreeNode current = root;
+
+    while (current.children?.isNotEmpty == true) {
+      current = current.children!.first;
+    }
+    return current;
+  }
+
+  TopState moveToNext() {
+    root.isSelected = false;
+    root.next?.isSelected = true;
+
+    return copyWith(root: root.next);
+  }
+
+  TopState moveToPrev() {
+    root.isSelected = false;
+    root.prev?.isSelected = true;
+
+    return copyWith(root: root.prev);
   }
 }

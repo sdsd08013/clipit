@@ -112,13 +112,13 @@ class _HomeState extends ConsumerState<Home> {
 
   Future<void> retlieveHistorys() async {
     final retlievedHistorys = await clipRepository.getClips();
-    topStateNotifier.initHistories(retlievedHistorys ??
+    topStateNotifier.addHistories(retlievedHistorys ??
         HistoryList(currentIndex: 0, listTitle: "history", value: []));
   }
 
   Future<void> retlievePins() async {
     final retlievedPins = await noteRepository.getNotes();
-    topStateNotifier.initPins(
+    topStateNotifier.addPins(
         retlievedPins ?? PinList(currentIndex: 0, listTitle: "pin", value: []));
   }
 
@@ -220,11 +220,14 @@ class _HomeState extends ConsumerState<Home> {
 
   handleSearchResultDown() {
     print("handleSearchResultDown");
+    ref.read(topStateProvider.notifier).moveToNext();
   }
 
   handleSearchResultUp() {
-    print("handleSearchResultUp");
+    ref.read(topStateProvider.notifier).moveToPrev();
   }
+
+  handleSearchResultSelect(Selectable item) {}
 
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
@@ -256,7 +259,6 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handleSearchFormFocusChanged(hasFocus) {
-    print("-------->hasFOcus:${hasFocus}");
     if (hasFocus) {
     } else {
       if (topStateNotifier.state.showSearchResult) {
@@ -305,7 +307,7 @@ class _HomeState extends ConsumerState<Home> {
           handleSearchFormInput: (text) => handleSearchFormInput(text),
           handleArchiveItemTap: handlePinItemTap,
           handleListViewItemTap: handleListViewItemTap,
-          handleSearchedItemTap: handleSearchedItemTap,
+          handleSearchResultSelect: handleSearchResultSelect,
           handleCopyToClipboardTap: handleCopyToClipboardTap,
           handleDeleteItemTap: handleListViewDeleteTap,
           handleEditItemTap: handleEditItemAction,

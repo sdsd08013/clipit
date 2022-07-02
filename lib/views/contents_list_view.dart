@@ -49,7 +49,7 @@ class ContentsListView extends ConsumerWidget {
     const ratio3 = 0.3;
     const ratio4 = 0.7;
     double offset = ref.watch(offsetProvider);
-    TopState state = ref.watch(topStateProvider.notifier).state;
+    SelectableList items = ref.watch(topStateProvider).currentItems;
     return FocusableActionDetector(
         autofocus: true,
         focusNode: listFocusNode,
@@ -91,19 +91,19 @@ class ContentsListView extends ConsumerWidget {
                   child: Container(
                       height: 75,
                       padding: const EdgeInsets.all(8),
-                      color: state.currentItems.value[index].isSelected
+                      color: items.value[index].isSelected
                           ? side2ndBackgroundSelect
                           : side2ndBackground,
                       child: RichText(
                         text: TextSpan(
-                          text: state.currentItems.value[index].name,
+                          text: items.value[index].subText,
                           style: const TextStyle(
                               color: textColor, fontFamily: "RictyDiminished"),
                         ),
                       ))),
               separatorBuilder: (context, index) =>
                   const Divider(color: dividerColor, height: 0.5),
-              itemCount: state.currentItems.value.length,
+              itemCount: items.value.length,
             )));
   }
 }

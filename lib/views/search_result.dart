@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../color.dart';
 import '../models/selectable.dart';
+import '../models/tree_node.dart';
 import '../providers/top_state_provider.dart';
 import 'contents_list_view.dart';
 import 'intent.dart';
@@ -10,7 +11,7 @@ import 'key_set.dart';
 
 class SearchResultView extends ConsumerWidget {
   final FocusNode searchResultFocusNode;
-  final Selectable2VoidFunc onItemTap;
+  final Selectable2VoidFunc handleSearchResultSelect;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
   final VoidCallback handleSearchFormFocused;
@@ -19,13 +20,13 @@ class SearchResultView extends ConsumerWidget {
       required this.handleListUp,
       required this.handleListDown,
       required this.handleSearchFormFocused,
-      required this.onItemTap,
+      required this.handleSearchResultSelect,
       required this.searchResultFocusNode})
       : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    List<SelectableList> results = ref.watch(topStateProvider).searchResults;
+    List<TreeNode> children = ref.watch(topStateProvider).root.children ?? [];
     return FocusableActionDetector(
         focusNode: searchResultFocusNode,
         shortcuts: {
@@ -39,39 +40,51 @@ class SearchResultView extends ConsumerWidget {
           SearchIntent:
               CallbackAction(onInvoke: (e) => print("fooooooooooooooooocus")),
         },
-        child: ListView.builder(
+        child: ListView.separated(
             shrinkWrap: true,
             itemBuilder: (context, parentIndex) => Column(children: [
-                  Text(results[parentIndex].listTitle),
-                  ListView.separated(
+                  Text(children[parentIndex].name),
+                  ListView.builder(
                       shrinkWrap: true,
-                      itemBuilder: (context, childIndex) => GestureDetector(
-                          onTap: () {
-                            onItemTap
-                                .call(results[parentIndex].value[childIndex]);
-                          },
-                          child: Container(
-                              height: 75,
-                              padding: const EdgeInsets.all(8),
-                              color: results[parentIndex]
-                                      .value[childIndex]
-                                      .isSelected
-                                  ? side2ndBackgroundSelect
-                                  : side2ndBackground,
-                              child: RichText(
-                                text: TextSpan(
-                                  text: results[parentIndex]
-                                      .value[childIndex]
-                                      .plainText,
-                                  style: const TextStyle(
-                                      color: textColor,
-                                      fontFamily: "RictyDiminished"),
-                                ),
-                              ))),
-                      separatorBuilder: (context, childIndex) =>
-                          const Divider(color: dividerColor, height: 0.5),
-                      itemCount: results[parentIndex].value.length)
+                      itemBuilder: (context, childIndex) => Text(
+                          children[parentIndex]
+                                  .children?[childIndex]
+                                  .listText ??
+                              "way"),
+                      itemCount: 5)
                 ]),
-            itemCount: results.length));
+            //Text(children.first.children?[parentIndex].listText ?? ""),
+            separatorBuilder: (context, index) =>
+                const Divider(color: dividerColor, height: 0.5),
+            itemCount: children.length));
+
+    // child: ListView.separated(
+    //     shrinkWrap: true,
+    //     itemBuilder: (context, parentIndex) => ListView.builder(
+    //         itemBuilder: (context, childIndex) =>
+    //             children[parentIndex].children![childIndex].isDir
+    //                 ? Text(children[parentIndex].children![childIndex].name)
+    //                 : Container(
+    //                     height: 75,
+    //                     padding: const EdgeInsets.all(8),
+    //                     color: children[parentIndex]
+    //                             .children![childIndex]
+    //                             .isSelected
+    //                         ? side2ndBackgroundSelect
+    //                         : side2ndBackground,
+    //                     child: RichText(
+    //                       text: TextSpan(
+    //                         text: children[parentIndex]
+    //                             .children![childIndex]
+    //                             .listText,
+    //                         style: const TextStyle(
+    //                             color: textColor,
+    //                             fontFamily: "RictyDiminished"),
+    //                       ),
+    //                     )),
+    //         itemCount: children[parentIndex].children?.length),
+    //     separatorBuilder: (context, index) =>
+    //         const Divider(color: dividerColor, height: 0.5),
+    //     itemCount: children.length));
   }
 }

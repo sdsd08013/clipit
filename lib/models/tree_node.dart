@@ -4,6 +4,8 @@ import 'package:clipit/models/selectable.dart';
 class TreeNode implements Directable {
   @override
   bool isSelected;
+  @override
+  bool isDir;
 
   @override
   final String name;
@@ -15,6 +17,7 @@ class TreeNode implements Directable {
   TreeNode(
       {required this.name,
       required this.isSelected,
+      required this.isDir,
       this.item,
       this.children,
       this.parent,
@@ -36,22 +39,25 @@ class TreeNode implements Directable {
     return TreeNode(
         name: name ?? this.name,
         isSelected: isSelected,
+        isDir: isDir,
         item: item ?? this.item,
         children: children ?? this.children,
         parent: parent ?? this.parent);
   }
 
-  TreeNode addSelectables(SelectableList list) {
+  TreeNode addSelectables(
+      {List<Selectable>? list, bool isSelectFirst = false}) {
     List<TreeNode> newChildren = [];
     if (children != null) {
       newChildren = children!;
     }
-    list.value.asMap().forEach((index, item) {
+    list?.asMap().forEach((index, item) {
       prev = newChildren.isEmpty ? null : newChildren.last;
 
       TreeNode tmp = TreeNode(
           name: item.name,
           isSelected: item.isSelected,
+          isDir: item.isDir,
           item: item,
           prev: prev,
           parent: this);
@@ -61,6 +67,9 @@ class TreeNode implements Directable {
       }
       newChildren.add(tmp);
     });
+    if (isSelectFirst) {
+      newChildren.first.isSelected = true;
+    }
     return copyWith(children: newChildren);
   }
 
@@ -83,5 +92,11 @@ class TreeNode implements Directable {
 
   int get index {
     return sibilings.indexOf(this);
+  }
+
+  String get listText {
+    return (item != null && item is Selectable)
+        ? (item as Selectable).plainText
+        : name;
   }
 }
