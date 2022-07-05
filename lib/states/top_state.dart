@@ -3,16 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:clipit/models/selectable.dart';
 import 'package:clipit/models/side_type.dart';
 
-import '../models/history.dart';
-import '../models/pin.dart';
-
 @immutable
 class TopState {
   final SelectableList histories;
   final SelectableList pins;
   final SelectableList trashes;
   final List<SelectableList> searchResults;
-  final TreeNode root;
+  final TreeNode currentNode;
   final ScreenType type;
   final bool showSearchBar;
   final bool showSearchResult;
@@ -25,7 +22,7 @@ class TopState {
       required this.type,
       required this.showSearchBar,
       required this.showSearchResult,
-      required this.root});
+      required this.currentNode});
 
   TopState copyWith(
       {SelectableList? histories,
@@ -35,7 +32,7 @@ class TopState {
       ScreenType? type,
       bool? showSearchBar,
       bool? showSearchResult,
-      TreeNode? root}) {
+      TreeNode? currentNode}) {
     return TopState(
         histories: histories ?? this.histories,
         pins: pins ?? this.pins,
@@ -44,7 +41,15 @@ class TopState {
         type: type ?? this.type,
         showSearchBar: showSearchBar ?? this.showSearchBar,
         showSearchResult: showSearchResult ?? this.showSearchResult,
-        root: root ?? this.root);
+        currentNode: currentNode ?? this.currentNode);
+  }
+
+  TreeNode get root {
+    TreeNode current = currentNode;
+    while (current.parent != null) {
+      current = current.parent!;
+    }
+    return current;
   }
 
   SelectableList get currentItems {
@@ -125,15 +130,10 @@ class TopState {
         .where((element) => element.plainText.contains(text))
         .toList();
 
-    final nr =
-        TreeNode(name: "root", isDir: true, isSelected: false, children: [
-      TreeNode(name: "history", isDir: true, isSelected: false, children: []),
-      TreeNode(name: "pin", isDir: true, isSelected: false, children: [])
-    ]);
-
-    final historyNode = nr.children![0];
-    final pinNode = nr.children![1];
-
+    final historyNode =
+        TreeNode(name: "history", isDir: true, isSelected: false, children: []);
+    final pinNode =
+        TreeNode(name: "pin", isDir: true, isSelected: false, children: []);
     if (searchedHistories.isNotEmpty) {
       historyNode.addSelectables(list: searchedHistories, isSelectFirst: true);
     }
@@ -142,11 +142,23 @@ class TopState {
       pinNode.addSelectables(list: searchedPins);
     }
 
-    return copyWith(root: nr);
+    historyNode.children?.first.isSelected = searchedHistories.isNotEmpty;
+    pinNode.children?.first.isSelected =
+        searchedHistories.isEmpty && searchedPins.isNotEmpty;
+    final nr = TreeNode(
+        name: "root",
+        isDir: true,
+        isSelected: false,
+        children: [
+          historyNode.copyWith(next: pinNode),
+          pinNode.copyWith(prev: historyNode)
+        ]);
+
+    return copyWith(currentNode: nr);
   }
 
-  TreeNode rootNode() {
-    TreeNode current = root;
+  TreeNode currentNodeNode() {
+    TreeNode current = currentNode;
     while (current.parent != null) {
       current = current.parent!;
     }
@@ -154,7 +166,7 @@ class TopState {
   }
 
   TreeNode firstChild() {
-    TreeNode current = root;
+    TreeNode current = currentNode;
 
     while (current.children?.isNotEmpty == true) {
       current = current.children!.first;
@@ -163,16 +175,35 @@ class TopState {
   }
 
   TopState moveToNext() {
-    root.isSelected = false;
-    root.next?.isSelected = true;
+    if (currentNode.isDir) {
+      currentNode.isSelected = false;
+      if (currentNode.children?.first.isDir == true) {
+        return copyWith(currentNode: currentNode.children?.first).moveToNext();
+      } else {
+        currentNode.children?.first.isSelected = true;
+        return copyWith(currentNode: currentNode.children?.first);
+      }
+    } else {
+      currentNode.isSelected = false;
+      currentNode.next?.isSelected = true;
 
-    return copyWith(root: root.next);
+      if (currentNode.next != null) {
+        // dir->fileのとき
+        return copyWith(currentNode: currentNode.next);
+      } else {
+        return copyWith(currentNode: currentNode.parent?.next).moveToNext();
+      }
+    }
+  }
+
+  void updateCurrentNode() {
+    currentNode.isSelected = false;
   }
 
   TopState moveToPrev() {
-    root.isSelected = false;
-    root.prev?.isSelected = true;
+    currentNode.isSelected = false;
+    currentNode.prev?.isSelected = true;
 
-    return copyWith(root: root.prev);
+    return copyWith(currentNode: currentNode.prev);
   }
 }

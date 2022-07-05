@@ -46,14 +46,20 @@ class SearchResultView extends ConsumerWidget {
                   Text(children[parentIndex].name),
                   ListView.builder(
                       shrinkWrap: true,
-                      itemBuilder: (context, childIndex) => Text(
-                          children[parentIndex]
+                      itemBuilder: (context, childIndex) => Container(
+                          height: 50,
+                          color: children[parentIndex]
+                                      .children?[childIndex]
+                                      .isSelected ??
+                                  false
+                              ? side2ndBackgroundSelect
+                              : side2ndBackground,
+                          child: Text(children[parentIndex]
                                   .children?[childIndex]
                                   .listText ??
-                              "way"),
-                      itemCount: 5)
+                              "way")),
+                      itemCount: children[parentIndex].children?.length ?? 0)
                 ]),
-            //Text(children.first.children?[parentIndex].listText ?? ""),
             separatorBuilder: (context, index) =>
                 const Divider(color: dividerColor, height: 0.5),
             itemCount: children.length));

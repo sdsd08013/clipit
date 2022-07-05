@@ -17,7 +17,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
             pins: PinList(currentIndex: 0, listTitle: "pin", value: []),
             trashes: TrashList(currentIndex: 0, listTitle: "trash", value: []),
             searchResults: [],
-            root: TreeNode(
+            currentNode: TreeNode(
                 name: "root",
                 isDir: true,
                 isSelected: false,

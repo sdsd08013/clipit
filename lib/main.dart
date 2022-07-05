@@ -219,7 +219,6 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   handleSearchResultDown() {
-    print("handleSearchResultDown");
     ref.read(topStateProvider.notifier).moveToNext();
   }
 

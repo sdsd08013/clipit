@@ -35,14 +35,19 @@ class TreeNode implements Directable {
       bool? isSlected,
       Directable? item,
       TreeNode? parent,
+      TreeNode? prev,
+      TreeNode? next,
       List<TreeNode>? children}) {
     return TreeNode(
-        name: name ?? this.name,
-        isSelected: isSelected,
-        isDir: isDir,
-        item: item ?? this.item,
-        children: children ?? this.children,
-        parent: parent ?? this.parent);
+      name: name ?? this.name,
+      isSelected: isSelected,
+      isDir: isDir,
+      item: item ?? this.item,
+      children: children ?? this.children,
+      parent: parent ?? this.parent,
+      prev: prev ?? this.prev,
+      next: next ?? this.next,
+    );
   }
 
   TreeNode addSelectables(
@@ -55,16 +60,14 @@ class TreeNode implements Directable {
       prev = newChildren.isEmpty ? null : newChildren.last;
 
       TreeNode tmp = TreeNode(
-          name: item.name,
+          name: item.subText,
           isSelected: item.isSelected,
           isDir: item.isDir,
           item: item,
           prev: prev,
           parent: this);
 
-      if (newChildren.isNotEmpty) {
-        newChildren.last.next = tmp;
-      }
+      prev?.next = tmp;
       newChildren.add(tmp);
     });
     if (isSelectFirst) {
