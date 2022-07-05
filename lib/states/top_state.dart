@@ -2,6 +2,7 @@ import 'package:clipit/models/tree_node.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:clipit/models/selectable.dart';
 import 'package:clipit/models/side_type.dart';
+import 'package:path/path.dart';
 
 @immutable
 class TopState {
@@ -130,31 +131,37 @@ class TopState {
         .where((element) => element.plainText.contains(text))
         .toList();
 
+    final nr =
+        TreeNode(name: "root", isDir: true, isSelected: false, children: []);
+
     final historyNode =
         TreeNode(name: "history", isDir: true, isSelected: false, children: []);
     final pinNode =
         TreeNode(name: "pin", isDir: true, isSelected: false, children: []);
+
+    nr.children = [historyNode, pinNode];
+    historyNode.parent = nr;
+    pinNode.parent = nr;
+    historyNode.next = pinNode;
+    pinNode.prev = historyNode;
+    // final chn = historyNode.copyWith(parent: nr, next: pinNode);
+    // final cpn = pinNode.copyWith(parent: nr, prev: chn);
+
     if (searchedHistories.isNotEmpty) {
       historyNode.addSelectables(list: searchedHistories, isSelectFirst: true);
+      //chn.addSelectables(list: searchedHistories, isSelectFirst: true);
     }
 
     if (searchedPins.isNotEmpty) {
       pinNode.addSelectables(list: searchedPins);
+      //cpn.addSelectables(list: searchedPins);
     }
 
     historyNode.children?.first.isSelected = searchedHistories.isNotEmpty;
     pinNode.children?.first.isSelected =
         searchedHistories.isEmpty && searchedPins.isNotEmpty;
-    final nr = TreeNode(
-        name: "root",
-        isDir: true,
-        isSelected: false,
-        children: [
-          historyNode.copyWith(next: pinNode),
-          pinNode.copyWith(prev: historyNode)
-        ]);
 
-    return copyWith(currentNode: nr);
+    return copyWith(currentNode: historyNode.children?.first);
   }
 
   TreeNode currentNodeNode() {
@@ -174,11 +181,17 @@ class TopState {
     return current;
   }
 
+  void updateCurrentNode() {
+    currentNode.isSelected = false;
+  }
+
   TopState moveToNext() {
     if (currentNode.isDir) {
       currentNode.isSelected = false;
       if (currentNode.children?.first.isDir == true) {
-        return copyWith(currentNode: currentNode.children?.first).moveToNext();
+        return copyWith(
+                currentNode: currentNode.children?.first.children?.first)
+            .moveToNext();
       } else {
         currentNode.children?.first.isSelected = true;
         return copyWith(currentNode: currentNode.children?.first);
@@ -191,19 +204,37 @@ class TopState {
         // dir->fileのとき
         return copyWith(currentNode: currentNode.next);
       } else {
-        return copyWith(currentNode: currentNode.parent?.next).moveToNext();
+        if (currentNode.parent?.next == null) {
+          return copyWith(currentNode: currentNode);
+        } else {
+          return copyWith(currentNode: currentNode.parent?.next).moveToNext();
+        }
       }
     }
   }
 
-  void updateCurrentNode() {
-    currentNode.isSelected = false;
-  }
-
   TopState moveToPrev() {
-    currentNode.isSelected = false;
-    currentNode.prev?.isSelected = true;
+    if (currentNode.isDir) {
+      currentNode.isSelected = false;
+      if (currentNode.children?.last.isDir == true) {
+        return copyWith(currentNode: currentNode.children?.last).moveToPrev();
+      } else {
+        currentNode.children?.last.isSelected = true;
+        return copyWith(currentNode: currentNode.children?.last);
+      }
+    } else {
+      currentNode.isSelected = false;
+      currentNode.prev?.isSelected = true;
 
-    return copyWith(currentNode: currentNode.prev);
+      if (currentNode.prev != null) {
+        return copyWith(currentNode: currentNode.prev);
+      } else {
+        if (currentNode.parent?.prev == null) {
+          return copyWith(currentNode: currentNode);
+        } else {
+          return copyWith(currentNode: currentNode.parent?.prev).moveToPrev();
+        }
+      }
+    }
   }
 }

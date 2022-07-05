@@ -57,7 +57,7 @@ class TreeNode implements Directable {
       newChildren = children!;
     }
     list?.asMap().forEach((index, item) {
-      prev = newChildren.isEmpty ? null : newChildren.last;
+      final prev = newChildren.isEmpty ? null : newChildren.last;
 
       TreeNode tmp = TreeNode(
           name: item.subText,
