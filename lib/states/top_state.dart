@@ -152,6 +152,8 @@ class TopState {
     if (searchedPins.isNotEmpty) {
       pinNode.addSelectables(list: searchedPins);
     }
+    historyNode.children?.last.next = pinNode.children?.first;
+    pinNode.children?.first.prev = historyNode.children?.last;
 
     historyNode.children?.first.isSelected = searchedHistories.isNotEmpty;
     pinNode.children?.first.isSelected =
@@ -182,54 +184,39 @@ class TopState {
   }
 
   TopState moveToNext() {
-    if (currentNode.isDir) {
-      currentNode.isSelected = false;
-      if (currentNode.children?.first.isDir == true) {
-        return copyWith(
-                currentNode: currentNode.children?.first.children?.first)
-            .moveToNext();
-      } else {
-        currentNode.children?.first.isSelected = true;
-        return copyWith(currentNode: currentNode.children?.first);
-      }
-    } else {
-      currentNode.isSelected = false;
-      currentNode.next?.isSelected = true;
+    if (currentNode.next == null) {
+      return copyWith(currentNode: currentNode);
+    }
 
+    currentNode.isSelected = false;
+    currentNode.next?.isSelected = true;
+
+    if (currentNode.isDir) {
+      return copyWith(currentNode: currentNode.next).moveToNext();
+    } else {
       if (currentNode.next != null) {
         // dir->fileのとき
         return copyWith(currentNode: currentNode.next);
       } else {
-        if (currentNode.parent?.next == null) {
-          return copyWith(currentNode: currentNode);
-        } else {
-          return copyWith(currentNode: currentNode.parent?.next).moveToNext();
-        }
+        return copyWith(currentNode: currentNode);
       }
     }
   }
 
   TopState moveToPrev() {
-    if (currentNode.isDir) {
-      currentNode.isSelected = false;
-      if (currentNode.children?.last.isDir == true) {
-        return copyWith(currentNode: currentNode.children?.last).moveToPrev();
-      } else {
-        currentNode.children?.last.isSelected = true;
-        return copyWith(currentNode: currentNode.children?.last);
-      }
-    } else {
-      currentNode.isSelected = false;
-      currentNode.prev?.isSelected = true;
+    if (currentNode.prev == null) {
+      return copyWith(currentNode: currentNode);
+    }
 
+    currentNode.isSelected = false;
+    currentNode.prev?.isSelected = true;
+    if (currentNode.isDir) {
+      return copyWith(currentNode: currentNode.children?.last).moveToPrev();
+    } else {
       if (currentNode.prev != null) {
         return copyWith(currentNode: currentNode.prev);
       } else {
-        if (currentNode.parent?.prev == null) {
-          return copyWith(currentNode: currentNode);
-        } else {
-          return copyWith(currentNode: currentNode.parent?.prev).moveToPrev();
-        }
+        return copyWith(currentNode: currentNode);
       }
     }
   }
