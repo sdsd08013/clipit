@@ -23,13 +23,7 @@ class Pin extends Selectable {
   }
 
   @override
-  String subText() {
-    if (trimText.length > 30) {
-      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
-    } else {
-      return "$trimText\n${formatter.format(createdAt)}";
-    }
-  }
+  String get name => text;
 
   factory Pin.fromMap(Map<String, dynamic> json, bool isSelected) => Pin(
       id: json['id'],

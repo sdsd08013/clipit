@@ -1,3 +1,5 @@
+import 'package:clipit/models/directable.dart';
+import 'package:clipit/models/tree_node.dart';
 import 'package:collection/collection.dart';
 import 'package:html/parser.dart';
 import 'package:html2md/html2md.dart' as html2md;
@@ -5,15 +7,19 @@ import 'package:intl/intl.dart';
 
 final formatter = DateFormat("yyyy/MM/dd HH:mm");
 
-class Selectable {
+class Selectable implements Directable {
   int id;
   String text;
   final DateTime createdAt;
   DateTime updatedAt;
+  @override
   bool isSelected;
+  @override
+  bool isDir = false;
   String mdText = "";
   String trimText = "";
   String plainText = "";
+  String subText = "";
   Selectable(
       {required this.id,
       required this.text,
@@ -26,15 +32,17 @@ class Selectable {
     if (parse(text).documentElement != null) {
       plainText = parse(text).documentElement!.text;
     }
-  }
 
-  String subText() {
     if (trimText.length > 30) {
-      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
+      subText =
+          "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}";
     } else {
-      return "$trimText\n${formatter.format(createdAt)}";
+      subText = "$trimText\n${formatter.format(createdAt)}";
     }
   }
+
+  @override
+  String get name => text;
 }
 
 class SelectableList {
@@ -135,5 +143,9 @@ class SelectableList {
 
   void selectLastItem() {
     switchItem(value.length - 1);
+  }
+
+  int getTargetIndex(Selectable target) {
+    return value.indexOf(target);
   }
 }

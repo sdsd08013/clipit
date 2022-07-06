@@ -19,7 +19,6 @@ typedef ScreenType2VoidFunc = void Function(ScreenType);
 class ContentsListView extends ConsumerWidget {
   final ScrollController controller;
   final Int2VoidFunc onItemTap;
-  final List<Selectable> items;
   final FocusNode listFocusNode;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
@@ -31,7 +30,6 @@ class ContentsListView extends ConsumerWidget {
 
   ContentsListView(
       {required this.controller,
-      required this.items,
       required this.listFocusNode,
       required this.handleListUp,
       required this.handleListDown,
@@ -51,7 +49,7 @@ class ContentsListView extends ConsumerWidget {
     const ratio3 = 0.3;
     const ratio4 = 0.7;
     double offset = ref.watch(offsetProvider);
-    TopState topState = ref.watch(topStateProvider);
+    SelectableList items = ref.watch(topStateProvider).currentItems;
     return FocusableActionDetector(
         autofocus: true,
         focusNode: listFocusNode,
@@ -66,7 +64,9 @@ class ContentsListView extends ConsumerWidget {
         },
         actions: {
           ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
-          ListViewDownIntent: CallbackAction(onInvoke: (e) => handleListDown()),
+          ListViewDownIntent: CallbackAction(onInvoke: (e) {
+            handleListDown();
+          }),
           ListViewItemCopyIntent:
               CallbackAction(onInvoke: (e) => handleTapCopyToClipboard()),
           ListViewItemDeleteIntent:
@@ -91,19 +91,19 @@ class ContentsListView extends ConsumerWidget {
                   child: Container(
                       height: 75,
                       padding: const EdgeInsets.all(8),
-                      color: items[index].isSelected
+                      color: items.value[index].isSelected
                           ? side2ndBackgroundSelect
                           : side2ndBackground,
                       child: RichText(
                         text: TextSpan(
-                          text: items[index].subText(),
+                          text: items.value[index].subText,
                           style: const TextStyle(
                               color: textColor, fontFamily: "RictyDiminished"),
                         ),
                       ))),
               separatorBuilder: (context, index) =>
                   const Divider(color: dividerColor, height: 0.5),
-              itemCount: items.length,
+              itemCount: items.value.length,
             )));
   }
 }

@@ -54,15 +54,6 @@ class History extends Selectable {
     return plainText.replaceAll(' ', '').replaceAll('\n', '');
   }
 
-  @override
-  String subText() {
-    if (trimText.length > 30) {
-      return "${trimText.substring(0, 30)}...\n${formatter.format(createdAt)}\n$count";
-    } else {
-      return "$trimText\n${formatter.format(createdAt)}\n$count";
-    }
-  }
-
   Map<String, dynamic> toMap() {
     return {
       'text': text,
@@ -79,4 +70,7 @@ class History extends Selectable {
           createdAt: DateTime.parse(json['created_at']).toLocal(),
           updatedAt: DateTime.parse(json['updated_at']).toLocal(),
           isSelected: isSelected);
+
+  @override
+  String get name => text;
 }

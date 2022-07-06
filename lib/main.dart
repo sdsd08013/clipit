@@ -7,7 +7,6 @@ import 'package:clipit/providers/top_state_provider.dart';
 import 'package:clipit/repositories/history_repository.dart';
 import 'package:clipit/color.dart';
 import 'package:clipit/repositories/pin_repository.dart';
-import 'package:clipit/states/top_state.dart';
 import 'package:clipit/views/contents_main.dart';
 import 'package:clipit/views/main_side_bar.dart';
 import 'package:clipit/views/resizable_divider.dart';
@@ -19,7 +18,6 @@ import 'dart:async';
 import 'dart:core';
 import 'models/pin.dart';
 import 'models/selectable.dart';
-import 'models/trash.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -121,7 +119,7 @@ class _HomeState extends ConsumerState<Home> {
   Future<void> retlievePins() async {
     final retlievedPins = await noteRepository.getNotes();
     topStateNotifier.addPins(
-        retlievedPins ?? PinList(currentIndex: 0, listTitle: "pi", value: []));
+        retlievedPins ?? PinList(currentIndex: 0, listTitle: "pin", value: []));
   }
 
   void createOrUpdateItem(String result) async {
@@ -171,8 +169,8 @@ class _HomeState extends ConsumerState<Home> {
     topStateNotifier.selectTargetItem(index);
   }
 
-  void handleSearchedtemTap(Selectable item) {
-    topStateNotifier.clearSearchResult();
+  void handleSearchedItemTap(Selectable item) {
+    topStateNotifier.selectSearchedItem(item);
   }
 
   void handleListDown() {
@@ -220,6 +218,16 @@ class _HomeState extends ConsumerState<Home> {
     ref.read(topStateProvider.notifier).selectLastItem();
   }
 
+  handleSearchResultDown() {
+    ref.read(topStateProvider.notifier).moveToNext();
+  }
+
+  handleSearchResultUp() {
+    ref.read(topStateProvider.notifier).moveToPrev();
+  }
+
+  handleSearchResultSelect(Selectable item) {}
+
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
     if (topStateNotifier.state.type == ScreenType.CLIP) {
@@ -241,12 +249,15 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handleSearchStart() {
-    setState(() {
-      searchFormFocusNode = FocusNode();
-    });
-    searchFormVisibleNotifier.update(true);
-    listFocusNode?.unfocus();
-    searchFormFocusNode?.requestFocus();
+    if (topStateNotifier.state.showSearchResult) {
+      searchFormVisibleNotifier.update(true);
+      searchResultFocusNode?.unfocus();
+      searchFormFocusNode?.requestFocus();
+    } else {
+      searchFormVisibleNotifier.update(true);
+      listFocusNode?.unfocus();
+      searchFormFocusNode?.requestFocus();
+    }
   }
 
   void handleSearchFormFocusChanged(hasFocus) {
@@ -298,12 +309,14 @@ class _HomeState extends ConsumerState<Home> {
           handleSearchFormInput: (text) => handleSearchFormInput(text),
           handleArchiveItemTap: handlePinItemTap,
           handleListViewItemTap: handleListViewItemTap,
-          handleSearchedItemTap: handleSearchedtemTap,
+          handleSearchResultSelect: handleSearchResultSelect,
           handleCopyToClipboardTap: handleCopyToClipboardTap,
           handleDeleteItemTap: handleListViewDeleteTap,
           handleEditItemTap: handleEditItemAction,
           handleListUp: handleListUp,
           handleListDown: handleListDown,
+          handleSearchResultUp: handleSearchResultUp,
+          handleSearchResultDown: handleSearchResultDown,
           handleListUpToTop: handleUpToTop,
           handleListDownToBottom: handleDownToBottom,
           handleListViewDeleteTap: handleListViewDeleteTap,
