@@ -38,7 +38,7 @@ class SearchResultView extends ConsumerWidget {
           ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
           ListViewDownIntent: CallbackAction(onInvoke: (e) => handleListDown()),
           SearchIntent:
-              CallbackAction(onInvoke: (e) => print("fooooooooooooooooocus")),
+              CallbackAction(onInvoke: (e) => handleSearchFormFocused()),
         },
         child: ListView.separated(
             shrinkWrap: true,

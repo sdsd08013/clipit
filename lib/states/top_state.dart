@@ -144,17 +144,13 @@ class TopState {
     pinNode.parent = nr;
     historyNode.next = pinNode;
     pinNode.prev = historyNode;
-    // final chn = historyNode.copyWith(parent: nr, next: pinNode);
-    // final cpn = pinNode.copyWith(parent: nr, prev: chn);
 
     if (searchedHistories.isNotEmpty) {
       historyNode.addSelectables(list: searchedHistories, isSelectFirst: true);
-      //chn.addSelectables(list: searchedHistories, isSelectFirst: true);
     }
 
     if (searchedPins.isNotEmpty) {
       pinNode.addSelectables(list: searchedPins);
-      //cpn.addSelectables(list: searchedPins);
     }
 
     historyNode.children?.first.isSelected = searchedHistories.isNotEmpty;

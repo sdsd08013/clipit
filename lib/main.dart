@@ -249,12 +249,15 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handleSearchStart() {
-    setState(() {
-      searchFormFocusNode = FocusNode();
-    });
-    searchFormVisibleNotifier.update(true);
-    listFocusNode?.unfocus();
-    searchFormFocusNode?.requestFocus();
+    if (topStateNotifier.state.showSearchResult) {
+      searchFormVisibleNotifier.update(true);
+      searchResultFocusNode?.unfocus();
+      searchFormFocusNode?.requestFocus();
+    } else {
+      searchFormVisibleNotifier.update(true);
+      listFocusNode?.unfocus();
+      searchFormFocusNode?.requestFocus();
+    }
   }
 
   void handleSearchFormFocusChanged(hasFocus) {

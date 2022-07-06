@@ -57,17 +57,17 @@ class TreeNode implements Directable {
       newChildren = children!;
     }
     list?.asMap().forEach((index, item) {
-      final prev = newChildren.isEmpty ? null : newChildren.last;
+      final tmpPrev = newChildren.isEmpty ? null : newChildren.last;
 
-      TreeNode tmp = TreeNode(
+      final TreeNode tmp = TreeNode(
           name: item.subText,
           isSelected: item.isSelected,
           isDir: item.isDir,
           item: item,
-          prev: prev,
+          prev: tmpPrev,
           parent: this);
 
-      prev?.next = tmp;
+      tmpPrev?.next = tmp;
       newChildren.add(tmp);
     });
     if (isSelectFirst) {
