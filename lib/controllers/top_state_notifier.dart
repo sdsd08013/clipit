@@ -16,7 +16,6 @@ class TopStateNotifier extends StateNotifier<TopState> {
                 HistoryList(currentIndex: 0, listTitle: "history", value: []),
             pins: PinList(currentIndex: 0, listTitle: "pin", value: []),
             trashes: TrashList(currentIndex: 0, listTitle: "trash", value: []),
-            searchResults: [],
             currentNode: TreeNode(
                 name: "root",
                 isDir: true,

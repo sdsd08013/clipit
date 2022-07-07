@@ -249,6 +249,7 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handleSearchStart() {
+    print("handleSearchStart");
     if (topStateNotifier.state.showSearchResult) {
       searchFormVisibleNotifier.update(true);
       searchResultFocusNode?.unfocus();
@@ -261,6 +262,7 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handleSearchFormFocusChanged(hasFocus) {
+    print("handleSearchFormFocusChanged:${hasFocus}");
     if (hasFocus) {
     } else {
       if (topStateNotifier.state.showSearchResult) {
@@ -273,7 +275,6 @@ class _HomeState extends ConsumerState<Home> {
         listFocusNode?.requestFocus();
         topStateNotifier.updateSearchBarVisibility(false);
         searchFormVisibleNotifier.update(false);
-        searchFormFocusNode = null;
       }
     }
   }

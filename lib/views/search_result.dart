@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:macos_ui/macos_ui.dart';
 
 import '../color.dart';
 import '../models/selectable.dart';
@@ -43,10 +44,17 @@ class SearchResultView extends ConsumerWidget {
         child: ListView.separated(
             shrinkWrap: true,
             itemBuilder: (context, parentIndex) => Column(children: [
-                  Text(children[parentIndex].name),
-                  ListView.builder(
+                  Container(
+                      padding: const EdgeInsets.all(8),
+                      color: side2ndBackground,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                          style: MacosTheme.of(context).typography.title1,
+                          children[parentIndex].name)),
+                  ListView.separated(
                       shrinkWrap: true,
                       itemBuilder: (context, childIndex) => Container(
+                          padding: const EdgeInsets.fromLTRB(24, 4, 4, 4),
                           height: 50,
                           color: children[parentIndex]
                                       .children?[childIndex]
@@ -54,43 +62,19 @@ class SearchResultView extends ConsumerWidget {
                                   false
                               ? side2ndBackgroundSelect
                               : side2ndBackground,
-                          child: Text(children[parentIndex]
-                                  .children?[childIndex]
-                                  .listText ??
-                              "way")),
+                          child: Text(
+                              maxLines: 2,
+                              style: MacosTheme.of(context).typography.headline,
+                              children[parentIndex]
+                                      .children?[childIndex]
+                                      .listText ??
+                                  "way")),
+                      separatorBuilder: (context, index) =>
+                          const Divider(color: dividerColor, height: 0.5),
                       itemCount: children[parentIndex].children?.length ?? 0)
                 ]),
             separatorBuilder: (context, index) =>
                 const Divider(color: dividerColor, height: 0.5),
             itemCount: children.length));
-
-    // child: ListView.separated(
-    //     shrinkWrap: true,
-    //     itemBuilder: (context, parentIndex) => ListView.builder(
-    //         itemBuilder: (context, childIndex) =>
-    //             children[parentIndex].children![childIndex].isDir
-    //                 ? Text(children[parentIndex].children![childIndex].name)
-    //                 : Container(
-    //                     height: 75,
-    //                     padding: const EdgeInsets.all(8),
-    //                     color: children[parentIndex]
-    //                             .children![childIndex]
-    //                             .isSelected
-    //                         ? side2ndBackgroundSelect
-    //                         : side2ndBackground,
-    //                     child: RichText(
-    //                       text: TextSpan(
-    //                         text: children[parentIndex]
-    //                             .children![childIndex]
-    //                             .listText,
-    //                         style: const TextStyle(
-    //                             color: textColor,
-    //                             fontFamily: "RictyDiminished"),
-    //                       ),
-    //                     )),
-    //         itemCount: children[parentIndex].children?.length),
-    //     separatorBuilder: (context, index) =>
-    //         const Divider(color: dividerColor, height: 0.5),
-    //     itemCount: children.length));
   }
 }
