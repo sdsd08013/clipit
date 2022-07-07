@@ -2,14 +2,12 @@ import 'package:clipit/models/tree_node.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:clipit/models/selectable.dart';
 import 'package:clipit/models/side_type.dart';
-import 'package:path/path.dart';
 
 @immutable
 class TopState {
   final SelectableList histories;
   final SelectableList pins;
   final SelectableList trashes;
-  final List<SelectableList> searchResults;
   final TreeNode currentNode;
   final ScreenType type;
   final bool showSearchBar;
@@ -19,7 +17,6 @@ class TopState {
       {required this.histories,
       required this.pins,
       required this.trashes,
-      required this.searchResults,
       required this.type,
       required this.showSearchBar,
       required this.showSearchResult,
@@ -38,7 +35,6 @@ class TopState {
         histories: histories ?? this.histories,
         pins: pins ?? this.pins,
         trashes: trashes ?? this.trashes,
-        searchResults: searchResults ?? this.searchResults,
         type: type ?? this.type,
         showSearchBar: showSearchBar ?? this.showSearchBar,
         showSearchResult: showSearchResult ?? this.showSearchResult,

@@ -1,5 +1,6 @@
 import 'package:clipit/models/directable.dart';
 import 'package:clipit/models/selectable.dart';
+import 'package:flutter/material.dart';
 
 class TreeNode implements Directable {
   @override
@@ -14,6 +15,7 @@ class TreeNode implements Directable {
   List<TreeNode>? children;
   TreeNode? prev;
   TreeNode? next;
+  IconData? icon;
   TreeNode(
       {required this.name,
       required this.isSelected,
@@ -22,7 +24,8 @@ class TreeNode implements Directable {
       this.children,
       this.parent,
       this.next,
-      this.prev}) {
+      this.prev,
+      this.icon}) {
     if (children != null) {
       for (var child in children!) {
         child.parent = this;

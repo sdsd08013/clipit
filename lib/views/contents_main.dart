@@ -1,3 +1,4 @@
+import 'package:clipit/color.dart';
 import 'package:clipit/views/markdown.dart';
 import 'package:clipit/views/search_result.dart';
 import 'package:flutter/cupertino.dart';
@@ -102,8 +103,8 @@ class ContentsMainView extends ConsumerWidget {
               Visibility(
                   visible: topState.showSearchResult,
                   child: Container(
+                      color: side2ndBackground,
                       height: double.infinity,
-                      color: Colors.red,
                       child: SearchResultView(
                           handleListUp: handleSearchResultUp,
                           handleListDown: handleSearchResultDown,
