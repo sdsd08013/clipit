@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:clipit/models/selectable.dart';
 import 'package:clipit/models/side_type.dart';
+import 'package:flutter/material.dart';
 
 import '../models/pin.dart';
 import '../models/trash.dart';
@@ -70,6 +71,10 @@ class TopState {
     }
   }
 
+  List<TreeNode> get firstHierarchicalDirs {
+    return listRoot.children ?? [];
+  }
+
   List<TreeNode> get historyNodes {
     return listRoot.children?[0].children ?? [];
   }
@@ -121,6 +126,8 @@ class TopState {
 
   TopState selectFirstNode() {
     if (listRoot.children?.first.children?.isNotEmpty == true) {
+      listCurrentNode.unSelect();
+      listRoot.children?.first.children?.first?.select();
       return copyWith(
           listCurrentNode: listRoot.children?.first.children?.first);
     } else {
@@ -129,16 +136,28 @@ class TopState {
   }
 
   TopState buildTree(HistoryList histories, PinList pins, TrashList trashes) {
-    final historyNode =
-        TreeNode(name: "history", isDir: true, isSelected: false, children: []);
-    historyNode.addSelectables(list: histories.value, isSelectFirst: true);
+    final historyNode = TreeNode(
+        name: "history",
+        isDir: true,
+        isSelected: false,
+        icon: Icons.history,
+        children: []);
+    historyNode.addSelectables(list: histories.value);
 
-    final pinNode =
-        TreeNode(name: "pin", isDir: true, isSelected: false, children: []);
+    final pinNode = TreeNode(
+        name: "pin",
+        isDir: true,
+        isSelected: false,
+        icon: Icons.push_pin_sharp,
+        children: []);
     pinNode.addSelectables(list: pins.value);
 
-    final trashNode =
-        TreeNode(name: "trash", isDir: true, isSelected: false, children: []);
+    final trashNode = TreeNode(
+        name: "trash",
+        isDir: true,
+        isSelected: false,
+        icon: Icons.delete,
+        children: []);
     trashNode.addSelectables(list: trashes.value);
 
     return copyWith(
@@ -173,7 +192,7 @@ class TopState {
     pinNode.prev = historyNode;
 
     if (searchedHistories.isNotEmpty) {
-      historyNode.addNodes(list: searchedHistories, isSelectFirst: true);
+      historyNode.addNodes(list: searchedHistories);
     }
 
     if (searchedPins.isNotEmpty) {

@@ -52,21 +52,21 @@ class TreeNode implements Directable {
       TreeNode? parent,
       TreeNode? prev,
       TreeNode? next,
-      List<TreeNode>? children}) {
+      List<TreeNode>? children,
+      IconData? icon}) {
     return TreeNode(
-      name: name ?? this.name,
-      isSelected: isSelected,
-      isDir: isDir,
-      item: item ?? this.item,
-      children: children ?? this.children,
-      parent: parent ?? this.parent,
-      prev: prev ?? this.prev,
-      next: next ?? this.next,
-    );
+        name: name ?? this.name,
+        isSelected: isSelected,
+        isDir: isDir,
+        item: item ?? this.item,
+        children: children ?? this.children,
+        parent: parent ?? this.parent,
+        prev: prev ?? this.prev,
+        next: next ?? this.next,
+        icon: icon ?? this.icon);
   }
 
-  TreeNode addSelectables(
-      {List<Selectable>? list, bool isSelectFirst = false}) {
+  TreeNode addSelectables({List<Selectable>? list}) {
     List<TreeNode> newChildren = [];
     if (children != null) {
       newChildren = children!;
@@ -85,13 +85,10 @@ class TreeNode implements Directable {
       tmpPrev?.next = tmp;
       newChildren.add(tmp);
     });
-    if (isSelectFirst) {
-      newChildren.first.isSelected = true;
-    }
     return copyWith(children: newChildren);
   }
 
-  TreeNode addNodes({List<TreeNode>? list, bool isSelectFirst = false}) {
+  TreeNode addNodes({List<TreeNode>? list}) {
     List<TreeNode> newChildren = [];
     if (children != null) {
       newChildren = children!;
@@ -111,9 +108,6 @@ class TreeNode implements Directable {
       tmpPrev?.next = tmp;
       newChildren.add(tmp);
     });
-    if (isSelectFirst) {
-      newChildren.first.isSelected = true;
-    }
     return copyWith(children: newChildren);
   }
 
@@ -165,6 +159,24 @@ class TreeNode implements Directable {
       return children!.last.moveToPrev();
     } else {
       return prev!;
+    }
+  }
+
+  void unSelect() {
+    isSelected = false;
+    TreeNode? nParent = parent;
+    while (nParent != null) {
+      nParent.isSelected = false;
+      nParent = nParent.parent;
+    }
+  }
+
+  void select() {
+    isSelected = true;
+    TreeNode? nParent = parent;
+    while (nParent != null) {
+      nParent.isSelected = true;
+      nParent = nParent.parent;
     }
   }
 }

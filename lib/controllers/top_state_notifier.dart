@@ -13,18 +13,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
             listCurrentNode: TreeNode(
                 name: "root", isDir: true, isSelected: false, children: []),
             searchResultCurrentNode: TreeNode(
-                name: "root",
-                isDir: true,
-                isSelected: false,
-                children: [
-                  TreeNode(
-                      name: "history",
-                      isDir: true,
-                      isSelected: false,
-                      children: []),
-                  TreeNode(
-                      name: "pin", isDir: true, isSelected: false, children: [])
-                ]),
+                name: "root", isDir: true, isSelected: false, children: []),
             type: ScreenType.CLIP,
             showSearchBar: false,
             showSearchResult: false));
