@@ -116,23 +116,6 @@ class _HomeState extends ConsumerState<Home> {
     }
   }
 
-  Future<void> retlieveHistorys() async {
-    final retlievedHistorys = await clipRepository.getClips();
-    topStateNotifier.addHistories(retlievedHistorys ??
-        HistoryList(currentIndex: 0, listTitle: "history", value: []));
-  }
-
-  Future<void> retlievePins() async {
-    final retlievedPins = await noteRepository.getNotes();
-    topStateNotifier.addPins(
-        retlievedPins ?? PinList(currentIndex: 0, listTitle: "pin", value: []));
-  }
-
-  Future<void> retlieveTrashes() async {
-    topStateNotifier
-        .addTrashes(TrashList(currentIndex: 0, listTitle: "trash", value: []));
-  }
-
   Future<void> retlieveTree() async {
     final retlievedHistories = await clipRepository.getClips();
     final retlievedPins = await noteRepository.getNotes();
@@ -188,10 +171,6 @@ class _HomeState extends ConsumerState<Home> {
 
   void handleListViewItemTap(int index) {
     topStateNotifier.selectTargetItem(index);
-  }
-
-  void handleSearchedItemTap(Selectable item) {
-    topStateNotifier.selectSearchedItem(item);
   }
 
   void handleListDown() {

@@ -16,9 +16,9 @@ class TopStateNotifier extends StateNotifier<TopState> {
                 HistoryList(currentIndex: 0, listTitle: "history", value: []),
             pins: PinList(currentIndex: 0, listTitle: "pin", value: []),
             trashes: TrashList(currentIndex: 0, listTitle: "trash", value: []),
-            currentListNode: TreeNode(
+            listCurrentNode: TreeNode(
                 name: "root", isDir: true, isSelected: false, children: []),
-            currentNode: TreeNode(
+            searchListCurrentNode: TreeNode(
                 name: "root",
                 isDir: true,
                 isSelected: false,
@@ -44,22 +44,22 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void selectFirstItem() {
-    state.currentListNode.isSelected = false;
+    state.listCurrentNode.isSelected = false;
     state.currentDirNodes.first.isSelected = true;
-    state = state.copyWith(currentListNode: state.currentDirNodes.first);
+    state = state.copyWith(listCurrentNode: state.currentDirNodes.first);
   }
 
   void selectLastItem() {
-    state.currentListNode.isSelected = false;
+    state.listCurrentNode.isSelected = false;
     state.currentDirNodes.last.isSelected = true;
-    state = state.copyWith(currentListNode: state.currentDirNodes.last);
+    state = state.copyWith(listCurrentNode: state.currentDirNodes.last);
   }
 
   void moveToTargetNode(TreeNode target) {
-    state.currentListNode.isSelected = false;
+    state.listCurrentNode.isSelected = false;
     target.isSelected = true;
     state = state.copyWith(
-        currentListNode: target,
+        listCurrentNode: target,
         searchResults: [],
         showSearchResult: false,
         showSearchBar: false);
@@ -75,21 +75,6 @@ class TopStateNotifier extends StateNotifier<TopState> {
         .copyWith(histories: histories, pins: pins, trashes: trashes)
         .buildTree(histories, pins, trashes)
         .selectFirstNode();
-  }
-
-  void addHistories(HistoryList histories) {
-    state = state.copyWith(histories: histories);
-    //state = state.buildHistoryTree(histories);
-  }
-
-  void addPins(PinList pins) {
-    state = state.copyWith(pins: pins);
-    //state = state.buildPinTree(pins);
-  }
-
-  void addTrashes(TrashList trashes) {
-    state = state.copyWith(trashes: trashes);
-    //state = state.buildTrashTree(trashes);
   }
 
   void selectFirstNode() {
@@ -128,22 +113,6 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state.getSearchResult(text).then((value) {
       state = value.copyWith(showSearchResult: true);
     });
-  }
-
-  void selectSearchedItem(Selectable item) {
-    int index = 0;
-    if (item is History) {
-      index = state.histories.getTargetIndex(item);
-    } else if (item is Pin) {
-      index = state.pins.getTargetIndex(item);
-    } else if (item is Trash) {
-      index = state.trashes.getTargetIndex(item);
-    } else {
-      index = state.histories.getTargetIndex(item);
-    }
-    state = state
-        .switchCurrentItems(index)
-        .copyWith(searchResults: [], showSearchResult: false);
   }
 
   void updateSearchBarVisibility(bool isVisible) {

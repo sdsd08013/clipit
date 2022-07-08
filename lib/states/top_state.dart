@@ -12,8 +12,8 @@ class TopState {
   final SelectableList histories;
   final SelectableList pins;
   final SelectableList trashes;
-  final TreeNode currentListNode;
-  final TreeNode currentNode;
+  final TreeNode listCurrentNode;
+  final TreeNode searchListCurrentNode;
   final ScreenType type;
   final bool showSearchBar;
   final bool showSearchResult;
@@ -25,8 +25,8 @@ class TopState {
       required this.type,
       required this.showSearchBar,
       required this.showSearchResult,
-      required this.currentListNode,
-      required this.currentNode});
+      required this.listCurrentNode,
+      required this.searchListCurrentNode});
 
   TopState copyWith({
     SelectableList? histories,
@@ -36,8 +36,8 @@ class TopState {
     ScreenType? type,
     bool? showSearchBar,
     bool? showSearchResult,
-    TreeNode? currentListNode,
-    TreeNode? currentNode,
+    TreeNode? listCurrentNode,
+    TreeNode? searchListCurrentNode,
   }) {
     return TopState(
         histories: histories ?? this.histories,
@@ -46,12 +46,13 @@ class TopState {
         type: type ?? this.type,
         showSearchBar: showSearchBar ?? this.showSearchBar,
         showSearchResult: showSearchResult ?? this.showSearchResult,
-        currentListNode: currentListNode ?? this.currentListNode,
-        currentNode: currentNode ?? this.currentNode);
+        listCurrentNode: listCurrentNode ?? this.listCurrentNode,
+        searchListCurrentNode:
+            searchListCurrentNode ?? this.searchListCurrentNode);
   }
 
   TreeNode get root {
-    TreeNode current = currentNode;
+    TreeNode current = listCurrentNode;
     while (current.parent != null) {
       current = current.parent!;
     }
@@ -59,7 +60,7 @@ class TopState {
   }
 
   TreeNode get root2 {
-    TreeNode current = currentListNode;
+    TreeNode current = listCurrentNode;
     while (current.parent != null) {
       current = current.parent!;
     }
@@ -89,7 +90,6 @@ class TopState {
 
   SelectableList get currentItems {
     if (type == ScreenType.CLIP) {
-      root.children?[0].children;
       return histories;
     } else if (type == ScreenType.PINNED) {
       return pins;
@@ -103,35 +103,15 @@ class TopState {
   Selectable get currentItem => currentItems.currentItem;
 
   int get currentIndex {
-    return currentListNode.sibilings.indexOf(currentListNode);
+    return listCurrentNode.sibilings.indexOf(listCurrentNode);
   }
 
   TopState decrementCurrentItems() {
     return moveToPrev();
-    // if (type == ScreenType.CLIP) {
-    //   return copyWith(histories: histories.decrementIndex());
-    // } else if (type == ScreenType.PINNED) {
-    //   return copyWith(pins: pins.decrementIndex());
-    // } else if (type == ScreenType.TRASH) {
-    //   return copyWith(trashes: trashes.decrementIndex());
-    // } else {
-    //   return copyWith(histories: histories.decrementIndex());
-    // }
   }
 
   TopState incrementCurrentItems() {
     return moveToNext();
-    /*
-    if (type == ScreenType.CLIP) {
-      return copyWith(histories: histories.incrementIndex());
-    } else if (type == ScreenType.PINNED) {
-      return copyWith(pins: pins.incrementIndex());
-    } else if (type == ScreenType.TRASH) {
-      return copyWith(trashes: trashes.incrementIndex());
-    } else {
-      return copyWith(histories: histories.incrementIndex());
-    }
-    */
   }
 
   TopState switchCurrentItems(int targetIndex) {
@@ -152,7 +132,7 @@ class TopState {
 
   TopState selectFirstNode() {
     if (root2.children?.first.children?.isNotEmpty == true) {
-      return copyWith(currentListNode: root2.children?.first?.children?.first);
+      return copyWith(listCurrentNode: root2.children?.first?.children?.first);
     } else {
       return copyWith();
     }
@@ -172,44 +152,11 @@ class TopState {
     trashNode.addSelectables(list: trashes.value);
 
     return copyWith(
-        currentListNode: root2
+        listCurrentNode: root2
             .addChild(historyNode.copyWith(next: pinNode, parent: root2))
             .addChild(pinNode.copyWith(
                 next: trashNode, prev: historyNode, parent: root2))
             .addChild(trashNode.copyWith(prev: pinNode, parent: root2)));
-  }
-
-  TopState buildHistoryTree(HistoryList histories) {
-    final historyNode =
-        TreeNode(name: "history", isDir: true, isSelected: false, children: []);
-    historyNode.addSelectables(list: histories.value);
-    return copyWith(currentListNode: root2.addChild(historyNode));
-  }
-
-  TopState buildPinTree(PinList pins) {
-    final pinNode =
-        TreeNode(name: "pin", isDir: true, isSelected: false, children: []);
-    pinNode.addSelectables(list: histories.value);
-    return copyWith(currentListNode: root2.addChild(pinNode));
-  }
-
-  TopState buildTrashTree(TrashList trashes) {
-    final trashNode =
-        TreeNode(name: "trash", isDir: true, isSelected: false, children: []);
-    trashNode.addSelectables(list: trashes.value);
-    return copyWith(currentListNode: root2.addChild(trashNode));
-  }
-
-  Future<List<TreeNode>> searchHistories(String text) async {
-    return historyNodes
-        .where((element) => element.listText.contains(text))
-        .toList();
-  }
-
-  Future<List<TreeNode>> searchPins(String text) async {
-    return pinNodes
-        .where((element) => element.listText.contains(text))
-        .toList();
   }
 
   Future<TopState> getSearchResult(String text) async {
@@ -247,65 +194,44 @@ class TopState {
     pinNode.children?.first.isSelected =
         searchedHistories.isEmpty && searchedPins.isNotEmpty;
 
-    return copyWith(currentNode: historyNode.children?.first);
-  }
-
-  TreeNode currentNodeNode() {
-    TreeNode current = currentNode;
-    while (current.parent != null) {
-      current = current.parent!;
-    }
-    return current;
-  }
-
-  TreeNode firstChild() {
-    TreeNode current = currentNode;
-
-    while (current.children?.isNotEmpty == true) {
-      current = current.children!.first;
-    }
-    return current;
-  }
-
-  void updateCurrentNode() {
-    currentNode.isSelected = false;
+    return copyWith(searchListCurrentNode: historyNode.children?.first);
   }
 
   TopState moveToNext() {
-    if (currentListNode.next == null) {
-      return copyWith(currentListNode: currentListNode);
+    if (listCurrentNode.next == null) {
+      return copyWith(listCurrentNode: listCurrentNode);
     }
 
-    currentListNode.isSelected = false;
-    currentListNode.next?.isSelected = true;
+    listCurrentNode.isSelected = false;
+    listCurrentNode.next?.isSelected = true;
 
-    if (currentListNode.isDir) {
-      return copyWith(currentListNode: currentListNode.next).moveToNext();
+    if (listCurrentNode.isDir) {
+      return copyWith(listCurrentNode: listCurrentNode.next).moveToNext();
     } else {
-      if (currentListNode.next != null) {
+      if (listCurrentNode.next != null) {
         // dir->fileのとき
-        return copyWith(currentListNode: currentListNode.next);
+        return copyWith(listCurrentNode: listCurrentNode.next);
       } else {
-        return copyWith(currentListNode: currentListNode);
+        return copyWith(listCurrentNode: listCurrentNode);
       }
     }
   }
 
   TopState moveToPrev() {
-    if (currentListNode.prev == null) {
-      return copyWith(currentListNode: currentListNode);
+    if (listCurrentNode.prev == null) {
+      return copyWith(listCurrentNode: listCurrentNode);
     }
 
-    currentListNode.isSelected = false;
-    currentListNode.prev?.isSelected = true;
-    if (currentListNode.isDir) {
-      return copyWith(currentListNode: currentListNode.children?.last)
+    listCurrentNode.isSelected = false;
+    listCurrentNode.prev?.isSelected = true;
+    if (listCurrentNode.isDir) {
+      return copyWith(listCurrentNode: listCurrentNode.children?.last)
           .moveToPrev();
     } else {
-      if (currentListNode.prev != null) {
-        return copyWith(currentListNode: currentListNode.prev);
+      if (listCurrentNode.prev != null) {
+        return copyWith(listCurrentNode: listCurrentNode.prev);
       } else {
-        return copyWith(currentListNode: currentListNode);
+        return copyWith(listCurrentNode: listCurrentNode);
       }
     }
   }
