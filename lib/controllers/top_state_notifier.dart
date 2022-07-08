@@ -106,7 +106,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
 
   void archiveHistory(History history) {}
 
-  void searchSelectables(String text) {
+  void searchTreeNode(String text) {
     state.search(text).then((value) {
       state = value.copyWith(showSearchResult: true).selectFirstNode();
     });
@@ -116,11 +116,8 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state = state.copyWith(showSearchBar: isVisible);
   }
 
-  void moveToNext() {
-    state = state.moveToNext();
-  }
-
-  void moveToPrev() {
-    state = state.moveToPrev();
+  void clearSearchResult() {
+    state =
+        state.copyWith(searchResultCurrentNode: null, showSearchResult: false);
   }
 }

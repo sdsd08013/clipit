@@ -176,16 +176,16 @@ class _HomeState extends ConsumerState<Home> {
   void handleListDown() {
     final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
     var visibleItemCount =
-        (listViewController.position.viewportDimension / 75.5).ceil();
+        (listViewController.position.viewportDimension / 76).ceil();
 
     var offset =
-        listViewController.position.viewportDimension - visibleItemCount * 75.5;
+        listViewController.position.viewportDimension - visibleItemCount * 76;
 
     if ((listViewController.offset +
             listViewController.position.viewportDimension) <
-        (currentIndex + 2) * 75.5) {
+        (currentIndex + 2) * 76) {
       listViewController
-          .jumpTo((currentIndex - visibleItemCount + 2) * 75.5 - offset);
+          .jumpTo((currentIndex - visibleItemCount + 2) * 76 - offset);
     }
 
     ref.read(topStateProvider.notifier).moveToNextList();
@@ -193,9 +193,9 @@ class _HomeState extends ConsumerState<Home> {
 
   void handleListUp() {
     final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
-    var current = (currentIndex - 1) * 75.5;
+    var current = (currentIndex - 1) * 76;
     if (current < listViewController.offset) {
-      listViewController.jumpTo((currentIndex - 1) * 75.5);
+      listViewController.jumpTo((currentIndex - 1) * 76);
     }
 
     ref.read(topStateProvider.notifier).moveToPrevList();
@@ -214,7 +214,7 @@ class _HomeState extends ConsumerState<Home> {
   void handleDownToBottom() {
     final length =
         ref.read(topStateProvider.notifier).state.currentDirNodes.length;
-    listViewController.jumpTo(length * 75.5);
+    listViewController.jumpTo(length * 76);
     ref.read(topStateProvider.notifier).selectLastItem();
   }
 
@@ -234,7 +234,7 @@ class _HomeState extends ConsumerState<Home> {
       searchFormVisibleNotifier.update(false);
 
       final length = ref.read(topStateProvider.notifier).state.currentIndex;
-      listViewController.jumpTo(length * 75.5);
+      listViewController.jumpTo(length * 76);
     }
   }
 
@@ -293,10 +293,10 @@ class _HomeState extends ConsumerState<Home> {
     if (text.isEmpty) {
       listFocusNode?.requestFocus();
       searchFormFocusNode?.unfocus();
-
       searchFormVisibleNotifier.update(false);
+      topStateNotifier.clearSearchResult();
     } else {
-      topStateNotifier.searchSelectables(text);
+      topStateNotifier.searchTreeNode(text);
       searchFormVisibleNotifier.update(true);
     }
   }

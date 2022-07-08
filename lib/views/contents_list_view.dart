@@ -95,7 +95,7 @@ class ContentsListView extends ConsumerWidget {
                         ),
                       ))),
               separatorBuilder: (context, index) =>
-                  const Divider(color: dividerColor, height: 0.5),
+                  const Divider(color: dividerColor, height: 1),
               itemCount: items.length,
             )));
   }

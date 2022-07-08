@@ -188,34 +188,4 @@ class TopState {
 
     return copyWith(searchResultCurrentNode: historyNode.children?.first);
   }
-
-  TopState moveToNext() {
-    if (listCurrentNode.next == null) {
-      return copyWith(listCurrentNode: listCurrentNode);
-    }
-
-    listCurrentNode.isSelected = false;
-    listCurrentNode.next?.isSelected = true;
-
-    if (listCurrentNode.isDir) {
-      return copyWith(listCurrentNode: listCurrentNode.next).moveToNext();
-    } else {
-      return copyWith(listCurrentNode: listCurrentNode.next);
-    }
-  }
-
-  TopState moveToPrev() {
-    if (listCurrentNode.prev == null) {
-      return copyWith(listCurrentNode: listCurrentNode);
-    }
-
-    listCurrentNode.isSelected = false;
-    listCurrentNode.prev?.isSelected = true;
-    if (listCurrentNode.isDir) {
-      return copyWith(listCurrentNode: listCurrentNode.children?.last)
-          .moveToPrev();
-    } else {
-      return copyWith(listCurrentNode: listCurrentNode.prev);
-    }
-  }
 }
