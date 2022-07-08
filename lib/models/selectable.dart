@@ -1,5 +1,4 @@
 import 'package:clipit/models/directable.dart';
-import 'package:clipit/models/tree_node.dart';
 import 'package:collection/collection.dart';
 import 'package:html/parser.dart';
 import 'package:html2md/html2md.dart' as html2md;

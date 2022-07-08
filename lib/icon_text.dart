@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:macos_ui/macos_ui.dart';
 
 class IconText extends StatelessWidget {
   final String text;
@@ -27,8 +28,12 @@ class IconText extends StatelessWidget {
               text: TextSpan(
                 children: [
                   WidgetSpan(child: Icon(icon, color: iconColor, size: 14)),
-                  TextSpan(text: " ", style: TextStyle(color: textColor)),
-                  TextSpan(text: text, style: TextStyle(color: textColor))
+                  TextSpan(
+                      text: " ",
+                      style: MacosTheme.of(context).typography.headline),
+                  TextSpan(
+                      text: text,
+                      style: MacosTheme.of(context).typography.headline)
                 ],
               ),
             )));

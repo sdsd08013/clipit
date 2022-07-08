@@ -1,9 +1,9 @@
-import 'package:clipit/views/contents_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:macos_ui/macos_ui.dart';
 import '../color.dart';
 import '../providers/search_form_visible_provider.dart';
+import '../types.dart';
 import 'modified_macos_search_field.dart';
 
 class ContentsHeader extends ConsumerWidget {

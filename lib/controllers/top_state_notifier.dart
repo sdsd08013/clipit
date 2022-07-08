@@ -16,6 +16,8 @@ class TopStateNotifier extends StateNotifier<TopState> {
                 HistoryList(currentIndex: 0, listTitle: "history", value: []),
             pins: PinList(currentIndex: 0, listTitle: "pin", value: []),
             trashes: TrashList(currentIndex: 0, listTitle: "trash", value: []),
+            currentListNode: TreeNode(
+                name: "root", isDir: true, isSelected: false, children: []),
             currentNode: TreeNode(
                 name: "root",
                 isDir: true,
@@ -42,23 +44,56 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void selectFirstItem() {
-    state = state.switchCurrentItems(0);
+    state.currentListNode.isSelected = false;
+    state.currentDirNodes.first.isSelected = true;
+    state = state.copyWith(currentListNode: state.currentDirNodes.first);
   }
 
   void selectLastItem() {
-    state = state.switchCurrentItems(state.currentItems.value.length - 1);
+    state.currentListNode.isSelected = false;
+    state.currentDirNodes.last.isSelected = true;
+    state = state.copyWith(currentListNode: state.currentDirNodes.last);
+  }
+
+  void moveToTargetNode(TreeNode target) {
+    state.currentListNode.isSelected = false;
+    target.isSelected = true;
+    state = state.copyWith(
+        currentListNode: target,
+        searchResults: [],
+        showSearchResult: false,
+        showSearchBar: false);
+    state;
   }
 
   void selectTargetItem(int targetIndex) {
     state = state.switchCurrentItems(targetIndex);
   }
 
+  void retlieveTree(HistoryList histories, PinList pins, TrashList trashes) {
+    state = state
+        .copyWith(histories: histories, pins: pins, trashes: trashes)
+        .buildTree(histories, pins, trashes)
+        .selectFirstNode();
+  }
+
   void addHistories(HistoryList histories) {
     state = state.copyWith(histories: histories);
+    //state = state.buildHistoryTree(histories);
   }
 
   void addPins(PinList pins) {
     state = state.copyWith(pins: pins);
+    //state = state.buildPinTree(pins);
+  }
+
+  void addTrashes(TrashList trashes) {
+    state = state.copyWith(trashes: trashes);
+    //state = state.buildTrashTree(trashes);
+  }
+
+  void selectFirstNode() {
+    state = state.selectFirstNode();
   }
 
   void insertHistoryToHead(History history) {

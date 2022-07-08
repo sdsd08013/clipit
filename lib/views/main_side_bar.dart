@@ -9,7 +9,7 @@ import '../color.dart';
 import '../icon_text.dart';
 import '../providers/offset_provider.dart';
 import '../states/top_state.dart';
-import 'contents_list_view.dart';
+import '../types.dart';
 
 class MainSideBarView extends ConsumerWidget {
   double dragStartPos = 0;

@@ -18,6 +18,8 @@ import 'dart:async';
 import 'dart:core';
 import 'models/pin.dart';
 import 'models/selectable.dart';
+import 'models/trash.dart';
+import 'models/tree_node.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -78,21 +80,25 @@ class _HomeState extends ConsumerState<Home> {
   late TopStateNotifier topStateNotifier;
   late SearchFormVisibleNotifier searchFormVisibleNotifier;
 
-  @override
-  void initState() {
-    super.initState();
-
+  initialize() {
     topStateNotifier = ref.read(topStateProvider.notifier);
     searchFormVisibleNotifier = ref.read(searchFormVisibleProvider.notifier);
-    retlieveHistorys();
-    retlievePins();
+    // retlieveHistorys();
+    // retlievePins();
+    // retlieveTrashes();
+    retlieveTree();
     //clipRepository.dropTable();
-
     Future.delayed(Duration.zero, () {
       Timer.periodic(const Duration(milliseconds: 100), (timer) {
         getHistoryboardHtml();
       });
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initialize();
   }
 
   getHistoryboardHtml() async {
@@ -120,6 +126,21 @@ class _HomeState extends ConsumerState<Home> {
     final retlievedPins = await noteRepository.getNotes();
     topStateNotifier.addPins(
         retlievedPins ?? PinList(currentIndex: 0, listTitle: "pin", value: []));
+  }
+
+  Future<void> retlieveTrashes() async {
+    topStateNotifier
+        .addTrashes(TrashList(currentIndex: 0, listTitle: "trash", value: []));
+  }
+
+  Future<void> retlieveTree() async {
+    final retlievedHistories = await clipRepository.getClips();
+    final retlievedPins = await noteRepository.getNotes();
+    topStateNotifier.retlieveTree(
+        retlievedHistories ??
+            HistoryList(currentIndex: 0, listTitle: "history", value: []),
+        retlievedPins ?? PinList(currentIndex: 0, listTitle: "pin", value: []),
+        TrashList(currentIndex: 0, listTitle: "trash", value: []));
   }
 
   void createOrUpdateItem(String result) async {
@@ -226,7 +247,18 @@ class _HomeState extends ConsumerState<Home> {
     ref.read(topStateProvider.notifier).moveToPrev();
   }
 
-  handleSearchResultSelect(Selectable item) {}
+  handleSearchResultSelect(TreeNode node) {
+    if (node.self != null) {
+      topStateNotifier.moveToTargetNode(node.self!);
+      searchFormFocusNode?.unfocus();
+      listFocusNode?.requestFocus();
+      topStateNotifier.updateSearchBarVisibility(false);
+      searchFormVisibleNotifier.update(false);
+
+      final length = ref.read(topStateProvider.notifier).state.currentIndex;
+      listViewController.jumpTo(length * 75.5);
+    }
+  }
 
   void handleListViewDeleteTap() {
     // TODO: 最新のclipboardと同じtextは消せないようにする
