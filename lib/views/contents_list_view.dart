@@ -11,7 +11,7 @@ import 'key_set.dart';
 
 class ContentsListView extends ConsumerWidget {
   final ScrollController controller;
-  final Int2VoidFunc onItemTap;
+  final TreeNode2VoidFunc onItemTap;
   final FocusNode listFocusNode;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
@@ -79,7 +79,7 @@ class ContentsListView extends ConsumerWidget {
               itemBuilder: (context, index) => GestureDetector(
                   key: key1,
                   onTap: () {
-                    onItemTap.call(index);
+                    onItemTap.call(items[index]);
                   },
                   child: Container(
                       height: 75,
@@ -95,7 +95,7 @@ class ContentsListView extends ConsumerWidget {
                         ),
                       ))),
               separatorBuilder: (context, index) =>
-                  const Divider(color: dividerColor, height: 0.5),
+                  const Divider(color: dividerColor, height: 1),
               itemCount: items.length,
             )));
   }

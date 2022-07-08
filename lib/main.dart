@@ -116,23 +116,6 @@ class _HomeState extends ConsumerState<Home> {
     }
   }
 
-  Future<void> retlieveHistorys() async {
-    final retlievedHistorys = await clipRepository.getClips();
-    topStateNotifier.addHistories(retlievedHistorys ??
-        HistoryList(currentIndex: 0, listTitle: "history", value: []));
-  }
-
-  Future<void> retlievePins() async {
-    final retlievedPins = await noteRepository.getNotes();
-    topStateNotifier.addPins(
-        retlievedPins ?? PinList(currentIndex: 0, listTitle: "pin", value: []));
-  }
-
-  Future<void> retlieveTrashes() async {
-    topStateNotifier
-        .addTrashes(TrashList(currentIndex: 0, listTitle: "trash", value: []));
-  }
-
   Future<void> retlieveTree() async {
     final retlievedHistories = await clipRepository.getClips();
     final retlievedPins = await noteRepository.getNotes();
@@ -173,53 +156,49 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handlePinItemTap() async {
-    final target = topStateNotifier.state.histories.currentItem;
-    clipRepository.deleteHistory(target.id);
-    topStateNotifier.deleteHistory(target);
-    final noteId = await noteRepository.savePin(target.text);
+    final target = topStateNotifier.state.listCurrentNode.item;
+    clipRepository.deleteHistory(target?.id ?? 0);
+    topStateNotifier.deleteCurrentNode();
+    final noteId = await noteRepository.savePin(target?.text ?? "");
     topStateNotifier.insertPinToHead(Pin(
         id: noteId,
-        text: target.text,
+        text: target?.text ?? "",
         isSelected: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now()));
     listFocusNode?.requestFocus();
   }
 
-  void handleListViewItemTap(int index) {
-    topStateNotifier.selectTargetItem(index);
-  }
-
-  void handleSearchedItemTap(Selectable item) {
-    topStateNotifier.selectSearchedItem(item);
+  void handleListViewItemTap(TreeNode node) {
+    topStateNotifier.selectTargetNode(node);
   }
 
   void handleListDown() {
     final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
     var visibleItemCount =
-        (listViewController.position.viewportDimension / 75.5).ceil();
+        (listViewController.position.viewportDimension / 76).ceil();
 
     var offset =
-        listViewController.position.viewportDimension - visibleItemCount * 75.5;
+        listViewController.position.viewportDimension - visibleItemCount * 76;
 
     if ((listViewController.offset +
             listViewController.position.viewportDimension) <
-        (currentIndex + 2) * 75.5) {
+        (currentIndex + 2) * 76) {
       listViewController
-          .jumpTo((currentIndex - visibleItemCount + 2) * 75.5 - offset);
+          .jumpTo((currentIndex - visibleItemCount + 2) * 76 - offset);
     }
 
-    ref.read(topStateProvider.notifier).increment();
+    ref.read(topStateProvider.notifier).moveToNextList();
   }
 
   void handleListUp() {
     final currentIndex = ref.read(topStateProvider.notifier).state.currentIndex;
-    var current = (currentIndex - 1) * 75.5;
+    var current = (currentIndex - 1) * 76;
     if (current < listViewController.offset) {
-      listViewController.jumpTo((currentIndex - 1) * 75.5);
+      listViewController.jumpTo((currentIndex - 1) * 76);
     }
 
-    ref.read(topStateProvider.notifier).decrement();
+    ref.read(topStateProvider.notifier).moveToPrevList();
   }
 
   void handleUpToTop() {
@@ -234,17 +213,17 @@ class _HomeState extends ConsumerState<Home> {
 
   void handleDownToBottom() {
     final length =
-        ref.read(topStateProvider.notifier).state.currentItems.value.length;
-    listViewController.jumpTo(length * 75.5);
+        ref.read(topStateProvider.notifier).state.currentDirNodes.length;
+    listViewController.jumpTo(length * 76);
     ref.read(topStateProvider.notifier).selectLastItem();
   }
 
   handleSearchResultDown() {
-    ref.read(topStateProvider.notifier).moveToNext();
+    ref.read(topStateProvider.notifier).moveToNextSearchResult();
   }
 
   handleSearchResultUp() {
-    ref.read(topStateProvider.notifier).moveToPrev();
+    ref.read(topStateProvider.notifier).moveToPrevSearchResult();
   }
 
   handleSearchResultSelect(TreeNode node) {
@@ -252,11 +231,10 @@ class _HomeState extends ConsumerState<Home> {
       topStateNotifier.moveToTargetNode(node.self!);
       searchFormFocusNode?.unfocus();
       listFocusNode?.requestFocus();
-      topStateNotifier.updateSearchBarVisibility(false);
       searchFormVisibleNotifier.update(false);
 
       final length = ref.read(topStateProvider.notifier).state.currentIndex;
-      listViewController.jumpTo(length * 75.5);
+      listViewController.jumpTo(length * 76);
     }
   }
 
@@ -264,8 +242,8 @@ class _HomeState extends ConsumerState<Home> {
     // TODO: 最新のclipboardと同じtextは消せないようにする
     if (topStateNotifier.state.type == ScreenType.CLIP) {
       clipRepository
-          .deleteHistory(topStateNotifier.state.histories.currentItem.id);
-      topStateNotifier.deleteCurrentHistory();
+          .deleteHistory(topStateNotifier.state.listCurrentNode.item?.id ?? 0);
+      topStateNotifier.deleteCurrentNode();
     } else if (type == ScreenType.PINNED) {}
 
     listFocusNode?.requestFocus();
@@ -277,7 +255,7 @@ class _HomeState extends ConsumerState<Home> {
 
   void handleCopyToClipboardTap() {
     Clipboard.setData(
-        ClipboardData(text: topStateNotifier.state.currentItem.text));
+        ClipboardData(text: topStateNotifier.state.currentItem?.text));
   }
 
   void handleSearchStart() {
@@ -315,11 +293,10 @@ class _HomeState extends ConsumerState<Home> {
     if (text.isEmpty) {
       listFocusNode?.requestFocus();
       searchFormFocusNode?.unfocus();
-
-      topStateNotifier.clearSearchResult();
       searchFormVisibleNotifier.update(false);
+      topStateNotifier.clearSearchResult();
     } else {
-      topStateNotifier.searchSelectables(text);
+      topStateNotifier.searchTreeNode(text);
       searchFormVisibleNotifier.update(true);
     }
   }

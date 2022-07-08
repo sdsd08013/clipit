@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../color.dart';
 import '../icon_text.dart';
 import '../models/side_type.dart';
-import '../models/tree_node.dart';
-import '../providers/top_state_provider.dart';
 import '../types.dart';
 
 class SideMenu extends ConsumerWidget {
@@ -15,7 +13,6 @@ class SideMenu extends ConsumerWidget {
       : super(key: key);
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    List<TreeNode> children = ref.watch(topStateProvider).root.children ?? [];
     return Column(children: [
       Container(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
