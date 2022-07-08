@@ -57,8 +57,9 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void selectTargetNode(TreeNode target) {
-    state.listCurrentNode.isSelected = false;
-    target.isSelected = true;
+    state.listCurrentNode.unSelect();
+    target.select();
+    // TODO: dirの場合はchild, fileの場合はtarget
     state = state.copyWith(listCurrentNode: target);
   }
 
@@ -74,10 +75,6 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void insertHistoryToHead(History history) {}
-
-  void changeType(ScreenType type) {
-    state = state.copyWith(type: type);
-  }
 
   void deleteHistory(History history) {}
 

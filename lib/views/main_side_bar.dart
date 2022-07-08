@@ -13,7 +13,7 @@ import '../types.dart';
 
 class MainSideBarView extends ConsumerWidget {
   double dragStartPos = 0;
-  ScreenType2VoidFunc handleSideBarTap;
+  TreeNode2VoidFunc handleSideBarTap;
   MainSideBarView({Key? key, required this.handleSideBarTap}) : super(key: key);
 
   @override
@@ -46,7 +46,7 @@ class MainSideBarView extends ConsumerWidget {
                     text: "setting",
                     textColor: textColor,
                     iconColor: iconColor,
-                    onTap: () => handleSideBarTap(ScreenType.SETTING),
+                    onTap: () => print("setting tap"),
                   ))),
         ]));
   }

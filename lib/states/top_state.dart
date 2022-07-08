@@ -60,14 +60,10 @@ class TopState {
   }
 
   List<TreeNode> get currentDirNodes {
-    if (type == ScreenType.CLIP) {
-      return listRoot.children?[0].children ?? [];
-    } else if (type == ScreenType.PINNED) {
-      return listRoot.children?[1].children ?? [];
-    } else if (type == ScreenType.TRASH) {
-      return listRoot.children?[2].children ?? [];
+    if (listCurrentNode.isDir) {
+      return listCurrentNode.children ?? [];
     } else {
-      return listRoot.children?[0].children ?? [];
+      return listCurrentNode.sibilings;
     }
   }
 

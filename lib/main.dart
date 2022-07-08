@@ -150,9 +150,9 @@ class _HomeState extends ConsumerState<Home> {
     }
   }
 
-  void handleSideBarTap(ScreenType newType) {
+  void handleSideBarTap(TreeNode node) {
     listFocusNode?.requestFocus();
-    ref.read(topStateProvider.notifier).changeType(newType);
+    ref.read(topStateProvider.notifier).selectTargetNode(node);
   }
 
   void handlePinItemTap() async {

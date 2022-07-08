@@ -10,7 +10,7 @@ import '../types.dart';
 
 class SideMenu extends ConsumerWidget {
   final ScreenType type;
-  final ScreenType2VoidFunc handleSideBarTap;
+  final TreeNode2VoidFunc handleSideBarTap;
   const SideMenu({Key? key, required this.type, required this.handleSideBarTap})
       : super(key: key);
   @override
@@ -28,7 +28,7 @@ class SideMenu extends ConsumerWidget {
               text: items[index].name,
               textColor: textColor,
               iconColor: iconColor,
-              onTap: () => handleSideBarTap(ScreenType.CLIP),
+              onTap: () => handleSideBarTap(items[index]),
             )),
         itemCount: items.length);
   }
