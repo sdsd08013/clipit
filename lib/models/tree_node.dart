@@ -10,13 +10,15 @@ class TreeNode implements Directable {
 
   @override
   final String name;
-  Directable? item;
+  Selectable? item;
   TreeNode? parent;
   List<TreeNode>? children;
   TreeNode? prev;
   TreeNode? next;
   TreeNode? self;
   IconData? icon;
+  String mdText = "";
+  String listText = "";
   TreeNode(
       {required this.name,
       required this.isSelected,
@@ -33,12 +35,20 @@ class TreeNode implements Directable {
         child.parent = this;
       }
     }
+
+    if (item != null && item is Selectable) {
+      mdText = (item as Selectable).mdText;
+      listText = (item as Selectable).plainText;
+    } else {
+      mdText = name;
+      listText = name;
+    }
   }
 
   TreeNode copyWith(
       {String? name,
       bool? isSlected,
-      Directable? item,
+      Selectable? item,
       TreeNode? parent,
       TreeNode? prev,
       TreeNode? next,
@@ -93,7 +103,7 @@ class TreeNode implements Directable {
           name: item.listText,
           isSelected: item.isSelected,
           isDir: item.isDir,
-          item: item,
+          item: item.item,
           self: item,
           prev: tmpPrev,
           parent: this);
@@ -129,9 +139,32 @@ class TreeNode implements Directable {
     return sibilings.indexOf(this);
   }
 
-  String get listText {
-    return (item != null && item is Selectable)
-        ? (item as Selectable).plainText
-        : name;
+  TreeNode moveToNext() {
+    if (next == null) {
+      return this;
+    }
+
+    isSelected = false;
+    next?.isSelected = true;
+
+    if (isDir) {
+      return next!.moveToNext();
+    } else {
+      return next!;
+    }
+  }
+
+  TreeNode moveToPrev() {
+    if (prev == null) {
+      return this;
+    }
+
+    isSelected = false;
+    prev?.isSelected = true;
+    if (isDir) {
+      return children!.last.moveToPrev();
+    } else {
+      return prev!;
+    }
   }
 }

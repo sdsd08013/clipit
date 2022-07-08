@@ -14,7 +14,7 @@ import 'contents_header.dart';
 import 'contents_list_view.dart';
 
 class ContentsMainView extends ConsumerWidget {
-  final Int2VoidFunc handleListViewItemTap;
+  final TreeNode2VoidFunc handleListViewItemTap;
   final TreeNode2VoidFunc handleSearchResultSelect;
   final VoidCallback handleArchiveItemTap;
   final VoidCallback handleCopyToClipboardTap;
@@ -85,7 +85,7 @@ class ContentsMainView extends ConsumerWidget {
           Expanded(
               child: Stack(
             children: [
-              topState.currentItems.value.isEmpty
+              topState.currentDirNodes.isEmpty
                   ? const Text("item is empty ;(")
                   : Row(children: <Widget>[
                       ContentsListView(
@@ -98,7 +98,7 @@ class ContentsMainView extends ConsumerWidget {
                           handleListViewDeleteTap: handleListViewDeleteTap,
                           handleTapCopyToClipboard: handleTapCopyToClipboard,
                           handleSearchFormFocused: handleSearchFormFocused,
-                          onItemTap: (index) => handleListViewItemTap(index)),
+                          onItemTap: handleListViewItemTap),
                       MarkdownView()
                     ]),
               Visibility(

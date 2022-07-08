@@ -156,21 +156,21 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   void handlePinItemTap() async {
-    final target = topStateNotifier.state.histories.currentItem;
-    clipRepository.deleteHistory(target.id);
-    topStateNotifier.deleteHistory(target);
-    final noteId = await noteRepository.savePin(target.text);
+    final target = topStateNotifier.state.listCurrentNode.item;
+    clipRepository.deleteHistory(target?.id ?? 0);
+    topStateNotifier.deleteCurrentNode();
+    final noteId = await noteRepository.savePin(target?.text ?? "");
     topStateNotifier.insertPinToHead(Pin(
         id: noteId,
-        text: target.text,
+        text: target?.text ?? "",
         isSelected: false,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now()));
     listFocusNode?.requestFocus();
   }
 
-  void handleListViewItemTap(int index) {
-    topStateNotifier.selectTargetItem(index);
+  void handleListViewItemTap(TreeNode node) {
+    topStateNotifier.selectTargetNode(node);
   }
 
   void handleListDown() {
@@ -188,7 +188,7 @@ class _HomeState extends ConsumerState<Home> {
           .jumpTo((currentIndex - visibleItemCount + 2) * 75.5 - offset);
     }
 
-    ref.read(topStateProvider.notifier).increment();
+    ref.read(topStateProvider.notifier).moveToNextList();
   }
 
   void handleListUp() {
@@ -198,7 +198,7 @@ class _HomeState extends ConsumerState<Home> {
       listViewController.jumpTo((currentIndex - 1) * 75.5);
     }
 
-    ref.read(topStateProvider.notifier).decrement();
+    ref.read(topStateProvider.notifier).moveToPrevList();
   }
 
   void handleUpToTop() {
@@ -213,17 +213,17 @@ class _HomeState extends ConsumerState<Home> {
 
   void handleDownToBottom() {
     final length =
-        ref.read(topStateProvider.notifier).state.currentItems.value.length;
+        ref.read(topStateProvider.notifier).state.currentDirNodes.length;
     listViewController.jumpTo(length * 75.5);
     ref.read(topStateProvider.notifier).selectLastItem();
   }
 
   handleSearchResultDown() {
-    ref.read(topStateProvider.notifier).moveToNext();
+    ref.read(topStateProvider.notifier).moveToNextSearchResult();
   }
 
   handleSearchResultUp() {
-    ref.read(topStateProvider.notifier).moveToPrev();
+    ref.read(topStateProvider.notifier).moveToPrevSearchResult();
   }
 
   handleSearchResultSelect(TreeNode node) {
@@ -231,7 +231,6 @@ class _HomeState extends ConsumerState<Home> {
       topStateNotifier.moveToTargetNode(node.self!);
       searchFormFocusNode?.unfocus();
       listFocusNode?.requestFocus();
-      topStateNotifier.updateSearchBarVisibility(false);
       searchFormVisibleNotifier.update(false);
 
       final length = ref.read(topStateProvider.notifier).state.currentIndex;
@@ -243,8 +242,8 @@ class _HomeState extends ConsumerState<Home> {
     // TODO: 最新のclipboardと同じtextは消せないようにする
     if (topStateNotifier.state.type == ScreenType.CLIP) {
       clipRepository
-          .deleteHistory(topStateNotifier.state.histories.currentItem.id);
-      topStateNotifier.deleteCurrentHistory();
+          .deleteHistory(topStateNotifier.state.listCurrentNode.item?.id ?? 0);
+      topStateNotifier.deleteCurrentNode();
     } else if (type == ScreenType.PINNED) {}
 
     listFocusNode?.requestFocus();
@@ -256,7 +255,7 @@ class _HomeState extends ConsumerState<Home> {
 
   void handleCopyToClipboardTap() {
     Clipboard.setData(
-        ClipboardData(text: topStateNotifier.state.currentItem.text));
+        ClipboardData(text: topStateNotifier.state.currentItem?.text));
   }
 
   void handleSearchStart() {
@@ -295,7 +294,6 @@ class _HomeState extends ConsumerState<Home> {
       listFocusNode?.requestFocus();
       searchFormFocusNode?.unfocus();
 
-      topStateNotifier.clearSearchResult();
       searchFormVisibleNotifier.update(false);
     } else {
       topStateNotifier.searchSelectables(text);

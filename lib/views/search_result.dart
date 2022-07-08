@@ -26,7 +26,8 @@ class SearchResultView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    List<TreeNode> children = ref.watch(topStateProvider).root.children ?? [];
+    List<TreeNode> children =
+        ref.watch(topStateProvider).searchResultRoot.children ?? [];
     return FocusableActionDetector(
         focusNode: searchResultFocusNode,
         shortcuts: {
@@ -56,7 +57,6 @@ class SearchResultView extends ConsumerWidget {
                           onTap: () {
                             final item =
                                 children[parentIndex].children?[childIndex];
-                            print("======>item:${item}");
                             handleSearchResultSelect.call(item!);
                           },
                           child: Container(
