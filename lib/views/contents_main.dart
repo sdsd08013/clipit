@@ -9,12 +9,13 @@ import '../models/side_type.dart';
 import '../providers/offset_provider.dart';
 import '../providers/top_state_provider.dart';
 import '../states/top_state.dart';
+import '../types.dart';
 import 'contents_header.dart';
 import 'contents_list_view.dart';
 
 class ContentsMainView extends ConsumerWidget {
   final Int2VoidFunc handleListViewItemTap;
-  final Selectable2VoidFunc handleSearchResultSelect;
+  final TreeNode2VoidFunc handleSearchResultSelect;
   final VoidCallback handleArchiveItemTap;
   final VoidCallback handleCopyToClipboardTap;
   final VoidCallback handleDeleteItemTap;

@@ -3,16 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:macos_ui/macos_ui.dart';
 
 import '../color.dart';
-import '../models/selectable.dart';
 import '../models/tree_node.dart';
 import '../providers/top_state_provider.dart';
-import 'contents_list_view.dart';
+import '../types.dart';
 import 'intent.dart';
 import 'key_set.dart';
 
 class SearchResultView extends ConsumerWidget {
   final FocusNode searchResultFocusNode;
-  final Selectable2VoidFunc handleSearchResultSelect;
+  final TreeNode2VoidFunc handleSearchResultSelect;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
   final VoidCallback handleSearchFormFocused;
@@ -53,22 +52,31 @@ class SearchResultView extends ConsumerWidget {
                           children[parentIndex].name)),
                   ListView.separated(
                       shrinkWrap: true,
-                      itemBuilder: (context, childIndex) => Container(
-                          padding: const EdgeInsets.fromLTRB(24, 4, 4, 4),
-                          height: 50,
-                          color: children[parentIndex]
-                                      .children?[childIndex]
-                                      .isSelected ??
-                                  false
-                              ? side2ndBackgroundSelect
-                              : side2ndBackground,
-                          child: Text(
-                              maxLines: 2,
-                              style: MacosTheme.of(context).typography.headline,
-                              children[parentIndex]
-                                      .children?[childIndex]
-                                      .listText ??
-                                  "way")),
+                      itemBuilder: (context, childIndex) => GestureDetector(
+                          onTap: () {
+                            final item =
+                                children[parentIndex].children?[childIndex];
+                            print("======>item:${item}");
+                            handleSearchResultSelect.call(item!);
+                          },
+                          child: Container(
+                              padding: const EdgeInsets.fromLTRB(24, 4, 4, 4),
+                              height: 50,
+                              color: children[parentIndex]
+                                          .children?[childIndex]
+                                          .isSelected ??
+                                      false
+                                  ? side2ndBackgroundSelect
+                                  : side2ndBackground,
+                              child: Text(
+                                  maxLines: 2,
+                                  style: MacosTheme.of(context)
+                                      .typography
+                                      .headline,
+                                  children[parentIndex]
+                                          .children?[childIndex]
+                                          .listText ??
+                                      "way"))),
                       separatorBuilder: (context, index) =>
                           const Divider(color: dividerColor, height: 0.5),
                       itemCount: children[parentIndex].children?.length ?? 0)

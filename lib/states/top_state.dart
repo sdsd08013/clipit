@@ -1,13 +1,18 @@
+import 'package:clipit/models/history.dart';
 import 'package:clipit/models/tree_node.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:clipit/models/selectable.dart';
 import 'package:clipit/models/side_type.dart';
+
+import '../models/pin.dart';
+import '../models/trash.dart';
 
 @immutable
 class TopState {
   final SelectableList histories;
   final SelectableList pins;
   final SelectableList trashes;
+  final TreeNode currentListNode;
   final TreeNode currentNode;
   final ScreenType type;
   final bool showSearchBar;
@@ -20,17 +25,20 @@ class TopState {
       required this.type,
       required this.showSearchBar,
       required this.showSearchResult,
+      required this.currentListNode,
       required this.currentNode});
 
-  TopState copyWith(
-      {SelectableList? histories,
-      SelectableList? pins,
-      SelectableList? trashes,
-      List<SelectableList>? searchResults,
-      ScreenType? type,
-      bool? showSearchBar,
-      bool? showSearchResult,
-      TreeNode? currentNode}) {
+  TopState copyWith({
+    SelectableList? histories,
+    SelectableList? pins,
+    SelectableList? trashes,
+    List<SelectableList>? searchResults,
+    ScreenType? type,
+    bool? showSearchBar,
+    bool? showSearchResult,
+    TreeNode? currentListNode,
+    TreeNode? currentNode,
+  }) {
     return TopState(
         histories: histories ?? this.histories,
         pins: pins ?? this.pins,
@@ -38,6 +46,7 @@ class TopState {
         type: type ?? this.type,
         showSearchBar: showSearchBar ?? this.showSearchBar,
         showSearchResult: showSearchResult ?? this.showSearchResult,
+        currentListNode: currentListNode ?? this.currentListNode,
         currentNode: currentNode ?? this.currentNode);
   }
 
@@ -49,8 +58,38 @@ class TopState {
     return current;
   }
 
+  TreeNode get root2 {
+    TreeNode current = currentListNode;
+    while (current.parent != null) {
+      current = current.parent!;
+    }
+    return current;
+  }
+
+  List<TreeNode> get currentDirNodes {
+    root2;
+    if (type == ScreenType.CLIP) {
+      return root2.children?[0].children ?? [];
+    } else if (type == ScreenType.PINNED) {
+      return root2.children?[1].children ?? [];
+    } else if (type == ScreenType.TRASH) {
+      return root2.children?[2].children ?? [];
+    } else {
+      return root2.children?[0].children ?? [];
+    }
+  }
+
+  List<TreeNode> get historyNodes {
+    return root2.children?[0].children ?? [];
+  }
+
+  List<TreeNode> get pinNodes {
+    return root2.children?[1].children ?? [];
+  }
+
   SelectableList get currentItems {
     if (type == ScreenType.CLIP) {
+      root.children?[0].children;
       return histories;
     } else if (type == ScreenType.PINNED) {
       return pins;
@@ -64,22 +103,25 @@ class TopState {
   Selectable get currentItem => currentItems.currentItem;
 
   int get currentIndex {
-    return currentItems.currentIndex;
+    return currentListNode.sibilings.indexOf(currentListNode);
   }
 
   TopState decrementCurrentItems() {
-    if (type == ScreenType.CLIP) {
-      return copyWith(histories: histories.decrementIndex());
-    } else if (type == ScreenType.PINNED) {
-      return copyWith(pins: pins.decrementIndex());
-    } else if (type == ScreenType.TRASH) {
-      return copyWith(trashes: trashes.decrementIndex());
-    } else {
-      return copyWith(histories: histories.decrementIndex());
-    }
+    return moveToPrev();
+    // if (type == ScreenType.CLIP) {
+    //   return copyWith(histories: histories.decrementIndex());
+    // } else if (type == ScreenType.PINNED) {
+    //   return copyWith(pins: pins.decrementIndex());
+    // } else if (type == ScreenType.TRASH) {
+    //   return copyWith(trashes: trashes.decrementIndex());
+    // } else {
+    //   return copyWith(histories: histories.decrementIndex());
+    // }
   }
 
   TopState incrementCurrentItems() {
+    return moveToNext();
+    /*
     if (type == ScreenType.CLIP) {
       return copyWith(histories: histories.incrementIndex());
     } else if (type == ScreenType.PINNED) {
@@ -89,6 +131,7 @@ class TopState {
     } else {
       return copyWith(histories: histories.incrementIndex());
     }
+    */
   }
 
   TopState switchCurrentItems(int targetIndex) {
@@ -107,25 +150,74 @@ class TopState {
   bool isHistoryExist(String text) => histories.isExist(text);
   bool shouldUpdateHistory(String text) => histories.shouldUpdate(text);
 
-  Future<List<Selectable>> searchHistories(String text) async {
-    return histories.value
-        .where((element) => element.plainText.contains(text))
+  TopState selectFirstNode() {
+    if (root2.children?.first.children?.isNotEmpty == true) {
+      return copyWith(currentListNode: root2.children?.first?.children?.first);
+    } else {
+      return copyWith();
+    }
+  }
+
+  TopState buildTree(HistoryList histories, PinList pins, TrashList trashes) {
+    final historyNode =
+        TreeNode(name: "history", isDir: true, isSelected: false, children: []);
+    historyNode.addSelectables(list: histories.value, isSelectFirst: true);
+
+    final pinNode =
+        TreeNode(name: "pin", isDir: true, isSelected: false, children: []);
+    pinNode.addSelectables(list: pins.value);
+
+    final trashNode =
+        TreeNode(name: "trash", isDir: true, isSelected: false, children: []);
+    trashNode.addSelectables(list: trashes.value);
+
+    return copyWith(
+        currentListNode: root2
+            .addChild(historyNode.copyWith(next: pinNode, parent: root2))
+            .addChild(pinNode.copyWith(
+                next: trashNode, prev: historyNode, parent: root2))
+            .addChild(trashNode.copyWith(prev: pinNode, parent: root2)));
+  }
+
+  TopState buildHistoryTree(HistoryList histories) {
+    final historyNode =
+        TreeNode(name: "history", isDir: true, isSelected: false, children: []);
+    historyNode.addSelectables(list: histories.value);
+    return copyWith(currentListNode: root2.addChild(historyNode));
+  }
+
+  TopState buildPinTree(PinList pins) {
+    final pinNode =
+        TreeNode(name: "pin", isDir: true, isSelected: false, children: []);
+    pinNode.addSelectables(list: histories.value);
+    return copyWith(currentListNode: root2.addChild(pinNode));
+  }
+
+  TopState buildTrashTree(TrashList trashes) {
+    final trashNode =
+        TreeNode(name: "trash", isDir: true, isSelected: false, children: []);
+    trashNode.addSelectables(list: trashes.value);
+    return copyWith(currentListNode: root2.addChild(trashNode));
+  }
+
+  Future<List<TreeNode>> searchHistories(String text) async {
+    return historyNodes
+        .where((element) => element.listText.contains(text))
         .toList();
   }
 
-  Future<List<Selectable>> searchPins(String text) async {
-    return pins.value
-        .where((element) => element.plainText.contains(text))
+  Future<List<TreeNode>> searchPins(String text) async {
+    return pinNodes
+        .where((element) => element.listText.contains(text))
         .toList();
   }
 
   Future<TopState> getSearchResult(String text) async {
-    final searchedHistories = histories.value
-        .where((element) => element.plainText.contains(text))
+    final searchedHistories = historyNodes
+        .where((element) => element.listText.contains(text))
         .toList();
-    final searchedPins = pins.value
-        .where((element) => element.plainText.contains(text))
-        .toList();
+    final searchedPins =
+        pinNodes.where((element) => element.listText.contains(text)).toList();
 
     final nr =
         TreeNode(name: "root", isDir: true, isSelected: false, children: []);
@@ -142,11 +234,11 @@ class TopState {
     pinNode.prev = historyNode;
 
     if (searchedHistories.isNotEmpty) {
-      historyNode.addSelectables(list: searchedHistories, isSelectFirst: true);
+      historyNode.addNodes(list: searchedHistories, isSelectFirst: true);
     }
 
     if (searchedPins.isNotEmpty) {
-      pinNode.addSelectables(list: searchedPins);
+      pinNode.addNodes(list: searchedPins);
     }
     historyNode.children?.last.next = pinNode.children?.first;
     pinNode.children?.first.prev = historyNode.children?.last;
@@ -180,39 +272,40 @@ class TopState {
   }
 
   TopState moveToNext() {
-    if (currentNode.next == null) {
-      return copyWith(currentNode: currentNode);
+    if (currentListNode.next == null) {
+      return copyWith(currentListNode: currentListNode);
     }
 
-    currentNode.isSelected = false;
-    currentNode.next?.isSelected = true;
+    currentListNode.isSelected = false;
+    currentListNode.next?.isSelected = true;
 
-    if (currentNode.isDir) {
-      return copyWith(currentNode: currentNode.next).moveToNext();
+    if (currentListNode.isDir) {
+      return copyWith(currentListNode: currentListNode.next).moveToNext();
     } else {
-      if (currentNode.next != null) {
+      if (currentListNode.next != null) {
         // dir->fileのとき
-        return copyWith(currentNode: currentNode.next);
+        return copyWith(currentListNode: currentListNode.next);
       } else {
-        return copyWith(currentNode: currentNode);
+        return copyWith(currentListNode: currentListNode);
       }
     }
   }
 
   TopState moveToPrev() {
-    if (currentNode.prev == null) {
-      return copyWith(currentNode: currentNode);
+    if (currentListNode.prev == null) {
+      return copyWith(currentListNode: currentListNode);
     }
 
-    currentNode.isSelected = false;
-    currentNode.prev?.isSelected = true;
-    if (currentNode.isDir) {
-      return copyWith(currentNode: currentNode.children?.last).moveToPrev();
+    currentListNode.isSelected = false;
+    currentListNode.prev?.isSelected = true;
+    if (currentListNode.isDir) {
+      return copyWith(currentListNode: currentListNode.children?.last)
+          .moveToPrev();
     } else {
-      if (currentNode.prev != null) {
-        return copyWith(currentNode: currentNode.prev);
+      if (currentListNode.prev != null) {
+        return copyWith(currentListNode: currentListNode.prev);
       } else {
-        return copyWith(currentNode: currentNode);
+        return copyWith(currentListNode: currentListNode);
       }
     }
   }
