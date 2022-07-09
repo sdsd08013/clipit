@@ -226,7 +226,9 @@ class _HomeState extends ConsumerState<Home> {
     ref.read(topStateProvider.notifier).moveToPrevSearchResult();
   }
 
-  handleSearchResultSelect(TreeNode node) {
+  handleSearchResultSelect() {
+    final node =
+        ref.read(topStateProvider.notifier).state.searchResultCurrentNode;
     if (node.self != null) {
       topStateNotifier.moveToTargetNode(node.self!);
       searchFormFocusNode?.unfocus();

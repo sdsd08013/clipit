@@ -47,8 +47,8 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void moveToTargetNode(TreeNode target) {
-    state.listCurrentNode.isSelected = false;
-    target.isSelected = true;
+    state.listCurrentNode.unSelect();
+    target.select();
     state = state.copyWith(
         listCurrentNode: target,
         searchResultCurrentNode: null,
@@ -59,8 +59,13 @@ class TopStateNotifier extends StateNotifier<TopState> {
   void selectTargetNode(TreeNode target) {
     state.listCurrentNode.unSelect();
     target.select();
-    // TODO: dirの場合はchild, fileの場合はtarget
-    state = state.copyWith(listCurrentNode: target);
+    if (target.isDir) {
+      target.children?.first.isSelected = true;
+      state = state.copyWith(listCurrentNode: target.children?.first);
+      // TODO: dirの場合はchild, fileの場合はtarget
+    } else {
+      state = state.copyWith(listCurrentNode: target);
+    }
   }
 
   void retlieveTree(HistoryList histories, PinList pins, TrashList trashes) {

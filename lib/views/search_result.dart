@@ -11,7 +11,7 @@ import 'key_set.dart';
 
 class SearchResultView extends ConsumerWidget {
   final FocusNode searchResultFocusNode;
-  final TreeNode2VoidFunc handleSearchResultSelect;
+  final VoidCallback handleSearchResultSelect;
   final VoidCallback handleListUp;
   final VoidCallback handleListDown;
   final VoidCallback handleSearchFormFocused;
@@ -34,12 +34,15 @@ class SearchResultView extends ConsumerWidget {
           listViewUpKeySet: ListViewUpIntent(),
           listViewDownKeySet: ListViewDownIntent(),
           searchKeySet: SearchIntent(),
+          listViewSelectKeySet: ListViewItemSelectIntent()
         },
         actions: {
           ListViewUpIntent: CallbackAction(onInvoke: (e) => handleListUp()),
           ListViewDownIntent: CallbackAction(onInvoke: (e) => handleListDown()),
           SearchIntent:
               CallbackAction(onInvoke: (e) => handleSearchFormFocused()),
+          ListViewItemSelectIntent:
+              CallbackAction(onInvoke: (e) => handleSearchResultSelect())
         },
         child: ListView.separated(
             shrinkWrap: true,
@@ -54,11 +57,7 @@ class SearchResultView extends ConsumerWidget {
                   ListView.separated(
                       shrinkWrap: true,
                       itemBuilder: (context, childIndex) => GestureDetector(
-                          onTap: () {
-                            final item =
-                                children[parentIndex].children?[childIndex];
-                            handleSearchResultSelect.call(item!);
-                          },
+                          onTap: () => handleSearchResultSelect.call(),
                           child: Container(
                               padding: const EdgeInsets.fromLTRB(24, 4, 4, 4),
                               height: 50,

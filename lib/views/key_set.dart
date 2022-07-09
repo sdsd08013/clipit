@@ -10,3 +10,4 @@ final searchKeySet = LogicalKeySet(LogicalKeyboardKey.slash);
 final listViewUpToTopKeySet = LogicalKeySet(LogicalKeyboardKey.keyG);
 final listViewDownToBottomKeySet =
     LogicalKeySet(LogicalKeyboardKey.shift, LogicalKeyboardKey.keyG);
+final listViewSelectKeySet = LogicalKeySet(LogicalKeyboardKey.enter);

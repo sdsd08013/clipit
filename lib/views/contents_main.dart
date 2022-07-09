@@ -15,7 +15,7 @@ import 'contents_list_view.dart';
 
 class ContentsMainView extends ConsumerWidget {
   final TreeNode2VoidFunc handleListViewItemTap;
-  final TreeNode2VoidFunc handleSearchResultSelect;
+  final VoidCallback handleSearchResultSelect;
   final VoidCallback handleArchiveItemTap;
   final VoidCallback handleCopyToClipboardTap;
   final VoidCallback handleDeleteItemTap;
