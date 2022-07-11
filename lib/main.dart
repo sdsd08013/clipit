@@ -129,15 +129,11 @@ class _HomeState extends ConsumerState<Home> {
   void createOrUpdateItem(String result) async {
     if (topStateNotifier.state.isPinExist(result)) return;
     if (topStateNotifier.state.isHistoryExist(result)) {
-      /*
-      if (topState.shouldUpdateHistory(result)) {
-        topState.histories.updateTargetHistory(result);
-        setState(() {
-          topState;
-        });
-        await clipRepository.updateHistory(topState.histories.currentItem);
+      if (topStateNotifier.state.shouldUpdateHistory(result)) {
+        topStateNotifier.state.updateHistory(result);
+        await clipRepository.updateHistory(
+            topStateNotifier.state.listCurrentNode.item as History);
       }
-      */
     } else {
       final id = await clipRepository.saveHistory(result);
       ref.read(topStateProvider.notifier).insertHistoryToHead(History(
@@ -150,9 +146,9 @@ class _HomeState extends ConsumerState<Home> {
     }
   }
 
-  void handleSideBarTap(ScreenType newType) {
+  void handleSideBarTap(TreeNode node) {
     listFocusNode?.requestFocus();
-    ref.read(topStateProvider.notifier).changeType(newType);
+    ref.read(topStateProvider.notifier).selectTargetNode(node);
   }
 
   void handlePinItemTap() async {
@@ -226,7 +222,9 @@ class _HomeState extends ConsumerState<Home> {
     ref.read(topStateProvider.notifier).moveToPrevSearchResult();
   }
 
-  handleSearchResultSelect(TreeNode node) {
+  handleSearchResultSelect() {
+    final node =
+        ref.read(topStateProvider.notifier).state.searchResultCurrentNode;
     if (node.self != null) {
       topStateNotifier.moveToTargetNode(node.self!);
       searchFormFocusNode?.unfocus();

@@ -13,18 +13,7 @@ class TopStateNotifier extends StateNotifier<TopState> {
             listCurrentNode: TreeNode(
                 name: "root", isDir: true, isSelected: false, children: []),
             searchResultCurrentNode: TreeNode(
-                name: "root",
-                isDir: true,
-                isSelected: false,
-                children: [
-                  TreeNode(
-                      name: "history",
-                      isDir: true,
-                      isSelected: false,
-                      children: []),
-                  TreeNode(
-                      name: "pin", isDir: true, isSelected: false, children: [])
-                ]),
+                name: "root", isDir: true, isSelected: false, children: []),
             type: ScreenType.CLIP,
             showSearchBar: false,
             showSearchResult: false));
@@ -45,6 +34,8 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state = state.moveToPrevSearchResult();
   }
 
+  void updateTargetHistory(result) {}
+
   void selectFirstItem() {
     state.listCurrentNode.isSelected = false;
     state.currentDirNodes.first.isSelected = true;
@@ -58,8 +49,8 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void moveToTargetNode(TreeNode target) {
-    state.listCurrentNode.isSelected = false;
-    target.isSelected = true;
+    state.listCurrentNode.unSelect();
+    target.select();
     state = state.copyWith(
         listCurrentNode: target,
         searchResultCurrentNode: null,
@@ -68,9 +59,15 @@ class TopStateNotifier extends StateNotifier<TopState> {
   }
 
   void selectTargetNode(TreeNode target) {
-    state.listCurrentNode.isSelected = false;
-    target.isSelected = true;
-    state = state.copyWith(listCurrentNode: target);
+    state.listCurrentNode.unSelect();
+    target.select();
+    if (target.isDir) {
+      target.children?.first.isSelected = true;
+      state = state.copyWith(listCurrentNode: target.children?.first);
+      // TODO: dirの場合はchild, fileの場合はtarget
+    } else {
+      state = state.copyWith(listCurrentNode: target);
+    }
   }
 
   void retlieveTree(HistoryList histories, PinList pins, TrashList trashes) {
@@ -84,22 +81,28 @@ class TopStateNotifier extends StateNotifier<TopState> {
     state = state.selectFirstNode();
   }
 
-  void insertHistoryToHead(History history) {}
-
-  void changeType(ScreenType type) {
-    state = state.copyWith(type: type);
+  void insertHistoryToHead(History history) {
+    state = state.createHistory(history);
   }
 
   void deleteHistory(History history) {}
 
   void deleteCurrentNode() {
-    final prev = state.listCurrentNode.prev;
-    final next = state.listCurrentNode.next;
-    prev?.next = next;
-    next?.prev = prev;
-    state.listCurrentNode.parent?.children?.remove(state.listCurrentNode);
-    prev?.isSelected = true;
-    state = state.copyWith(listCurrentNode: prev);
+    if (state.listCurrentNode.index == 0) {
+      final next = state.listCurrentNode.next;
+      next?.prev = null;
+      state.listCurrentNode.parent?.children?.remove(state.listCurrentNode);
+      next?.isSelected = true;
+      state = state.copyWith(listCurrentNode: next);
+    } else {
+      final prev = state.listCurrentNode.prev;
+      final next = state.listCurrentNode.next;
+      prev?.next = next;
+      next?.prev = prev;
+      state.listCurrentNode.parent?.children?.remove(state.listCurrentNode);
+      prev?.isSelected = true;
+      state = state.copyWith(listCurrentNode: prev);
+    }
   }
 
   void insertPinToHead(Pin pin) {}

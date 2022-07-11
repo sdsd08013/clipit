@@ -6,6 +6,8 @@ class ListViewUpIntent extends Intent {}
 
 class ListViewItemCopyIntent extends Intent {}
 
+class ListViewItemSelectIntent extends Intent {}
+
 class ListViewItemDeleteIntent extends Intent {}
 
 class SearchIntent extends Intent {}
