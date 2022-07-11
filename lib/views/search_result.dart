@@ -67,7 +67,7 @@ class SearchResultView extends ConsumerWidget {
                                       false
                                   ? side2ndBackgroundSelect
                                   : side2ndBackground,
-                              child: Text(
+                              child: SelectableText(
                                   maxLines: 2,
                                   style: MacosTheme.of(context)
                                       .typography

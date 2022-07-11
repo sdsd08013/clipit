@@ -123,6 +123,12 @@ class TreeNode implements Directable {
     return copyWith(children: cc);
   }
 
+  TreeNode addChildToHead(TreeNode item) {
+    final List<TreeNode> nc = [item];
+    nc.addAll(children as Iterable<TreeNode>);
+    return copyWith(children: nc);
+  }
+
   bool get isRoot => item == null;
 
   List<TreeNode> get sibilings {

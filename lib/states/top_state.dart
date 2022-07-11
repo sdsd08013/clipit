@@ -85,6 +85,32 @@ class TopState {
     return listCurrentNode.sibilings.indexOf(listCurrentNode);
   }
 
+  TopState createHistory(History history) {
+    final TreeNode node = TreeNode(
+        name: history.subText,
+        isSelected: history.isSelected,
+        isDir: history.isDir,
+        item: history,
+        prev: null,
+        next: historyNodes.first,
+        parent: listRoot.children?[0]);
+
+    historyNodes.first.prev = node;
+    listRoot.children?[0].addChildToHead(node);
+
+    listCurrentNode.unSelect();
+    node.select();
+    return copyWith(listCurrentNode: node);
+  }
+
+  TopState updateHistory(text) {
+    final node =
+        historyNodes.where((element) => element.item?.name == text).firstOrNull;
+    listCurrentNode.unSelect();
+    node?.select();
+    return copyWith(listCurrentNode: node);
+  }
+
   TopState moveToPrevList() {
     return copyWith(listCurrentNode: listCurrentNode.moveToPrev());
   }
@@ -108,15 +134,15 @@ class TopState {
   bool isHistoryExist(String text) =>
       historyNodes.where((element) => element.item?.name == text).isNotEmpty;
   bool shouldUpdateHistory(String text) {
-    final clip =
+    final node =
         historyNodes.where((element) => element.item?.name == text).firstOrNull;
-    if (clip == null) {
+    if (node == null) {
       return true;
     } else {
-      return (clip.item as Selectable)
-          .updatedAt
-          .add(const Duration(minutes: 1))
-          .isBefore(DateTime.now());
+      return node.item?.updatedAt
+              .add(const Duration(minutes: 1))
+              .isBefore(DateTime.now()) ==
+          true;
     }
   }
 
@@ -194,13 +220,28 @@ class TopState {
     if (searchedPins.isNotEmpty) {
       pinNode.addNodes(list: searchedPins);
     }
-    historyNode.children?.last.next = pinNode.children?.first;
-    pinNode.children?.first.prev = historyNode.children?.last;
+    if (historyNode.children?.isNotEmpty == true) {
+      historyNode.children?.first.isSelected = searchedHistories.isNotEmpty;
 
-    historyNode.children?.first.isSelected = searchedHistories.isNotEmpty;
-    pinNode.children?.first.isSelected =
-        searchedHistories.isEmpty && searchedPins.isNotEmpty;
+      if (pinNode.children?.isNotEmpty == true) {
+        historyNode.children?.last.next = pinNode.children?.first;
+      }
+    }
+    if (pinNode.children?.isNotEmpty == true) {
+      pinNode.children?.first.isSelected =
+          searchedHistories.isEmpty && searchedPins.isNotEmpty;
 
-    return copyWith(searchResultCurrentNode: historyNode.children?.first);
+      if (historyNode.children?.isNotEmpty == true) {
+        pinNode.children?.first.prev = historyNode.children?.last;
+      }
+    }
+
+    if (historyNode.children?.isNotEmpty == true) {
+      return copyWith(searchResultCurrentNode: historyNode.children?.first);
+    } else if (pinNode.children?.isNotEmpty == true) {
+      return copyWith(searchResultCurrentNode: pinNode.children?.first);
+    } else {
+      return copyWith(searchResultCurrentNode: null);
+    }
   }
 }

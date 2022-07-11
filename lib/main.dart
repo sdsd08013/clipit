@@ -129,15 +129,11 @@ class _HomeState extends ConsumerState<Home> {
   void createOrUpdateItem(String result) async {
     if (topStateNotifier.state.isPinExist(result)) return;
     if (topStateNotifier.state.isHistoryExist(result)) {
-      /*
-      if (topState.shouldUpdateHistory(result)) {
-        topState.histories.updateTargetHistory(result);
-        setState(() {
-          topState;
-        });
-        await clipRepository.updateHistory(topState.histories.currentItem);
+      if (topStateNotifier.state.shouldUpdateHistory(result)) {
+        topStateNotifier.state.updateHistory(result);
+        await clipRepository.updateHistory(
+            topStateNotifier.state.listCurrentNode.item as History);
       }
-      */
     } else {
       final id = await clipRepository.saveHistory(result);
       ref.read(topStateProvider.notifier).insertHistoryToHead(History(
