@@ -54,15 +54,41 @@ class AppDelegate: FlutterAppDelegate {
         
         let binaryChannel = FlutterMethodChannel(name: "clipboard/html",
                                                  binaryMessenger:  controller.registrar(forPlugin: "SwapBuffers").messenger)
+        
+        
         binaryChannel.setMethodCallHandler({
                   (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
                   // Note: this method is invoked on the UI thread.
-                    guard call.method == "getClipboardContent" else {
+                  guard call.method == "getClipboardContent" else {
                       result(FlutterMethodNotImplemented)
                       return
                     }
+       
                     self.getClipboardContent(result: result)
                 })
+        
+        let popupChannel = FlutterMethodChannel(name: "popup",
+                                                 binaryMessenger:  controller.registrar(forPlugin: "SwapBuffers").messenger)
+        
+        popupChannel.setMethodCallHandler({
+            (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
+            print("---------------")
+            print(call.method)
+
+            if call.method == "showPopup"  {
+                let menu = NSMenu(title: "test")
+                menu.addItem(NSMenuItem.separator())
+                
+                let aboutItem = NSMenuItem(
+                        title: "About",
+                        action: nil,
+                        keyEquivalent: ""
+                    )
+                menu.addItem(aboutItem)
+                menu.addItem(NSMenuItem.separator())
+                menu.popUp(positioning: nil, at: NSEvent.mouseLocation, in: nil)
+            }
+        })
     }
      
     override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

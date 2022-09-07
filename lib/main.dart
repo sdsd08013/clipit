@@ -12,7 +12,9 @@ import 'package:clipit/views/main_side_bar.dart';
 import 'package:clipit/views/resizable_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'dart:async';
 import 'dart:core';
@@ -20,9 +22,44 @@ import 'models/pin.dart';
 import 'models/selectable.dart';
 import 'models/trash.dart';
 import 'models/tree_node.dart';
+import 'package:window_manager/window_manager.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
+  await hotKeyManager.unregisterAll();
+
+  // windowManager.waitUntilReadyToShow(windowOptions, () async {
+  //   await windowManager.show();
+  //   await windowManager.focus();
+  // });
+
   runApp(const ProviderScope(child: MyApp()));
+
+  // ⌥ + Q
+  HotKey _hotKey = HotKey(
+    KeyCode.keyQ,
+    modifiers: [KeyModifier.alt],
+    // Set hotkey scope (default is HotKeyScope.system)
+    scope: HotKeyScope.system, // Set as inapp-wide hotkey.
+  );
+  await hotKeyManager.register(
+    _hotKey,
+    keyDownHandler: (hotKey) {
+      popup();
+      print('onKeyDown+${hotKey.toJson()}');
+    },
+    // Only works on macOS.
+    keyUpHandler: (hotKey) {
+      print('onKeyUp+${hotKey.toJson()}');
+    },
+  );
+}
+
+const popupChannelName = 'popup';
+final popupMethodChannel = const MethodChannel(popupChannelName);
+popup() async {
+  await popupMethodChannel.invokeMethod('showPopup');
 }
 
 class MyApp extends StatelessWidget {
@@ -76,6 +113,7 @@ class _HomeState extends ConsumerState<Home> {
   FocusNode? searchFormFocusNode = FocusNode();
   FocusNode? searchResultFocusNode = FocusNode();
   FocusNode? listFocusNode = FocusNode();
+  FocusNode? markdownFocusNode = FocusNode();
   bool isUpToTopTriggered = false;
   late TopStateNotifier topStateNotifier;
   late SearchFormVisibleNotifier searchFormVisibleNotifier;
@@ -98,6 +136,8 @@ class _HomeState extends ConsumerState<Home> {
   @override
   void initState() {
     super.initState();
+    //markdownFocusNode?.requestFocus();
+    listFocusNode?.requestFocus();
     initialize();
   }
 
@@ -273,17 +313,16 @@ class _HomeState extends ConsumerState<Home> {
     print("handleSearchFormFocusChanged:${hasFocus}");
     if (hasFocus) {
     } else {
+      searchFormFocusNode?.unfocus();
+      listFocusNode?.requestFocus();
+      topStateNotifier.updateSearchBarVisibility(false);
+      searchFormVisibleNotifier.update(false);
       if (topStateNotifier.state.showSearchResult) {
         searchFormFocusNode?.unfocus();
         searchResultFocusNode?.requestFocus();
         topStateNotifier.updateSearchBarVisibility(false);
         searchFormVisibleNotifier.update(true);
-      } else {
-        searchFormFocusNode?.unfocus();
-        listFocusNode?.requestFocus();
-        topStateNotifier.updateSearchBarVisibility(false);
-        searchFormVisibleNotifier.update(false);
-      }
+      } else {}
     }
   }
 
@@ -312,6 +351,7 @@ class _HomeState extends ConsumerState<Home> {
           searchFormFocusNode: searchFormFocusNode ?? FocusNode(),
           searchResultFocusNode: searchResultFocusNode ?? FocusNode(),
           listFocusNode: listFocusNode ?? FocusNode(),
+          markdownFocusNode: markdownFocusNode ?? FocusNode(),
           handleSearchFormFocusChange: (hasFocus) =>
               handleSearchFormFocusChanged(hasFocus),
           handleSearchFormInput: (text) => handleSearchFormInput(text),

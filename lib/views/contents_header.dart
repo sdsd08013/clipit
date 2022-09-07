@@ -72,11 +72,12 @@ class ContentsHeader extends ConsumerWidget {
                           onFocusChange: (value) {
                             handleSearchFormFocusChange(value);
                           },
-                          child: ModifiedMacosSearchField(
-                              maxLines: 1,
-                              focusNode: searchFormFocusNode,
-                              onChanged: (string) =>
-                                  {handleSearchFormInput(string)})))))
+                          child: Material(
+                              child: TextField(
+                                  maxLines: 1,
+                                  focusNode: searchFormFocusNode,
+                                  onChanged: (string) =>
+                                      {handleSearchFormInput(string)}))))))
         ]));
   }
 }
