@@ -44,7 +44,6 @@ class ContentsListView extends ConsumerWidget {
     double offset = ref.watch(offsetProvider);
     List<TreeNode> items = ref.watch(topStateProvider).currentDirNodes;
     return FocusableActionDetector(
-        autofocus: true,
         focusNode: listFocusNode,
         shortcuts: {
           listViewUpKeySet: ListViewUpIntent(),

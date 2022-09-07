@@ -3,6 +3,7 @@ import 'package:clipit/views/markdown.dart';
 import 'package:clipit/views/search_result.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/side_type.dart';
@@ -37,6 +38,7 @@ class ContentsMainView extends ConsumerWidget {
   final FocusNode searchFormFocusNode;
   final FocusNode searchResultFocusNode;
   final FocusNode listFocusNode;
+  final FocusNode markdownFocusNode;
 
   ContentsMainView(
       {required this.handleArchiveItemTap,
@@ -59,6 +61,7 @@ class ContentsMainView extends ConsumerWidget {
       required this.controller,
       required this.searchFormFocusNode,
       required this.searchResultFocusNode,
+      required this.markdownFocusNode,
       required this.listFocusNode});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,7 +102,7 @@ class ContentsMainView extends ConsumerWidget {
                           handleTapCopyToClipboard: handleTapCopyToClipboard,
                           handleSearchFormFocused: handleSearchFormFocused,
                           onItemTap: handleListViewItemTap),
-                      MarkdownView()
+                      MarkdownView(markdownFocusNode: markdownFocusNode)
                     ]),
               Visibility(
                   visible: topState.showSearchResult,
